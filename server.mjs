@@ -1,20 +1,18 @@
 import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
-import * as cheerio from 'cheerio';
+import * as cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
 
 app.get("/api/panchang", async (req, res) => {
   try {
-    // 🔗 Panchang source (today)
     const url = "https://www.drikpanchang.com/panchang/day-panchang.html";
     const response = await fetch(url);
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    // 🔹 Extract data (safe selectors)
     const date = $(".dpHeaderDate").first().text().trim();
     const vaar = $("span.dpDay").first().text().trim();
 
@@ -34,7 +32,7 @@ app.get("/api/panchang", async (req, res) => {
     res.json({
       date,
       vaar,
-      vikramSamvat: "2082",   // later auto
+      vikramSamvat: "2082",
       shakSamvat: "1947",
       maas,
       tithi,
@@ -48,12 +46,11 @@ app.get("/api/panchang", async (req, res) => {
     });
 
   } catch (err) {
-    res.json({ error: "Panchang fetch failed" });
+    res.status(500).json({ error: "Panchang fetch failed" });
   }
 });
 
 const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Panchang backend running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log("Panchang backend running on port", PORT);
 });
