@@ -52,6 +52,8 @@ app.get("/api/panchang", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Panchang backend running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Panchang backend running on port ${PORT}`);
 });
