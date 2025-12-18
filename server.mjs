@@ -1,60 +1,57 @@
 import express from "express";
+import fetch from "node-fetch";
 import cors from "cors";
-import { vratTyoharMap } from "./data/vratTyohar.js";
+import cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
 
-/* ===== Helpers ===== */
+app.get("/api/panchang", async (req, res) => {
+  try {
+    // 🔗 Panchang source (today)
+    const url = "https://www.drikpanchang.com/panchang/day-panchang.html";
+    const response = await fetch(url);
+    const html = await response.text();
+    const $ = cheerio.load(html);
 
-function getTodayInfo() {
-  const today = new Date();
+    // 🔹 Extract data (safe selectors)
+    const date = $(".dpHeaderDate").first().text().trim();
+    const vaar = $("span.dpDay").first().text().trim();
 
-  const dd = String(today.getDate()).padStart(2, "0");
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const yyyy = today.getFullYear();
+    const tithi = $("td:contains('Tithi')").next().text().trim();
+    const maas = $("td:contains('Amanta')").next().text().trim();
 
-  const vaarList = [
-    "रविवार", "सोमवार", "मंगलवार",
-    "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार"
-  ];
+    const sunrise = $("td:contains('Sunrise')").next().text().trim();
+    const sunset = $("td:contains('Sunset')").next().text().trim();
+    const moonrise = $("td:contains('Moonrise')").next().text().trim();
+    const moonset = $("td:contains('Moonset')").next().text().trim();
 
-  return {
-    date: `${dd}-${mm}-${yyyy}`,
-    vaar: vaarList[today.getDay()],
-    key: `${mm}-${dd}`
-  };
-}
+    const vratTyohar = [];
+    $("ul.dpFestivalList li").each((i, el) => {
+      vratTyohar.push($(el).text().trim());
+    });
 
-/* ===== API ===== */
+    res.json({
+      date,
+      vaar,
+      vikramSamvat: "2082",   // later auto
+      shakSamvat: "1947",
+      maas,
+      tithi,
+      sunMoon: {
+        sunrise,
+        sunset,
+        moonrise,
+        moonset
+      },
+      vratTyohar
+    });
 
-app.get("/api/panchang/today", (req, res) => {
-  const today = getTodayInfo();
-
-  res.json({
-    date: today.date,
-    vaar: today.vaar,
-
-    vikramSamvat: "2082",
-    shakSamvat: "1947",
-
-    maas: "पौष",
-    tithi: "कृष्ण पक्ष त्रयोदशी",
-
-    sunMoon: {
-      sunrise: "--",
-      sunset: "--",
-      moonrise: "--",
-      moonset: "--"
-    },
-
-    vratTyohar: vratTyoharMap[today.key] || []
-  });
+  } catch (err) {
+    res.json({ error: "Panchang fetch failed" });
+  }
 });
 
-/* ===== Server Start ===== */
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log("Bhakti Panchang Backend running on port", PORT);
+app.listen(3000, () => {
+  console.log("Panchang backend running");
 });
