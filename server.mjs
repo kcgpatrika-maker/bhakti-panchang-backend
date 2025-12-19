@@ -2,22 +2,10 @@ import express from "express";
 import fetch from "node-fetch";
 import cors from "cors";
 import * as cheerio from "cheerio";
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
 const app = express();
 app.use(cors());
-
-/* =========================
-   भारतीय दिवस / जयंती मैप
-   ========================= */
-const indianDayMap = {
-  "01-26": ["🇮🇳 गणतंत्र दिवस"],
-  "08-15": ["🇮🇳 स्वतंत्रता दिवस"],
-  "10-02": ["गांधी जयंती"],
-  "12-25": ["क्रिसमस"],
-  "01-23": ["नेताजी सुभाष चंद्र बोस जयंती"],
-  "04-14": ["डॉ. भीमराव अंबेडकर जयंती"],
-  "09-05": ["शिक्षक दिवस"],
-};
 
 /* =========================
    Panchang API
@@ -71,9 +59,9 @@ app.get("/api/panchang", async (req, res) => {
       today.getDate()
     ).padStart(2, "0")}`;
 
-    if (indianDayMap[key]) {
-      vratTyohar = [...indianDayMap[key], ...vratTyohar];
-    }
+    if (bharatDiwasMap[key]) {
+  vratTyohar = [...bharatDiwasMap[key], ...vratTyohar];
+}
 
     res.json({
       date,
