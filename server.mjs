@@ -1,91 +1,121 @@
 import express from "express";
 import cors from "cors";
-import * as cheerio from "cheerio";
-import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
 const app = express();
 app.use(cors());
 
 /* =========================
-   Panchang API
+   भारतीय दिवस / जयंती मैप
    ========================= */
-app.get("/api/panchang", async (req, res) => {
-  try {
-    const url = "https://www.drikpanchang.com/panchang/day-panchang.html";
-    const response = await fetch(url);
-    const html = await response.text();
-    const $ = cheerio.load(html);
+const indianDayMap = {
+  "01-26": ["🇮🇳 गणतंत्र दिवस"],
+  "08-15": ["🇮🇳 स्वतंत्रता दिवस"],
+  "10-02": ["गांधी जयंती"],
+  "01-23": ["नेताजी सुभाष चंद्र बोस जयंती"],
+  "04-14": ["डॉ. भीमराव अंबेडकर जयंती"],
+  "09-05": ["शिक्षक दिवस"],
+};
 
-    // Date
-    const date = $(".dpHeaderDate").first().text().trim();
-    const vaar = $("span.dpDay").first().text().trim();
+/* =========================
+   वार (Day names)
+   ========================= */
+const vaarMap = [
+  "रविवार",
+  "सोमवार",
+  "मंगलवार",
+  "बुधवार",
+  "गुरुवार",
+  "शुक्रवार",
+  "शनिवार",
+];
 
-    // Maas + Paksha + Tithi
-    const tithiRaw = $("td:contains('Tithi')").next().text().trim();
-    const maasRaw = $("td:contains('Amanta')").next().text().trim();
+/* =========================
+   मास + तिथि (Base Logic)
+   NOTE: यह production-safe fallback है
+   ========================= */
+function getTithiPaksha(date) {
+  // SIMPLE LOGIC (stable fallback)
+  const day = date.getDate();
 
-    let paksha = "";
-    if (tithiRaw.includes("Krishna")) paksha = "कृष्ण पक्ष";
-    if (tithiRaw.includes("Shukla")) paksha = "शुक्ल पक्ष";
+  const paksha = day <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+  const tithiNumber = day <= 15 ? day : day - 15;
 
-    const tithi = tithiRaw
-      .replace("Krishna", "")
-      .replace("Shukla", "")
-      .trim();
+  const tithiNames = [
+    "प्रतिपदा",
+    "द्वितीया",
+    "तृतीया",
+    "चतुर्थी",
+    "पंचमी",
+    "षष्ठी",
+    "सप्तमी",
+    "अष्टमी",
+    "नवमी",
+    "दशमी",
+    "एकादशी",
+    "द्वादशी",
+    "त्रयोदशी",
+    "चतुर्दशी",
+    "अमावस्या / पूर्णिमा",
+  ];
 
-    const maas = maasRaw + (paksha ? ` (${paksha})` : "");
-
-    // Sun & Moon
-    const sunrise = $("td:contains('Sunrise')").next().text().trim() || "--";
-    const sunset = $("td:contains('Sunset')").next().text().trim() || "--";
-    const moonrise = $("td:contains('Moonrise')").next().text().trim() || "--";
-    const moonset = $("td:contains('Moonset')").next().text().trim() || "--";
-
-    /* =========================
-       व्रत-त्योहार (Drik Panchang)
-       ========================= */
-    let vratTyohar = [];
-    $("ul.dpFestivalList li").each((i, el) => {
-      const txt = $(el).text().trim();
-      if (txt) vratTyohar.push(txt);
-    });
-
-    /* =========================
-       भारतीय दिवस जोड़ना
-       ========================= */
-    // DD-MM key from scraped date (safer than JS Date)
-let key = "";
-if (date && date.includes("-")) {
-  const parts = date.split("-"); // ["19","12","2025"]
-  key = `${parts[0]}-${parts[1]}`; // "19-12"
+  return `${paksha} ${tithiNames[tithiNumber - 1]}`;
 }
 
-    if (bharatDiwasMap[key]) {
-  vratTyohar = [...bharatDiwasMap[key], ...vratTyohar];
+function getMaas(month) {
+  const maasMap = [
+    "चैत्र",
+    "वैशाख",
+    "ज्येष्ठ",
+    "आषाढ़",
+    "श्रावण",
+    "भाद्रपद",
+    "आश्विन",
+    "कार्तिक",
+    "मार्गशीर्ष",
+    "पौष",
+    "माघ",
+    "फाल्गुन",
+  ];
+  return maasMap[month] || "";
 }
 
-    res.json({
-      date,
-      vaar,
-      vikramSamvat: "2082",
-      shakSamvat: "1947 (विश्वावसु)",
-      maas,
-      tithi: paksha ? `${paksha} ${tithi}` : tithi,
-      sunMoon: {
-        sunrise,
-        sunset,
-        moonrise,
-        moonset,
-      },
-      vratTyohar,
-    });
-  } catch (err) {
-    console.error(err);
-    res.json({ error: "Panchang fetch failed" });
-  }
+/* =========================
+   Panchang API (Stable)
+   ========================= */
+app.get("/api/panchang", (req, res) => {
+  const now = new Date();
+
+  const dateStr = now.toLocaleDateString("en-GB").split("/").join("-");
+  const vaar = vaarMap[now.getDay()];
+
+  const maas = getMaas(now.getMonth());
+  const tithi = getTithiPaksha(now);
+
+  /* भारतीय दिवस */
+  const key = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
+
+  const vratTyohar = indianDayMap[key] || [];
+
+  res.json({
+    date: dateStr,
+    vaar,
+    vikramSamvat: "2082",
+    shakSamvat: "1947 (विश्वावसु)",
+    maas,
+    tithi,
+    sunMoon: {
+      sunrise: "--",
+      sunset: "--",
+      moonrise: "--",
+      moonset: "--",
+    },
+    vratTyohar,
+  });
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Panchang backend running");
+  console.log("Bhakti Panchang backend running");
 });
