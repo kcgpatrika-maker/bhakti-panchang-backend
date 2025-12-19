@@ -101,7 +101,7 @@ app.get("/api/panchang", (req, res) => {
   res.json({
     date: dateStr,
     vaar,
-    vikramSamvat: "2082",
+    vikramSamvat: "2082 (सिद्धार्थी)",
     shakSamvat: "1947 (विश्वावसु)",
     maas,
     tithi,
