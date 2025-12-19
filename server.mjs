@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import cors from "cors";
 import * as cheerio from "cheerio";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
