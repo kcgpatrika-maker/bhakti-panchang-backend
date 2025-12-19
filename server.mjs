@@ -54,10 +54,12 @@ app.get("/api/panchang", async (req, res) => {
     /* =========================
        भारतीय दिवस जोड़ना
        ========================= */
-    const today = new Date();
-    const key = `${String(today.getMonth() + 1).padStart(2, "0")}-${String(
-      today.getDate()
-    ).padStart(2, "0")}`;
+    // DD-MM key from scraped date (safer than JS Date)
+let key = "";
+if (date && date.includes("-")) {
+  const parts = date.split("-"); // ["19","12","2025"]
+  key = `${parts[0]}-${parts[1]}`; // "19-12"
+}
 
     if (bharatDiwasMap[key]) {
   vratTyohar = [...bharatDiwasMap[key], ...vratTyohar];
