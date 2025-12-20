@@ -142,14 +142,15 @@ app.get("/api/panchang", (req, res) => {
    Ask Bhakti API (Wikipedia summary)
    ========================= */
 app.get("/api/ask-bhakti", async (req, res) => {
-  const { q, type } = req.query;
+  const q = req.query.q;
+const type = decodeURIComponent(req.query.type || "");
 
-  if (!q || !type) {
-    return res.json({
-      success: false,
-      message: "Query या type missing"
-    });
-  }
+  if (!q || !type.trim()) {
+  return res.json({
+    success: false,
+    message: "Query या type missing"
+  });
+}
 
   try {
     // उदाहरण: "शिव आरती", "शिव चालीसा"
