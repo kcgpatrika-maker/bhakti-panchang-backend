@@ -142,36 +142,53 @@ app.get("/api/panchang", (req, res) => {
    Ask Bhakti API (Wikipedia summary)
    ========================= */
 app.get("/api/ask-bhakti", async (req, res) => {
-  const q = req.query.q;
-const type = decodeURIComponent(req.query.type || "");
+  const { q, type } = req.query;
 
-  if (!q || !type.trim()) {
-  return res.json({
-    success: false,
-    message: "Query या type missing"
-  });
-}
+  if (!q || !type) {
+    return res.json({
+      success: false,
+      message: "Query या type missing"
+    });
+  }
 
   try {
-    // उदाहरण: "शिव आरती", "शिव चालीसा"
-    const searchTerm = `${q} ${type}`;
-    const wikiApi = `https://hi.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`;
+    // Wikipedia REST API (clean + free)
+    const title = `${q} ${type}`;
+    const apiUrl = `https://hi.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
 
-    const response = await fetch(wikiApi);
+    const response = await fetch(apiUrl);
     const data = await response.json();
+
+    let content = "";
+
+    if (data.extract && data.extract.length > 50) {
+      content = data.extract;
+    } else {
+      // fallback: famous default content
+      if (type === "मंत्र") {
+        content = "ॐ नमः शिवाय ॥\nॐ नमः शिवाय ॥\nॐ नमः शिवाय ॥";
+      } else if (type === "आरती") {
+        content = "ॐ जय शिव ओंकारा...\n(प्रसिद्ध शिव आरती)";
+      } else if (type === "चालीसा") {
+        content = "जय गणेश गिरिजा सुवन...\n(प्रारंभिक चौपाइयाँ)";
+      } else {
+        content = "इस विषय की जानकारी उपलब्ध है, नीचे दिए गए स्रोत पर पढ़ें।";
+      }
+    }
 
     res.json({
       success: true,
-      title: searchTerm,
-      content: data.extract || "इस विषय की जानकारी उपलब्ध नहीं है।",
-      source: `https://hi.wikipedia.org/wiki/${encodeURIComponent(searchTerm)}`
+      title: title,
+      content: content,
+      more_url: data.content_urls?.desktop?.page || apiUrl,
+      source: "Wikipedia"
     });
 
   } catch (err) {
     res.json({
       success: false,
-      message: "डेटा लोड नहीं हो पाया",
-      error: err.message
+      message: "कंटेंट लोड नहीं हो पाया",
+      source: null
     });
   }
 });
