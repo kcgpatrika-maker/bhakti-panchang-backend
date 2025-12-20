@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-import { vratTyoharMap } from "./vratTyohar.js";
-import { bharatDiwasMap } from "./bharatDiwas.js";
+import { vratTyoharMap } from "./data/vratTyohar.js";
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
 const app = express();
 app.use(cors());
