@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import fetch from "node-fetch";
 import cheerio from "cheerio";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
