@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import { vratTyoharMap } from "./vratTyohar.js";
+import { bharatDiwasMap } from "./bharatDiwas.js";
 
 const app = express();
 app.use(cors());
@@ -83,36 +85,57 @@ function getMaas(month) {
    Panchang API (Stable)
    ========================= */
 app.get("/api/panchang", (req, res) => {
-  const now = new Date();
+  const today = new Date();
+  
+  // Date formatting
+  const months = ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+  const dateStr = `${today.getDate()} ${months[today.getMonth()]} ${today.getFullYear()}`;
+  const dayStr = today.toLocaleDateString('hi-IN', { weekday: 'long' });
 
-  const dateStr = now.toLocaleDateString("en-GB").split("/").join("-");
-  const vaar = vaarMap[now.getDay()];
+  // Fallback logic
+  const sunrise = "आज उपलब्ध नहीं";
+  const sunset = "आज उपलब्ध नहीं";
+  const moonrise = "आज उपलब्ध नहीं";
+  const moonset = "आज उपलब्ध नहीं";
 
-  const maas = getMaas(now.getMonth());
-  const tithi = getTithiPaksha(now);
+  const vikramSamvat = 2082; // example, dynamic calculation possible
+  const shakSamvat = 1947;   // example
 
-  /* भारतीय दिवस */
-  const key = `${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-    now.getDate()
-  ).padStart(2, "0")}`;
+  const masa = "फाल्गुन"; // placeholder, dynamic calculation possible
+  const paksha_tithi = "कृष्ण पक्ष पंचमी"; // placeholder
 
-  const vratTyohar = indianDayMap[key] || [];
+  // Vrat / Tyohar
+  const dateKey = `${today.getDate()}-${today.getMonth()+1}`; // e.g., "20-12"
+  let vratTyohar = [];
+  if (vratTyoharMap[dateKey]) vratTyohar.push(vratTyoharMap[dateKey]);
+  if (bharatDiwasMap[dateKey]) vratTyohar.push(bharatDiwasMap[dateKey]);
+  if (vratTyohar.length === 0) vratTyohar.push("कोई विशेष व्रत नहीं");
 
-  res.json({
+  // Ask slides placeholder
+  const ask_slides = [
+    { title: "आरती", content: "आरती का विवरण..." },
+    { title: "चालीसा", content: "चालीसा का विवरण..." },
+    { title: "पूजा विधि", content: "पूजा विधि का विवरण..." },
+    { title: "मंत्र", content: "मंत्र का विवरण..." },
+    { title: "कथा", content: "कथा का विवरण..." }
+  ];
+
+  const panchang = {
     date: dateStr,
-    vaar,
-    vikramSamvat: "2082 (सिद्धार्थी)",
-    shakSamvat: "1947 (विश्वावसु)",
-    maas,
-    tithi,
-    sunMoon: {
-      sunrise: "--",
-      sunset: "--",
-      moonrise: "--",
-      moonset: "--",
-    },
-    vratTyohar,
-  });
+    day: dayStr,
+    sunrise,
+    sunset,
+    moonrise,
+    moonset,
+    vikram_samvat: vikramSamvat,
+    shak_samvat: shakSamvat,
+    masa,
+    paksha_tithi,
+    vrat_tyohar: vratTyohar,
+    ask_slides
+  };
+
+  res.json(panchang);
 });
 
 const PORT = process.env.PORT || 3000;
