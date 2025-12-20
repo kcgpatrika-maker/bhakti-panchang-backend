@@ -142,39 +142,35 @@ app.get("/api/panchang", (req, res) => {
    Ask Bhakti API (Wikipedia summary)
    ========================= */
 app.get("/api/ask-bhakti", async (req, res) => {
-  const query = req.query.q;
-  if (!query) {
-    return res.json({ success: false, message: "Query missing" });
+  const { q, type } = req.query;
+
+  if (!q || !type) {
+    return res.json({
+      success: false,
+      message: "Query या type missing"
+    });
   }
 
   try {
-    // Wikipedia REST API
-    const searchUrl = `https://hi.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
-    const response = await fetch(searchUrl);
+    // उदाहरण: "शिव आरती", "शिव चालीसा"
+    const searchTerm = `${q} ${type}`;
+    const wikiApi = `https://hi.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(searchTerm)}`;
+
+    const response = await fetch(wikiApi);
     const data = await response.json();
 
-    // अगर page missing हो तो fallback
-    if (data.type === "https://mediawiki.org/wiki/HyperSwitch/errors/not_found") {
-      return res.json({
-        success: false,
-        message: "इस विषय की जानकारी उपलब्ध नहीं है",
-        source: `https://hi.wikipedia.org/wiki/${encodeURIComponent(query)}`
-      });
-    }
-
-    // response भेज रहे हैं
     res.json({
       success: true,
-      title: data.title,
-      preview: data.extract,      // summary
-      source: data.content_urls?.desktop?.page || searchUrl
+      title: searchTerm,
+      content: data.extract || "इस विषय की जानकारी उपलब्ध नहीं है।",
+      source: `https://hi.wikipedia.org/wiki/${encodeURIComponent(searchTerm)}`
     });
 
   } catch (err) {
     res.json({
       success: false,
       message: "डेटा लोड नहीं हो पाया",
-      source: null
+      error: err.message
     });
   }
 });
