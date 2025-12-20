@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import fetch from "node-fetch";
+import cheerio from "cheerio";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
@@ -137,7 +139,48 @@ app.get("/api/panchang", (req, res) => {
 
   res.json(panchang);
 });
+/* =========================
+   Ask Bhakti API (QuickNews style)
+   ========================= */
+app.get("/api/ask-bhakti", async (req, res) => {
+  const query = req.query.q;
+  if (!query) {
+    return res.json({ success: false, message: "Query missing" });
+  }
 
+  try {
+    const searchUrl = `https://hi.wikipedia.org/wiki/${encodeURIComponent(query)}`;
+    const response = await fetch(searchUrl);
+    const html = await response.text();
+
+    const $ = cheerio.load(html);
+
+    let text = "";
+    $("#mw-content-text p").each((i, el) => {
+      if (i < 3) {
+        text += $(el).text().trim() + "\n\n";
+      }
+    });
+
+    if (!text) {
+      text = "इस विषय की जानकारी नीचे दिए गए स्रोत पर उपलब्ध है।";
+    }
+
+    res.json({
+      success: true,
+      title: query,
+      preview: text.trim(),
+      source: searchUrl
+    });
+
+  } catch (err) {
+    res.json({
+      success: false,
+      message: "डेटा लोड नहीं हो पाया",
+      source: null
+    });
+  }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log("Bhakti Panchang backend running");
