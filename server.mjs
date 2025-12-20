@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
