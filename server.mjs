@@ -5,92 +5,80 @@ const app = express();
 app.use(cors());
 
 /* =========================
-   IST DATE FIX
-========================= */
-function getISTDate() {
-  return new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-  );
-}
-
-/* =========================
-   PANCHANG API (LIVE DATE)
-========================= */
-app.get("/api/panchang", (req, res) => {
-  const now = getISTDate();
-
-  const days = ["रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"];
-
-  res.json({
-    date: now.toLocaleDateString("hi-IN", { day:"numeric", month:"long", year:"numeric" }),
-    day: days[now.getDay()],
-    vikram_samvat: 2082,
-    shak_samvat: 1947,
-    masa: "फाल्गुन",
-    paksha_tithi: "कृष्ण पक्ष पंचमी",
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:30",
-      moonrise: "07:20",
-      moonset: "18:00"
-    },
-    vrat_tyohar: []
-  });
-});
-
-/* =========================
-   ASK BHAKTI – ONE REAL CONTENT
-========================= */
-app.get("/api/ask-bhakti", async (req, res) => {
+   ASK BHAKTI – FINAL
+   ========================= */
+app.get("/api/ask-bhakti", (req, res) => {
   const { q, type } = req.query;
   if (!q || !type) {
-    return res.json({ success:false, message:"Query या type missing" });
+    return res.json({ success: false });
   }
 
-  try {
-    let title = `${q} ${type}`;
-    let content = "";
-    let pdf = null;
+  // DEMO: शिव (बाकी देवता इसी पैटर्न पर बढ़ेंगे)
+  if (q.includes("शिव")) {
 
-    /* ---- RULE ENGINE ---- */
+    if (type === "मंत्र") {
+      return res.json({
+        success: true,
+        title: "शिव मंत्र",
+        content: "ॐ नमः शिवाय।",
+        sources: [
+          "https://www.sanskritdocuments.org",
+          "https://archive.org"
+        ]
+      });
+    }
+
     if (type === "आरती") {
-      content = `${q} जी की आरती – 
-ॐ जय ${q} भगवान, प्रभु जय ${q} भगवान।
-सकल लोक के पालनहारे, जय जय ${q} भगवान॥`;
+      return res.json({
+        success: true,
+        title: "शिव आरती",
+        content: `
+जय शिव ओंकारा, हर शिव ओंकारा।
+ब्रह्मा विष्णु सदाशिव, अर्द्धांगी धारा॥
+`,
+        sources: [
+          "https://sanskritdocuments.org",
+          "https://www.templepurohit.com"
+        ]
+      });
     }
 
-    else if (type === "मंत्र") {
-      content = `ॐ नमः शिवाय।
-यह ${q} जी का सर्वाधिक प्रचलित और शक्तिशाली मंत्र माना जाता है।`;
+    if (type === "पूजा विधि") {
+      return res.json({
+        success: true,
+        title: "शिव पूजा विधि",
+        content: `
+प्रातः स्नान कर स्वच्छ वस्त्र धारण करें।
+संकल्प लें – ममोपात्त समस्त दुरित क्षय द्वारा...
+शिवलिंग पर जल, दूध, बेलपत्र अर्पित करें।
+धूप, दीप, नैवेद्य अर्पित करें।
+अंत में आरती कर प्रार्थना करें।
+`,
+        sources: ["AI Generated – Shastra based"]
+      });
     }
 
-    else if (type === "पूजा विधि") {
-      content = `${q} पूजा विधि (AI जनरेटेड):
-1. स्नान कर स्वच्छ वस्त्र धारण करें
-2. दीप, धूप, पुष्प अर्पित करें
-3. मंत्र जाप करें
-4. आरती करें`;
+    if (type === "चालीसा") {
+      return res.json({
+        success: true,
+        title: "शिव चालीसा",
+        pdf: "https://archive.org/download/shivchalisa/shivchalisa.pdf",
+        sources: ["archive.org"]
+      });
     }
 
-    else if (type === "चालीसा" || type === "कथा") {
-      content = `${q} ${type} की संक्षिप्त जानकारी।`;
-      pdf = `https://hi.wikipedia.org/wiki/${encodeURIComponent(title)}`;
+    if (type === "स्तोत्र") {
+      return res.json({
+        success: true,
+        title: "रुद्राष्टकम",
+        pdf: "https://archive.org/download/rudrashtakam/rudrashtakam.pdf",
+        sources: ["archive.org"]
+      });
     }
-
-    res.json({
-      success: true,
-      title,
-      content,
-      source: `https://hi.wikipedia.org/wiki/${encodeURIComponent(title)}`,
-      pdf
-    });
-
-  } catch (e) {
-    res.json({ success:false, message:"डेटा लोड नहीं हो पाया" });
   }
+
+  res.json({ success: false });
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () =>
-  console.log("Bhakti Panchang backend running")
-);
+app.listen(PORT, () => console.log("Bhakti Panchang API Running"));
