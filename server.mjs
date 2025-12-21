@@ -4,81 +4,72 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-/* =========================
-   ASK BHAKTI – FINAL
-   ========================= */
-app.get("/api/ask-bhakti", (req, res) => {
+app.get("/api/ask-bhakti", (req,res)=>{
   const { q, type } = req.query;
-  if (!q || !type) {
-    return res.json({ success: false });
-  }
+  if(!q || !type) return res.json({success:false});
 
-  // DEMO: शिव (बाकी देवता इसी पैटर्न पर बढ़ेंगे)
-  if (q.includes("शिव")) {
-
-    if (type === "मंत्र") {
+  if(q.includes("शिव")){
+    if(type==="मंत्र"){
       return res.json({
-        success: true,
-        title: "शिव मंत्र",
-        content: "ॐ नमः शिवाय।",
-        sources: [
-          "https://www.sanskritdocuments.org",
-          "https://archive.org"
-        ]
+        success:true,
+        title:"ॐ नमः शिवाय",
+        content:"ॐ नमः शिवाय।",
+        sources:["sanskritdocuments.org"]
       });
     }
 
-    if (type === "आरती") {
+    if(type==="आरती"){
       return res.json({
-        success: true,
-        title: "शिव आरती",
-        content: `
-जय शिव ओंकारा, हर शिव ओंकारा।
-ब्रह्मा विष्णु सदाशिव, अर्द्धांगी धारा॥
-`,
-        sources: [
-          "https://sanskritdocuments.org",
-          "https://www.templepurohit.com"
-        ]
+        success:true,
+        title:"शिव आरती",
+        content:`जय शिव ओंकारा, हर शिव ओंकारा।
+ब्रह्मा विष्णु सदाशिव, अर्द्धांगी धारा॥`,
+        sources:["sanskritdocuments.org","templepurohit.com"]
       });
     }
 
-    if (type === "पूजा विधि") {
+    if(type==="पूजा विधि"){
       return res.json({
-        success: true,
-        title: "शिव पूजा विधि",
-        content: `
-प्रातः स्नान कर स्वच्छ वस्त्र धारण करें।
-संकल्प लें – ममोपात्त समस्त दुरित क्षय द्वारा...
-शिवलिंग पर जल, दूध, बेलपत्र अर्पित करें।
+        success:true,
+        title:"शिव पूजा विधि",
+        content:`संकल्प लें।
+जल, दूध से अभिषेक करें।
+बेलपत्र अर्पित करें।
 धूप, दीप, नैवेद्य अर्पित करें।
-अंत में आरती कर प्रार्थना करें।
-`,
-        sources: ["AI Generated – Shastra based"]
+आरती कर प्रार्थना करें।`
       });
     }
 
-    if (type === "चालीसा") {
+    if(type==="चालीसा"){
       return res.json({
-        success: true,
-        title: "शिव चालीसा",
-        pdf: "https://archive.org/download/shivchalisa/shivchalisa.pdf",
-        sources: ["archive.org"]
+        success:true,
+        title:"शिव चालीसा",
+        pdf:"https://archive.org/download/shivchalisa/shivchalisa.pdf"
       });
     }
 
-    if (type === "स्तोत्र") {
+    if(type==="स्तोत्र"){
       return res.json({
-        success: true,
-        title: "रुद्राष्टकम",
-        pdf: "https://archive.org/download/rudrashtakam/rudrashtakam.pdf",
-        sources: ["archive.org"]
+        success:true,
+        title:"रुद्राष्टकम",
+        pdf:"https://archive.org/download/rudrashtakam/rudrashtakam.pdf"
       });
     }
   }
 
-  res.json({ success: false });
+  res.json({success:false});
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Bhakti Panchang API Running"));
+app.get("/api/panchang",(req,res)=>{
+  res.json({
+    date:"20 दिसंबर 2025",
+    day:"शनिवार",
+    sunMoon:{sunrise:"06:55",sunset:"17:30",moonrise:"07:20",moonset:"18:00"},
+    vikram_samvat:2082,
+    shak_samvat:1947,
+    masa:"पौष",
+    paksha_tithi:"कृष्ण पक्ष पंचमी"
+  });
+});
+
+app.listen(3000,()=>console.log("Bhakti API running"));
