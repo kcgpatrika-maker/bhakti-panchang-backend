@@ -4,29 +4,31 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
-const INDIAN_DATE = () => {
-  return new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata"
-    })
-  );
-};
-
 app.get("/api/panchang", (req, res) => {
-  const today = INDIAN_DATE();
 
-  const date = today.getDate();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
-  const day = today.toLocaleDateString("hi-IN", {
-    weekday: "long"
-  });
+  const today = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const date = `${today.getDate()} दिसंबर ${today.getFullYear()}`;
+  const day = today.toLocaleDateString("hi-IN",{ weekday:"long" });
 
   res.json({
     date,
-    month,
-    year,
-    day
+    day,
+
+    sunMoon: {
+      sunrise: "06:55",
+      sunset: "17:42",
+      moonrise: "19:10",
+      moonset: "07:30"
+    },
+
+    vikram_samvat: "2082",
+    shak_samvat: "1947",
+
+    masa: "पौष",
+    paksha_tithi: "शुक्ल पक्ष द्वितीया"
   });
 });
 
