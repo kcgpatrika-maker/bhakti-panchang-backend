@@ -1,68 +1,126 @@
 import express from "express";
 import cors from "cors";
-import festivalData from "./data/festivals.json" assert { type: "json" };
-import { bharatDiwasMap } from "./data/bharatDiwas.js";
-import { vratTyoharMap } from "./data/vratTyohar.js";
+import fs from "fs";
+import path from "path";
 
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 3000;
+// ---------------------------
+// Load festival data safely
+// ---------------------------
+const festivalDataPath = path.resolve("./data/festivals.json");
+let festivalData = { bharatDiwasMap: {}, vratTyoharMap: {} };
 
-// Month names in Hindi
-const monthNames = [
-  "चैत्र","वैशाख","ज्येष्ठ","आषाढ़","श्रावण","भाद्रपद",
-  "आश्विन","कार्तिक","मार्गशीर्ष","पौष","माघ","फाल्गुन"
-];
+try {
+  festivalData = JSON.parse(fs.readFileSync(festivalDataPath, "utf-8"));
+} catch (e) {
+  console.error("Error loading festivals.json:", e);
+}
 
-app.get("/api/panchang", (req, res) => {
-  const today = new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Kolkata"}));
-  
-  const dateNum = today.getDate();
-  const monthNum = today.getMonth();
-  const yearNum = today.getFullYear();
-  
-  const dayName = today.toLocaleDateString("hi-IN",{weekday:"long"});
-  const monthName = monthNames[monthNum];
-  
-  // Approximate Panchang values
-  const vikramSamvat = 2082 + (yearNum-2025);
-  const shakSamvat = 1947 + (yearNum-2025);
+// ---------------------------
+// Helper functions
+// ---------------------------
+function pad(num) {
+  return num.toString().padStart(2, "0");
+}
 
-  const masa = monthName;
-  const paksha = dateNum <= 15 ? "शुक्ल" : "कृष्ण"; // simple approx
-  const tithiNumber = ((dateNum-1)%15)+1;
+// Simple Panchang calculation (static sunrise/sunset, dynamic date)
+function getPanchang() {
+  const today = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
 
-  // 1️⃣ Perpetual Panchang festivals
-  const key = `${masa}-${paksha}-${tithiNumber}`;
-  let festivals = festivalData[key] || ["कोई विशेष व्रत नहीं"];
+  const date = `${today.getDate()} ${getHindiMonth(today.getMonth())} ${today.getFullYear()}`;
+  const day = today.toLocaleDateString("hi-IN",{ weekday:"long" });
 
-  // 2️⃣ Bharat Diwas merge
-  const monthDayKey = `${String(monthNum+1).padStart(2,'0')}-${String(dateNum).padStart(2,'0')}`;
-  if(bharatDiwasMap[monthDayKey]){
-    festivals = festivals.concat(bharatDiwasMap[monthDayKey]);
+  const vikram_samvat = 2082 + (today.getFullYear() - 2025); // rough
+  const shak_samvat = 1947 + (today.getFullYear() - 2025);    // rough
+
+  const masa = "पौष"; // placeholder
+  const paksha_tithi = "शुक्ल पक्ष द्वितीया"; // placeholder
+
+  // Merge festivals
+  const festivalList = [];
+
+  const mmdd = `${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
+
+  if(festivalData.bharatDiwasMap[mmdd]){
+    festivalList.push(...festivalData.bharatDiwasMap[mmdd]);
+  }
+  if(festivalData.vratTyoharMap[mmdd]){
+    festivalList.push(...festivalData.vratTyoharMap[mmdd]);
   }
 
-  // 3️⃣ Vrat Tyohar merge
-  if(vratTyoharMap[monthDayKey]){
-    festivals = festivals.concat(vratTyoharMap[monthDayKey]);
-  }
+  return {
+    date,
+    day,
+    sunMoon: {
+      sunrise: "06:55",
+      sunset: "17:42",
+      moonrise: "19:10",
+      moonset: "07:30"
+    },
+    vikram_samvat,
+    shak_samvat,
+    masa,
+    paksha_tithi,
+    festivalList: festivalList.length ? festivalList : ["कोई विशेष व्रत नहीं"]
+  };
+}
+
+function getHindiMonth(index){
+  const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून",
+                  "जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+  return months[index] || "";
+}
+
+// ---------------------------
+// Panchang API
+// ---------------------------
+app.get("/api/panchang", (req,res)=>{
+  res.json(getPanchang());
+});
+
+// ---------------------------
+// Ask Bhakti API
+// ---------------------------
+app.get("/api/ask-bhakti", (req,res)=>{
+  const { q, type } = req.query;
+  if(!q || !type) return res.json({success:false});
+
+  // Simple example data
+  const dataMap = {
+    "शिव": {
+      "मंत्र": { content: "ॐ नमः शिवाय।", sources: ["sanskritdocuments.org"] },
+      "आरती": { content: "जय शिव ओंकारा...", sources: ["bhaktisangrah.com"] },
+      "पूजा विधि": { content: "1. संकल्प\n2. स्नान\n3. पूजन\n4. अर्पण\n5. आरती\n6. विसर्जन", sources: [] },
+      "चालीसा": { content: "शिव चालीसा...", sources: ["kavitakosh.org"], pdf: "https://archive.org/download/shiv_chalisa.pdf" },
+      "स्तोत्र": { content: "शिव स्तोत्र...", sources: ["vedabase.io"], pdf: "https://archive.org/download/shiv_stotra.pdf" }
+    },
+    "हनुमान": {
+      "मंत्र": { content: "ॐ हनुमते नमः।", sources: ["sanskritdocuments.org"] },
+      "आरती": { content: "जय हनुमान...", sources: ["bhaktisangrah.com"] },
+      "पूजा विधि": { content: "1. संकल्प\n2. स्नान\n3. पूजन\n4. अर्पण\n5. आरती\n6. विसर्जन", sources: [] },
+      "चालीसा": { content: "हनुमान चालीसा...", sources: ["kavitakosh.org"], pdf: "https://archive.org/download/hanuman_chalisa.pdf" },
+      "स्तोत्र": { content: "हनुमान स्तोत्र...", sources: ["vedabase.io"], pdf: "https://archive.org/download/hanuman_stotra.pdf" }
+    }
+  };
+
+  const entry = dataMap[q];
+  if(!entry || !entry[type]) return res.json({success:false});
 
   res.json({
-    date:`${dateNum} ${monthName} ${yearNum}`,
-    day:dayName,
-    sunMoon:{
-      sunrise:"06:55",
-      sunset:"17:42",
-      moonrise:"19:10",
-      moonset:"07:30"
-    },
-    vikram_samvat:vikramSamvat,
-    shak_samvat:shakSamvat,
-    masa:masa,
-    paksha_tithi:`${paksha} पक्ष ${tithiNumber}`,
-    festivalList:festivals.length>0?festivals:["कोई विशेष व्रत नहीं"]
+    success:true,
+    title: q,
+    content: entry[type].content,
+    sources: entry[type].sources || [],
+    pdf: entry[type].pdf || null
   });
 });
 
+// ---------------------------
+// Start server
+// ---------------------------
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, ()=>console.log(`Server running on port ${PORT}`));
