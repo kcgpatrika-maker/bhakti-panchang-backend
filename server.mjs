@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import SunCalc from "suncalc";
 
 const app = express();
 app.use(cors());
@@ -13,15 +14,24 @@ app.get("/api/panchang", (req, res) => {
   const date = `${today.getDate()} दिसंबर ${today.getFullYear()}`;
   const day = today.toLocaleDateString("hi-IN",{ weekday:"long" });
 
+  const lat = 26.9124;   // Jaipur approx
+  const lon = 75.7873;
+
+  const times = SunCalc.getTimes(today, lat, lon);
+  const moonTimes = SunCalc.getMoonTimes(today, lat, lon);
+
+  const format = d =>
+    d ? d.toLocaleTimeString("hi-IN",{ hour:"2-digit", minute:"2-digit" }) : "--";
+
   res.json({
     date,
     day,
 
     sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
+      sunrise: format(times.sunrise),
+      sunset: format(times.sunset),
+      moonrise: format(moonTimes.rise),
+      moonset: format(moonTimes.set)
     },
 
     vikram_samvat: "2082",
