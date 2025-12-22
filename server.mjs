@@ -4,6 +4,32 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 
+const INDIAN_DATE = () => {
+  return new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata"
+    })
+  );
+};
+
+app.get("/api/panchang", (req, res) => {
+  const today = INDIAN_DATE();
+
+  const date = today.getDate();
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
+  const day = today.toLocaleDateString("hi-IN", {
+    weekday: "long"
+  });
+
+  res.json({
+    date,
+    month,
+    year,
+    day
+  });
+});
+
 app.get("/api/ask-bhakti", (req,res)=>{
   const { q, type } = req.query;
   if(!q || !type) return res.json({success:false});
