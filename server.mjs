@@ -25,50 +25,6 @@ function pad(num) {
   return num.toString().padStart(2, "0");
 }
 
-// Simple Panchang calculation (static sunrise/sunset, dynamic date)
-function getPanchang() {
-  const today = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-  );
-
-  const date = `${today.getDate()} ${getHindiMonth(today.getMonth())} ${today.getFullYear()}`;
-  const day = today.toLocaleDateString("hi-IN",{ weekday:"long" });
-
-  const vikram_samvat = 2082 + (today.getFullYear() - 2025); // rough
-  const shak_samvat = 1947 + (today.getFullYear() - 2025);    // rough
-
-  const masa = "पौष"; // placeholder
-  const paksha_tithi = "शुक्ल पक्ष द्वितीया"; // placeholder
-
-  // Merge festivals
-  const festivals = festivalMap?.[dateKey] || [];
-
-  const mmdd = `${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
-
-  if(festivalData.bharatDiwasMap[mmdd]){
-    festivalList.push(...festivalData.bharatDiwasMap[mmdd]);
-  }
-  if(festivalData.vratTyoharMap[mmdd]){
-    festivalList.push(...festivalData.vratTyoharMap[mmdd]);
-  }
-
-  return {
-    date,
-    day,
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
-    },
-    vikram_samvat,
-    shak_samvat,
-    masa,
-    paksha_tithi,
-    festivalList: festivalList.length ? festivalList : ["कोई विशेष व्रत नहीं"]
-  };
-}
-
 function getHindiMonth(index){
   const months = ["जनवरी","फरवरी","मार्च","अप्रैल","मई","जून",
                   "जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
