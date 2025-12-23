@@ -41,7 +41,7 @@ function getPanchang() {
   const paksha_tithi = "शुक्ल पक्ष द्वितीया"; // placeholder
 
   // Merge festivals
-  const festivalList = [];
+  const festivals = festivalMap?.[dateKey] || [];
 
   const mmdd = `${pad(today.getMonth()+1)}-${pad(today.getDate())}`;
 
@@ -78,9 +78,55 @@ function getHindiMonth(index){
 // ---------------------------
 // Panchang API
 // ---------------------------
-app.get("/api/panchang", (req,res)=>{
-  res.json(getPanchang());
-});
+function getPanchang() {
+  const today = new Date(
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+
+  const date = `${today.getDate()} ${getHindiMonth(today.getMonth())} ${today.getFullYear()}`;
+  const day = today.toLocaleDateString("hi-IN", { weekday: "long" });
+
+  const vikram_samvat = 2082 + (today.getFullYear() - 2025);
+  const shak_samvat = 1947 + (today.getFullYear() - 2025);
+
+  const masa = "पौष"; // अभी placeholder
+  const paksha_tithi = "शुक्ल पक्ष द्वितीया"; // अभी placeholder
+
+  // ✅ festival list safe initialize
+  let festivalList = [];
+
+  const mmdd = `${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+
+  // ✅ Bharat Diwas
+  if (festivalData.bharatDiwasMap?.[mmdd]) {
+    festivalList.push(...festivalData.bharatDiwasMap[mmdd]);
+  }
+
+  // ✅ Vrat / Tyohar
+  if (festivalData.vratTyoharMap?.[mmdd]) {
+    festivalList.push(...festivalData.vratTyoharMap[mmdd]);
+  }
+
+  if (festivalList.length === 0) {
+    festivalList.push("कोई विशेष व्रत नहीं");
+  }
+
+  return {
+    date,
+    day,
+    sunMoon: {
+      sunrise: "06:55",
+      sunset: "17:42",
+      moonrise: "19:10",
+      moonset: "07:30"
+    },
+    vikram_samvat,
+    shak_samvat,
+    masa,
+    paksha_tithi,
+    festivalList
+  };
+}
 
 // ---------------------------
 // Ask Bhakti API
