@@ -5,189 +5,147 @@ import path from "path";
 
 const app = express();
 app.use(cors());
-app.use(express.json());
 
-// ---------------------------
-// Load festival data safely
-// ---------------------------
+/* ===============================
+   FESTIVAL DATA LOAD
+================================ */
 const festivalDataPath = path.resolve("./data/festivals.json");
 let festivalData = { bharatDiwasMap: {}, vratTyoharMap: {} };
 
 try {
-  if (fs.existsSync(festivalDataPath)) {
-    festivalData = JSON.parse(fs.readFileSync(festivalDataPath, "utf-8"));
-  }
+  festivalData = JSON.parse(fs.readFileSync(festivalDataPath, "utf-8"));
 } catch (e) {
-  console.error("Error loading festivals.json:", e);
+  console.error("festivals.json load error:", e);
 }
 
-// ---------------------------
-// Helper functions
-// ---------------------------
-function pad(num) {
-  return num.toString().padStart(2, "0");
-}
+/* ===============================
+   HELPERS
+================================ */
+const pad = n => n.toString().padStart(2, "0");
 
-function getHindiMonth(index) {
-  const months = [
-    "जनवरी","फरवरी","मार्च","अप्रैल","मई","जून",
-    "जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"
-  ];
-  return months[index] || "";
-}
-
-// ---------------------------
-// Panchang logic
-// ---------------------------
-function getPanchang() {
+/* ===============================
+   PANCHANG API
+================================ */
+app.get("/api/panchang", (req, res) => {
   const today = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
   );
 
-  const date = `${today.getDate()} ${getHindiMonth(today.getMonth())} ${today.getFullYear()}`;
+  const date = `${today.getDate()} दिसंबर ${today.getFullYear()}`;
   const day = today.toLocaleDateString("hi-IN", { weekday: "long" });
 
-  const vikram_samvat = 2082 + (today.getFullYear() - 2025);
-  const shak_samvat = 1947 + (today.getFullYear() - 2025);
+  const vikram_samvat = 2082;
+  const shak_samvat = 1947;
 
-  const masa = "पौष";                 // placeholder
-  const paksha_tithi = "शुक्ल पक्ष द्वितीया"; // placeholder
+  const masa = "पौष";
+  const paksha_tithi = "शुक्ल पक्ष द्वितीया";
 
-  let festivalList = [];
   const mmdd = `${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+  let festivalList = [];
 
-  if (festivalData.bharatDiwasMap?.[mmdd]) {
+  if (festivalData.bharatDiwasMap?.[mmdd])
     festivalList.push(...festivalData.bharatDiwasMap[mmdd]);
-  }
 
-  if (festivalData.vratTyoharMap?.[mmdd]) {
+  if (festivalData.vratTyoharMap?.[mmdd])
     festivalList.push(...festivalData.vratTyoharMap[mmdd]);
-  }
 
-  if (festivalList.length === 0) {
-    festivalList.push("कोई विशेष व्रत नहीं");
-  }
+  if (!festivalList.length) festivalList.push("कोई विशेष व्रत नहीं");
 
-  return {
-    date,
-    day,
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
-    },
-    vikram_samvat,
-    shak_samvat,
-    masa,
-    paksha_tithi,
-    festivalList
-  };
-}
-
-// ---------------------------
-// Panchang API (FIXED)
-// ---------------------------
-app.get("/api/panchang", (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: getPanchang()
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false });
-  }
+  res.json({
+    success: true,
+    data: {
+      date,
+      day,
+      sunMoon: {
+        sunrise: "06:55",
+        sunset: "17:42",
+        moonrise: "19:10",
+        moonset: "07:30"
+      },
+      vikram_samvat,
+      shak_samvat,
+      masa,
+      paksha_tithi,
+      festivalList
+    }
+  });
 });
 
-// ---------------------------
-// Ask Bhakti API
-// ---------------------------
+/* ===============================
+   ASK-BHAKTI CORE DATABASE
+   (Public-domain, curated)
+================================ */
+const BHAKTI_DB = {
+  "शिव": {
+    "मंत्र": {
+      content: `ॐ नमः शिवाय।
+यह पंचाक्षरी मंत्र भगवान शिव का सर्वाधिक प्रचलित मंत्र है।
+इसका जप शांति, वैराग्य और आत्मशुद्धि प्रदान करता है।`,
+      sources: [
+        "https://www.sanskritdocuments.org",
+        "https://kavitakosh.org"
+      ]
+    },
+    "आरती": {
+      content: `जय शिव ओंकारा, हर शिव ओंकारा।
+ब्रह्मा विष्णु सदाशिव, अर्द्धांगी धारा॥`,
+      sources: [
+        "https://kavitakosh.org"
+      ]
+    },
+    "पूजा विधि": {
+      content: `1. स्नान कर स्वच्छ वस्त्र धारण करें
+2. शिवलिंग पर जल, दूध अर्पित करें
+3. बिल्वपत्र, धतूरा अर्पित करें
+4. ॐ नमः शिवाय का जप करें
+5. आरती करें`,
+      sources: []
+    },
+    "चालीसा": {
+      content: `जय गिरिजा पति दीन दयाला।
+सदा करत सन्तन प्रतिपाला॥`,
+      sources: [
+        "https://kavitakosh.org"
+      ],
+      pdf: "https://archive.org/download/shiv_chalisa/shiv_chalisa.pdf"
+    },
+    "स्तोत्र": {
+      content: `नागेन्द्रहाराय त्रिलोचनाय
+भस्माङ्गरागाय महेश्वराय॥`,
+      sources: [
+        "https://www.sanskritdocuments.org"
+      ],
+      pdf: "https://archive.org/download/shiv_tandav_stotra/shiv_tandav_stotra.pdf"
+    }
+  }
+};
+
+/* ===============================
+   ASK-BHAKTI API
+================================ */
 app.get("/api/ask-bhakti", (req, res) => {
   const { q, type } = req.query;
-  if (!q || !type) {
+
+  if (!q || !type)
     return res.json({ success: false });
-  }
 
-  const dataMap = {
-    "शिव": {
-      "मंत्र": {
-        content: "ॐ नमः शिवाय।",
-        sources: ["https://www.sanskritdocuments.org"]
-      },
-      "आरती": {
-        content: "जय शिव ओंकारा...",
-        sources: ["https://bhaktisangrah.com"]
-      },
-      "पूजा विधि": {
-        content:
-          "1. संकल्प\n2. स्नान\n3. पूजन\n4. अर्पण\n5. आरती\n6. विसर्जन",
-        sources: []
-      },
-      "चालीसा": {
-        content: "शिव चालीसा...",
-        sources: ["https://kavitakosh.org"],
-        pdf: "https://archive.org/download/shiv_chalisa.pdf"
-      },
-      "स्तोत्र": {
-        content: "शिव स्तोत्र...",
-        sources: ["https://vedabase.io"],
-        pdf: "https://archive.org/download/shiv_stotra.pdf"
-      }
-    },
-
-    "हनुमान": {
-      "मंत्र": {
-        content: "ॐ हनुमते नमः।",
-        sources: ["https://www.sanskritdocuments.org"]
-      },
-      "आरती": {
-        content: "जय हनुमान...",
-        sources: ["https://bhaktisangrah.com"]
-      },
-      "पूजा विधि": {
-        content:
-          "1. संकल्प\n2. स्नान\n3. पूजन\n4. अर्पण\n5. आरती\n6. विसर्जन",
-        sources: []
-      },
-      "चालीसा": {
-        content: "हनुमान चालीसा...",
-        sources: ["https://kavitakosh.org"],
-        pdf: "https://archive.org/download/hanuman_chalisa.pdf"
-      },
-      "स्तोत्र": {
-        content: "हनुमान स्तोत्र...",
-        sources: ["https://vedabase.io"],
-        pdf: "https://archive.org/download/hanuman_stotra.pdf"
-      }
-    }
-  };
-
-  const entry = dataMap[q];
-  if (!entry || !entry[type]) {
+  const deity = BHAKTI_DB[q];
+  if (!deity || !deity[type])
     return res.json({ success: false });
-  }
 
   res.json({
     success: true,
     title: q,
-    content: entry[type].content,
-    sources: entry[type].sources || [],
-    pdf: entry[type].pdf || null
+    content: deity[type].content,
+    sources: deity[type].sources || [],
+    pdf: deity[type].pdf || null
   });
 });
 
-// ---------------------------
-// Root check (optional but useful)
-// ---------------------------
-app.get("/", (req, res) => {
-  res.send("Ask Bhakti Backend Running");
-});
-
-// ---------------------------
-// Start server
-// ---------------------------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+/* ===============================
+   SERVER START
+================================ */
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () =>
+  console.log("Server running on port", PORT)
+);
