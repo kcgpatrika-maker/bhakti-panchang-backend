@@ -60,13 +60,25 @@ function getPanchang() {
     tithi: "जानकारी उपलब्ध नहीं"
   };
 
-  return {
-    date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
-    masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi
-  };
-}
+ return {
+  date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
+  day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+
+  sunMoon: {
+    sunrise: "06:55",
+    sunset: "17:42",
+    moonrise: "19:10",
+    moonset: "07:30"
+  },
+
+  vikram_samvat: 2082,
+  shak_samvat: 1947,
+
+  masa: tithiInfo.masa,
+  paksha_tithi: tithiInfo.tithi,
+
+  festivalList: ["कोई विशेष व्रत नहीं"]
+};
 
 /* =========================
    APIs
