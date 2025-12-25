@@ -2,19 +2,29 @@ import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
-// JSON फाइल को पढ़कर BHAKTI_DB बनाना
-const __dirname = path.resolve();
-const bhaktiData = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "data/bhakti-mantra-aarti.json"), "utf8")
-);
-const BHAKTI_DB = bhaktiData;
+/* =========================
+   PATH FIX (IMPORTANT)
+========================= */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+/* =========================
+   LOAD BHAKTI DATA
+========================= */
+const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
+const BHAKTI_DB = JSON.parse(fs.readFileSync(bhaktiPath, "utf-8"));
+
+/* =========================
+   APP INIT
+========================= */
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 /* =========================
-   BASIC HELPERS
+   HELPERS
 ========================= */
 function pad(n) {
   return n.toString().padStart(2, "0");
@@ -28,18 +38,13 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   TITHI + MAAS (AUTO TABLE)
-   (यह कैल्कुलेशन नहीं, भरोसेमंद पंचांग-टेबल है)
+   PANCHANG (STATIC TABLE)
 ========================= */
 const tithiTable2025 = {
   "12-23": { masa: "पौष", tithi: "शुक्ल पक्ष तृतीया" },
   "12-24": { masa: "पौष", tithi: "शुक्ल पक्ष चतुर्थी" }
-  // आगे जरूरत अनुसार जोड़ते जायेंगे
 };
 
-/* =========================
-   PANCHANG CORE
-========================= */
 function getPanchang() {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
@@ -48,7 +53,6 @@ function getPanchang() {
   const dd = pad(now.getDate());
   const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
-
   const key = `${mm}-${dd}`;
 
   const tithiInfo = tithiTable2025[key] || {
@@ -59,38 +63,21 @@ function getPanchang() {
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
     day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
-    },
-    vikram_samvat: 2082,
-    shak_samvat: 1947,
     masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi,
-    festivalList: ["कोई विशेष व्रत नहीं"]
+    paksha_tithi: tithiInfo.tithi
   };
 }
 
 /* =========================
-   PANCHANG API
+   APIs
 ========================= */
+
+// Panchang
 app.get("/api/panchang", (req, res) => {
-  try {
-    res.json({
-      success: true,
-      data: getPanchang()
-    });
-  } catch (e) {
-    console.error(e);
-    res.status(500).json({ success: false });
-  }
+  res.json({ success: true, data: getPanchang() });
 });
 
-/* =================================
-   ALL-IN-ONE ASK-BHAKTI API
-================================= */
+// Ask Bhakti
 app.get("/api/ask-bhakti-all", (req, res) => {
   const q = (req.query.q || "").trim();
 
@@ -108,17 +95,15 @@ app.get("/api/ask-bhakti-all", (req, res) => {
   });
 });
 
-/* =========================
-   ROOT CHECK
-========================= */
+// Root
 app.get("/", (req, res) => {
-  res.send("Panchang Backend Running");
+  res.send("Bhakti Panchang Backend Running");
 });
 
-/* =================================
-   SERVER START
-================================= */
+/* =========================
+   START SERVER
+========================= */
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () =>
-  console.log(`Ask-Bhakti backend running on port ${PORT}`)
+  console.log(`Server running on ${PORT}`)
 );
