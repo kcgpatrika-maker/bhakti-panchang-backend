@@ -1,12 +1,18 @@
 import express from "express";
 import cors from "cors";
-import bhaktiData from "./data/bhakti-mantra-aarti.json" assert { type: "json" };
+import fs from "fs";
+import path from "path";
+
+// JSON फाइल को पढ़कर BHAKTI_DB बनाना
+const __dirname = path.resolve();
+const bhaktiData = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "data/bhakti-mantra-aarti.json"), "utf8")
+);
 const BHAKTI_DB = bhaktiData;
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-
 /* =========================
    BASIC HELPERS
 ========================= */
