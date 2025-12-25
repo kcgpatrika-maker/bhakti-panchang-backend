@@ -40,11 +40,6 @@ function getHindiMonth(i) {
 /* =========================
    PANCHANG (STATIC TABLE)
 ========================= */
-const tithiTable2025 = {
-  "12-23": { masa: "पौष", tithi: "शुक्ल पक्ष तृतीया" },
-  "12-24": { masa: "पौष", tithi: "शुक्ल पक्ष चतुर्थी" }
-};
-
 function getPanchang() {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
@@ -53,33 +48,34 @@ function getPanchang() {
   const dd = pad(now.getDate());
   const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
+
   const key = `${mm}-${dd}`;
 
   const tithiInfo = tithiTable2025[key] || {
-    masa: "पौष",
-    tithi: "जानकारी उपलब्ध नहीं"
+    masa: "à¤ªà¥Œà¤·",
+    tithi: "à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤‰à¤ªà¤²à¤¬à¥�à¤§ à¤¨à¤¹à¥€à¤‚"
   };
 
- return {
-  date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-  day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+  return {
+    date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
+    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
 
-  sunMoon: {
-    sunrise: "06:55",
-    sunset: "17:42",
-    moonrise: "19:10",
-    moonset: "07:30"
-  },
+    sunMoon: {
+      sunrise: "06:55",
+      sunset: "17:42",
+      moonrise: "19:10",
+      moonset: "07:30"
+    },
 
-  vikram_samvat: 2082,
-  shak_samvat: 1947,
+    vikram_samvat: 2082,
+    shak_samvat: 1947,
 
-  masa: tithiInfo.masa,
-  paksha_tithi: tithiInfo.tithi,
+    masa: tithiInfo.masa,
+    paksha_tithi: tithiInfo.tithi,
 
-  festivalList: ["कोई विशेष व्रत नहीं"]
-};
-
+    festivalList: ["à¤•à¥‹à¤ˆ à¤µà¤¿à¤¶à¥‡à¤· à¤µà¥�à¤°à¤¤ à¤¨à¤¹à¥€à¤‚"]
+  };
+}
 /* =========================
    APIs
 ========================= */
