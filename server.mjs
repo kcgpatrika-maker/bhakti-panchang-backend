@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import bhaktiData from "./data/bhakti-mantra-aarti.json";  // JSON import
+import bhaktiData from "./data/bhakti-mantra-aarti.json" assert { type: "json" };
 const BHAKTI_DB = bhaktiData;
 
 const app = express();
