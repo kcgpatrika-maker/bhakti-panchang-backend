@@ -5,16 +5,18 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 /* =========================
-   PATH FIX (IMPORTANT)
+   PATH FIX
 ========================= */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* =========================
-   LOAD BHAKTI DATA
+   LOAD BHAKTI DATA (SAFE)
 ========================= */
 const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
-const BHAKTI_DB = JSON.parse(fs.readFileSync(bhaktiPath, "utf-8"));
+const BHAKTI_DB = JSON.parse(
+  fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
+);
 
 /* =========================
    APP INIT
@@ -38,7 +40,15 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   PANCHANG (STATIC TABLE)
+   TITHI TABLE (MINIMUM)
+========================= */
+const tithiTable2025 = {
+  "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
+  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" }
+};
+
+/* =========================
+   PANCHANG CORE
 ========================= */
 function getPanchang() {
   const now = new Date(
@@ -48,12 +58,11 @@ function getPanchang() {
   const dd = pad(now.getDate());
   const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
-
   const key = `${mm}-${dd}`;
 
   const tithiInfo = tithiTable2025[key] || {
-    masa: "à¤ªà¥Œà¤·",
-    tithi: "à¤œà¤¾à¤¨à¤•à¤¾à¤°à¥€ à¤‰à¤ªà¤²à¤¬à¥�à¤§ à¤¨à¤¹à¥€à¤‚"
+    masa: "पौष",
+    tithi: "जानकारी उपलब्ध नहीं"
   };
 
   return {
@@ -73,19 +82,23 @@ function getPanchang() {
     masa: tithiInfo.masa,
     paksha_tithi: tithiInfo.tithi,
 
-    festivalList: ["à¤•à¥‹à¤ˆ à¤µà¤¿à¤¶à¥‡à¤· à¤µà¥�à¤°à¤¤ à¤¨à¤¹à¥€à¤‚"]
+    festivalList: ["कोई विशेष व्रत नहीं"]
   };
 }
+
 /* =========================
    APIs
 ========================= */
 
-// Panchang
+// Panchang API
 app.get("/api/panchang", (req, res) => {
-  res.json({ success: true, data: getPanchang() });
+  res.json({
+    success: true,
+    data: getPanchang()
+  });
 });
 
-// Ask Bhakti
+// Ask Bhakti API
 app.get("/api/ask-bhakti-all", (req, res) => {
   const q = (req.query.q || "").trim();
 
@@ -113,5 +126,5 @@ app.get("/", (req, res) => {
 ========================= */
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () =>
-  console.log(`Server running on ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 );
