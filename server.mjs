@@ -5,11 +5,6 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 /* =========================
-   IMPORT INDIA DAYS
-========================= */
-import { bharatDiwasMap } from "./data/bharatDiwas.js";
-
-/* =========================
    PATH FIX
 ========================= */
 const __filename = fileURLToPath(import.meta.url);
@@ -22,6 +17,12 @@ const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
 const BHAKTI_DB = JSON.parse(
   fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
 );
+
+/* =========================
+   IMPORT VRAT/DIWAS DATA
+========================= */
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
+import { vratTyoharMap } from "./data/vratTyohar.js";
 
 /* =========================
    APP INIT
@@ -45,15 +46,18 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   TITHI TABLE (MINIMUM)
+   TITHI TABLE (MINIMUM, EXAMPLE)
 ========================= */
 const tithiTable2025 = {
   "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
-  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" }
+  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
+  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" },
+  "12-28": { masa: "पौष", tithi: "शुक्ल पक्ष अष्टमी" },
+  // आगे और जोड़ सकते हैं
 };
 
 /* =========================
-   PANCHANG CORE
+   PANCHANG + FESTIVALS
 ========================= */
 function getPanchang() {
   const now = new Date(
@@ -70,10 +74,14 @@ function getPanchang() {
     tithi: "जानकारी उपलब्ध नहीं"
   };
 
-  /* =========================
-     भारत दिवस जोड़ना
-  ========================== */
-  const todaysBharatDiwas = bharatDiwasMap[key] || [];
+  // व्रत / त्योहार
+  const vratList = vratTyoharMap[key] || [];
+
+  // भारत दिवस / महत्वपूर्ण दिवस
+  const diwasList = bharatDiwasMap[key] || [];
+
+  const festivalList = [...vratList, ...diwasList];
+  if(festivalList.length === 0) festivalList.push("कोई विशेष व्रत / दिवस नहीं");
 
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
@@ -92,8 +100,7 @@ function getPanchang() {
     masa: tithiInfo.masa,
     paksha_tithi: tithiInfo.tithi,
 
-    festivalList: ["कोई विशेष व्रत नहीं"],  // अभी व्रत/त्योहार नहीं बदला
-    bharatDiwas: todaysBharatDiwas
+    festivalList
   };
 }
 
