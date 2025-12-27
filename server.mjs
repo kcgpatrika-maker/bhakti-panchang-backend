@@ -4,8 +4,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { bharatDiwasMap } from "./bharatDiwas.js";
-import { vratTyoharMap } from "./vratTyohar.js";
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
+import { vratTyoharMap } from "./data/vratTyohar.js";
 
 /* =========================
    PATH FIX
