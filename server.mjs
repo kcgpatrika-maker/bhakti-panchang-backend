@@ -4,6 +4,9 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import { bharatDiwasMap } from "./bharatDiwas.js";
+import { vratTyoharMap } from "./vratTyohar.js";
+
 /* =========================
    PATH FIX
 ========================= */
@@ -11,7 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* =========================
-   LOAD BHAKTI DATA (SAFE)
+   LOAD BHAKTI DATA
 ========================= */
 const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
 const BHAKTI_DB = JSON.parse(
@@ -40,7 +43,7 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   TITHI TABLE (MINIMUM)
+   TITHI TABLE (TEMP)
 ========================= */
 const tithiTable2025 = {
   "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
@@ -65,6 +68,21 @@ function getPanchang() {
     tithi: "जानकारी उपलब्ध नहीं"
   };
 
+  /* ✅ STEP-1 MAIN FIX */
+  let festivalList = [];
+
+  if (vratTyoharMap[key]) {
+    festivalList.push(...vratTyoharMap[key]);
+  }
+
+  if (bharatDiwasMap[key]) {
+    festivalList.push(...bharatDiwasMap[key]);
+  }
+
+  if (festivalList.length === 0) {
+    festivalList.push("कोई विशेष व्रत / दिवस नहीं");
+  }
+
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
     day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
@@ -82,7 +100,7 @@ function getPanchang() {
     masa: tithiInfo.masa,
     paksha_tithi: tithiInfo.tithi,
 
-    festivalList: ["कोई विशेष व्रत नहीं"]
+    festivalList
   };
 }
 
@@ -90,7 +108,6 @@ function getPanchang() {
    APIs
 ========================= */
 
-// Panchang API
 app.get("/api/panchang", (req, res) => {
   res.json({
     success: true,
@@ -98,7 +115,6 @@ app.get("/api/panchang", (req, res) => {
   });
 });
 
-// Ask Bhakti API
 app.get("/api/ask-bhakti-all", (req, res) => {
   const q = (req.query.q || "").trim();
 
@@ -116,7 +132,6 @@ app.get("/api/ask-bhakti-all", (req, res) => {
   });
 });
 
-// Root
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
