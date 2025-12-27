@@ -5,28 +5,22 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 /* =========================
+   IMPORT INDIA DAYS
+========================= */
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
+
+/* =========================
    PATH FIX
 ========================= */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* =========================
-   IMPORT DAY DATA
-========================= */
-import { bharatDiwasMap } from "./bharatDiwas.js";
-import { vratTyoharMap } from "./vratTyohar.js";
-
-/* =========================
    LOAD BHAKTI DATA
 ========================= */
-const bhaktiPath = path.join(
-  __dirname,
-  "data",
-  "bhakti-mantra-aarti.json"
-);
-
+const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
 const BHAKTI_DB = JSON.parse(
-  fs.readFileSync(bhaktiPath, "utf-8")
+  fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
 );
 
 /* =========================
@@ -51,12 +45,11 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   TITHI TABLE (LIMITED)
+   TITHI TABLE (MINIMUM)
 ========================= */
 const tithiTable2025 = {
-  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
-  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" },
-  "12-28": { masa: "पौष", tithi: "शुक्ल पक्ष अष्टमी" }
+  "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
+  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" }
 };
 
 /* =========================
@@ -64,44 +57,27 @@ const tithiTable2025 = {
 ========================= */
 function getPanchang() {
   const now = new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata"
-    })
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
   );
 
   const dd = pad(now.getDate());
   const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
+  const key = `${mm}-${dd}`;
 
-  const keyMMDD = `${mm}-${dd}`;
+  const tithiInfo = tithiTable2025[key] || {
+    masa: "पौष",
+    tithi: "जानकारी उपलब्ध नहीं"
+  };
 
-  const tithiInfo =
-    tithiTable2025[keyMMDD] || {
-      masa: "पौष",
-      tithi: "जानकारी उपलब्ध नहीं"
-    };
-
-  /* Bharat Diwas */
-  const bharatDiwas =
-    bharatDiwasMap[keyMMDD] || [];
-
-  /* Vrat / Tyohar */
-  const vratTyohar =
-    vratTyoharMap[keyMMDD] || [];
+  /* =========================
+     भारत दिवस जोड़ना
+  ========================== */
+  const todaysBharatDiwas = bharatDiwasMap[key] || [];
 
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-    day: now.toLocaleDateString("hi-IN", {
-      weekday: "long"
-    }),
-
-    masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi,
-
-    samvat: {
-      vikram: 2082,
-      shak: 1947
-    },
+    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
 
     sunMoon: {
       sunrise: "06:55",
@@ -110,15 +86,14 @@ function getPanchang() {
       moonset: "07:30"
     },
 
-    vrat_tyohar:
-      vratTyohar.length > 0
-        ? vratTyohar
-        : ["कोई विशेष व्रत नहीं"],
+    vikram_samvat: 2082,
+    shak_samvat: 1947,
 
-    bharat_diwas:
-      bharatDiwas.length > 0
-        ? bharatDiwas
-        : []
+    masa: tithiInfo.masa,
+    paksha_tithi: tithiInfo.tithi,
+
+    festivalList: ["कोई विशेष व्रत नहीं"],  // अभी व्रत/त्योहार नहीं बदला
+    bharatDiwas: todaysBharatDiwas
   };
 }
 
@@ -161,6 +136,6 @@ app.get("/", (req, res) => {
    START SERVER
 ========================= */
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
