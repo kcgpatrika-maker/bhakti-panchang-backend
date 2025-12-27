@@ -4,36 +4,34 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-/* =========================
-   PATH FIX
-========================= */
+// =========================
+// PATH FIX
+// =========================
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-/* =========================
-   LOAD BHAKTI DATA
-========================= */
+// =========================
+// LOAD BHAKTI DATA
+// =========================
 const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
-const BHAKTI_DB = JSON.parse(
-  fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
-);
+const BHAKTI_DB = JSON.parse(fs.readFileSync(bhaktiPath, { encoding: "utf-8" }));
 
-/* =========================
-   IMPORT VRAT/DIWAS DATA
-========================= */
-import { bharatDiwasMap } from "./data/bharatDiwas.js";
+// =========================
+// LOAD Vrat / Tyohar & Bharat Diwas
+// =========================
 import { vratTyoharMap } from "./data/vratTyohar.js";
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
 
-/* =========================
-   APP INIT
-========================= */
+// =========================
+// APP INIT
+// =========================
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* =========================
-   HELPERS
-========================= */
+// =========================
+// HELPERS
+// =========================
 function pad(n) {
   return n.toString().padStart(2, "0");
 }
@@ -45,20 +43,18 @@ function getHindiMonth(i) {
   ][i];
 }
 
-/* =========================
-   TITHI TABLE (MINIMUM, EXAMPLE)
-========================= */
+// =========================
+// TITHI TABLE (MINIMUM)
+// =========================
 const tithiTable2025 = {
   "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
   "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
-  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" },
-  "12-28": { masa: "पौष", tithi: "शुक्ल पक्ष अष्टमी" },
-  // आगे और जोड़ सकते हैं
+  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" }
 };
 
-/* =========================
-   PANCHANG + FESTIVALS
-========================= */
+// =========================
+// PANCHANG CORE
+// =========================
 function getPanchang() {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
@@ -74,14 +70,14 @@ function getPanchang() {
     tithi: "जानकारी उपलब्ध नहीं"
   };
 
-  // व्रत / त्योहार
-  const vratList = vratTyoharMap[key] || [];
-
-  // भारत दिवस / महत्वपूर्ण दिवस
-  const diwasList = bharatDiwasMap[key] || [];
-
-  const festivalList = [...vratList, ...diwasList];
-  if(festivalList.length === 0) festivalList.push("कोई विशेष व्रत / दिवस नहीं");
+  // Merge festivals: व्रत/त्योहार + भारत दिवस
+  const festivalList = [
+    ...(vratTyoharMap[key] || []),
+    ...(bharatDiwasMap[key] || [])
+  ];
+  if(festivalList.length === 0) {
+    festivalList.push("कोई विशेष व्रत / दिवस नहीं");
+  }
 
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
@@ -104,9 +100,9 @@ function getPanchang() {
   };
 }
 
-/* =========================
-   APIs
-========================= */
+// =========================
+// APIs
+// =========================
 
 // Panchang API
 app.get("/api/panchang", (req, res) => {
@@ -119,19 +115,11 @@ app.get("/api/panchang", (req, res) => {
 // Ask Bhakti API
 app.get("/api/ask-bhakti-all", (req, res) => {
   const q = (req.query.q || "").trim();
-
   if (!q || !BHAKTI_DB[q]) {
-    return res.json({
-      success: false,
-      message: "डेटा उपलब्ध नहीं"
-    });
+    return res.json({ success: false, message: "डेटा उपलब्ध नहीं" });
   }
 
-  res.json({
-    success: true,
-    deity: q,
-    data: BHAKTI_DB[q]
-  });
+  res.json({ success: true, deity: q, data: BHAKTI_DB[q] });
 });
 
 // Root
@@ -139,9 +127,9 @@ app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
 
-/* =========================
-   START SERVER
-========================= */
+// =========================
+// START SERVER
+// =========================
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () =>
   console.log(`Server running on port ${PORT}`)
