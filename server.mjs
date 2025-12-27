@@ -4,9 +4,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import { bharatDiwasMap } from "./data/bharatDiwas.js";
-import { vratTyoharMap } from "./data/vratTyohar.js";
-
 /* =========================
    PATH FIX
 ========================= */
@@ -14,11 +11,22 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /* =========================
+   IMPORT DAY DATA
+========================= */
+import { bharatDiwasMap } from "./bharatDiwas.js";
+import { vratTyoharMap } from "./vratTyohar.js";
+
+/* =========================
    LOAD BHAKTI DATA
 ========================= */
-const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
+const bhaktiPath = path.join(
+  __dirname,
+  "data",
+  "bhakti-mantra-aarti.json"
+);
+
 const BHAKTI_DB = JSON.parse(
-  fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
+  fs.readFileSync(bhaktiPath, "utf-8")
 );
 
 /* =========================
@@ -43,11 +51,12 @@ function getHindiMonth(i) {
 }
 
 /* =========================
-   TITHI TABLE (TEMP)
+   TITHI TABLE (LIMITED)
 ========================= */
 const tithiTable2025 = {
-  "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
-  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" }
+  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
+  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" },
+  "12-28": { masa: "पौष", tithi: "शुक्ल पक्ष अष्टमी" }
 };
 
 /* =========================
@@ -55,37 +64,44 @@ const tithiTable2025 = {
 ========================= */
 function getPanchang() {
   const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata"
+    })
   );
 
   const dd = pad(now.getDate());
   const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
-  const key = `${mm}-${dd}`;
 
-  const tithiInfo = tithiTable2025[key] || {
-    masa: "पौष",
-    tithi: "जानकारी उपलब्ध नहीं"
-  };
+  const keyMMDD = `${mm}-${dd}`;
 
-  /* ✅ STEP-1 MAIN FIX */
-  let festivalList = [];
+  const tithiInfo =
+    tithiTable2025[keyMMDD] || {
+      masa: "पौष",
+      tithi: "जानकारी उपलब्ध नहीं"
+    };
 
-  if (vratTyoharMap[key]) {
-    festivalList.push(...vratTyoharMap[key]);
-  }
+  /* Bharat Diwas */
+  const bharatDiwas =
+    bharatDiwasMap[keyMMDD] || [];
 
-  if (bharatDiwasMap[key]) {
-    festivalList.push(...bharatDiwasMap[key]);
-  }
-
-  if (festivalList.length === 0) {
-    festivalList.push("कोई विशेष व्रत / दिवस नहीं");
-  }
+  /* Vrat / Tyohar */
+  const vratTyohar =
+    vratTyoharMap[keyMMDD] || [];
 
   return {
     date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+    day: now.toLocaleDateString("hi-IN", {
+      weekday: "long"
+    }),
+
+    masa: tithiInfo.masa,
+    paksha_tithi: tithiInfo.tithi,
+
+    samvat: {
+      vikram: 2082,
+      shak: 1947
+    },
 
     sunMoon: {
       sunrise: "06:55",
@@ -94,13 +110,15 @@ function getPanchang() {
       moonset: "07:30"
     },
 
-    vikram_samvat: 2082,
-    shak_samvat: 1947,
+    vrat_tyohar:
+      vratTyohar.length > 0
+        ? vratTyohar
+        : ["कोई विशेष व्रत नहीं"],
 
-    masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi,
-
-    festivalList
+    bharat_diwas:
+      bharatDiwas.length > 0
+        ? bharatDiwas
+        : []
   };
 }
 
@@ -108,6 +126,7 @@ function getPanchang() {
    APIs
 ========================= */
 
+// Panchang API
 app.get("/api/panchang", (req, res) => {
   res.json({
     success: true,
@@ -115,6 +134,7 @@ app.get("/api/panchang", (req, res) => {
   });
 });
 
+// Ask Bhakti API
 app.get("/api/ask-bhakti-all", (req, res) => {
   const q = (req.query.q || "").trim();
 
@@ -132,6 +152,7 @@ app.get("/api/ask-bhakti-all", (req, res) => {
   });
 });
 
+// Root
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
@@ -140,6 +161,6 @@ app.get("/", (req, res) => {
    START SERVER
 ========================= */
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
