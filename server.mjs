@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { tithiCalendar } from "./data/tithiCalendar.js";
-import { tithiEventsMap } from "./data/tithiEventsMap.js";
+import { tithiEventsMap } from "./data/tithiEvents.js";
 /* =========================
    PATH FIX
 ========================= */
