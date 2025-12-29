@@ -137,21 +137,50 @@ function getTithiAndEvents(today) {
 /* =========================
    APIs
 ========================= */
+app.get("/api/panchang", (req, res) => {
 
-const today = new Date();
-const tithiData = getTithiAndEvents(today);
+  const now = new Date(
+    new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Kolkata"
+    })
+  );
 
-res.json({
-  sunrise,
-  sunset,
-  moonrise,
-  moonset,
-  vikramSamvat,
-  shakSamvat,
-  masa: tithiData.masa,
-  tithi: tithiData.tithi,
-  vrat: tithiData.vrat,
-  diwas: tithiData.diwas
+  const dd = pad(now.getDate());
+  const mm = pad(now.getMonth() + 1);
+  const yyyy = now.getFullYear();
+
+  // 🔹 TITHI + EVENTS
+  const tithiData = getTithiAndEvents(now);
+
+  res.json({
+    success: true,
+    data: {
+      date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
+      day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+
+      sunMoon: {
+        sunrise: "06:55",
+        sunset: "17:42",
+        moonrise: "19:10",
+        moonset: "07:30"
+      },
+
+      vikram_samvat: 2082,
+      shak_samvat: 1947,
+
+      masa: tithiData.masa,
+      paksha_tithi: tithiData.tithi,
+
+      vratList: tithiData.vrat.length
+        ? tithiData.vrat
+        : ["कोई विशेष व्रत नहीं"],
+
+      diwasList: tithiData.diwas.length
+        ? tithiData.diwas
+        : ["कोई विशेष दिवस नहीं"]
+    }
+  });
+
 });
 
 // Ask Bhakti API
