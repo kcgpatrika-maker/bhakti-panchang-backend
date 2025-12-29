@@ -6,7 +6,8 @@ import { fileURLToPath } from "url";
 
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { vratTyoharMap } from "./data/vratTyohar.js";
-
+import { tithiCalendar } from "./data/tithiCalendar.js";
+import { tithiEventsMap } from "./data/tithiEventsMap.js";
 /* =========================
    PATH FIX
 ========================= */
@@ -101,17 +102,56 @@ function getPanchang() {
     diwasList
   };
 }
+function getDateKey(dateObj) {
+  return dateObj.toISOString().split("T")[0];
+}
 
+function getTithiAndEvents(today) {
+  const dateKey = getDateKey(today);
+  const info = tithiCalendar[dateKey];
+
+  if (!info) {
+    return {
+      masa: "—",
+      tithi: "जानकारी उपलब्ध नहीं",
+      vrat: [],
+      diwas: []
+    };
+  }
+
+  const exactKey = `${info.masa} | ${info.paksha} ${info.tithi}`;
+  const anyMasaKey = `किसी भी मास | ${info.tithi}`;
+
+  const events =
+    tithiEventsMap[exactKey] ||
+    tithiEventsMap[anyMasaKey] ||
+    [];
+
+  return {
+    masa: info.masa,
+    tithi: `${info.paksha} ${info.tithi}`,
+    vrat: events,
+    diwas: events
+  };
+}
 /* =========================
    APIs
 ========================= */
 
-// Panchang API
-app.get("/api/panchang", (req, res) => {
-  res.json({
-    success: true,
-    data: getPanchang()
-  });
+const today = new Date();
+const tithiData = getTithiAndEvents(today);
+
+res.json({
+  sunrise,
+  sunset,
+  moonrise,
+  moonset,
+  vikramSamvat,
+  shakSamvat,
+  masa: tithiData.masa,
+  tithi: tithiData.tithi,
+  vrat: tithiData.vrat,
+  diwas: tithiData.diwas
 });
 
 // Ask Bhakti API
