@@ -1,10 +1,12 @@
 import express from "express";
 import cors from "cors";
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import bhaktiMaster from "./data/bhaktiMaster.js";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
+import { vratTyoharMap } from "./data/vratTyohar.js";
+import { tithiCalendar } from "./data/tithiCalendar.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 
 /* =========================
@@ -12,14 +14,6 @@ import { tithiEventsMap } from "./data/tithiEvents.js";
 ========================= */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-/* =========================
-   LOAD BHAKTI DATA
-========================= */
-const bhaktiPath = path.join(__dirname, "data", "bhakti-mantra-aarti.json");
-const BHAKTI_DB = JSON.parse(
-  fs.readFileSync(bhaktiPath, { encoding: "utf-8" })
-);
 
 /* =========================
    APP INIT
@@ -42,112 +36,127 @@ function getHindiMonth(i) {
   ][i];
 }
 
-/* =========================
-   TITHI TABLE (BASE)
-========================= */
-const tithiTable2025 = {
-  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
-  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" }
-};
+function getDateKey(dateObj) {
+  return dateObj.toISOString().split("T")[0];
+}
 
 /* =========================
    PANCHANG CORE
 ========================= */
-function getPanchang() {
+function getTithiAndEvents(today) {
+  const dateKey = getDateKey(today);
+  const info = tithiCalendar[dateKey];
+
+  if (!info) {
+    return {
+      masa: "—",
+      tithi: "तिथि जानकारी अपडेट प्रक्रिया में है",
+      vrat: [],
+      diwas: []
+    };
+  }
+
+  const exactKey = `${info.masa} | ${info.paksha} ${info.tithi}`;
+  const anyMasaKey = `किसी भी मास | ${info.tithi}`;
+
+  const events =
+    tithiEventsMap[exactKey] ||
+    tithiEventsMap[anyMasaKey] ||
+    [];
+
+  const vratList = events.filter(e => e.type === "vrat").map(e => e.name);
+  const diwasList = events.filter(e => e.type === "diwas").map(e => e.name);
+
+  return {
+    masa: info.masa,
+    tithi: `${info.paksha} ${info.tithi}`,
+    vrat: vratList.length ? vratList : [],
+    diwas: diwasList.length ? diwasList : []
+  };
+}
+
+/* =========================
+   PANCHANG API
+========================= */
+app.get("/api/panchang", (req, res) => {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
   );
 
   const dd = pad(now.getDate());
-  const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
-  const dateKey = `${mm}-${dd}`;
 
-  const tithiInfo = tithiTable2025[dateKey] || {
-    masa: "पौष",
-    tithi: "जानकारी उपलब्ध नहीं"
-  };
+  const tithiData = getTithiAndEvents(now);
 
-  /* =========================
-     EVENT COLLECTION
-  ========================= */
-
-  let events = [];
-
-  // A) भारत दिवस (Date based)
-  if (bharatDiwasMap[dateKey]) {
-    events.push(...bharatDiwasMap[dateKey]);
-  }
-
-  // B) तिथि आधारित व्रत / पर्व
-  const exactKey = `${tithiInfo.masa} | ${tithiInfo.tithi}`;
-  if (tithiEventsMap[exactKey]) {
-    events.push(...tithiEventsMap[exactKey]);
-  }
-
-  // C) किसी भी मास वाले नियम
-  Object.keys(tithiEventsMap).forEach(k => {
-    if (k.startsWith("किसी भी मास")) {
-      const [, tithi] = k.split(" | ");
-      if (tithiInfo.tithi.includes(tithi)) {
-        events.push(...tithiEventsMap[k]);
-      }
-    }
-  });
-
-  if (events.length === 0) {
-    events.push("कोई विशेष व्रत / दिवस नहीं");
-  }
-
-  return {
-    date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
-
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
-    },
-
-    vikram_samvat: 2082,
-    shak_samvat: 1947,
-
-    masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi,
-
-    festivalList: events
-  };
-}
-
-/* =========================
-   APIs
-========================= */
-
-app.get("/api/panchang", (req, res) => {
   res.json({
     success: true,
-    data: getPanchang()
+    data: {
+      date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
+      day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+      sunMoon: {
+        sunrise: "06:55",
+        sunset: "17:42",
+        moonrise: "19:10",
+        moonset: "07:30"
+      },
+      vikram_samvat: 2082,
+      shak_samvat: 1947,
+      masa: tithiData.masa || "—",
+      paksha_tithi: tithiData.tithi || "तिथि जानकारी अपडेट प्रक्रिया में है",
+      vratList: tithiData.vrat.length ? tithiData.vrat : ["कोई विशेष व्रत नहीं"],
+      diwasList: tithiData.diwas.length ? tithiData.diwas : ["कोई विशेष दिवस नहीं"]
+    }
   });
 });
 
-app.get("/api/ask-bhakti-all", (req, res) => {
-  const q = (req.query.q || "").trim();
+/* =========================
+   Ask Bhakti : Single Devta
+========================= */
+app.get("/api/ask-bhakti/:devta", (req, res) => {
+  const devtaKey = req.params.devta.toLowerCase().trim();
+  const data = bhaktiMaster[devtaKey];
 
-  if (!q || !BHAKTI_DB[q]) {
-    return res.json({
+  if (!data) {
+    return res.status(404).json({
       success: false,
-      message: "डेटा उपलब्ध नहीं"
+      message: "देवता की जानकारी उपलब्ध नहीं है"
     });
   }
 
-  res.json({
-    success: true,
-    deity: q,
-    data: BHAKTI_DB[q]
-  });
+  res.json({ success: true, data });
 });
 
+/* =========================
+   Ask Bhakti : Full List
+========================= */
+app.get("/api/ask-bhakti", (req, res) => {
+  const list = Object.values(bhaktiMaster).map(d => ({
+    id: d.id,
+    name: d.name
+  }));
+  res.json({ success: true, data: list });
+});
+
+/* =========================
+   Ask Bhakti : Query All Sections
+   (for full mantra, aarti, puja, chalisa, stotra)
+========================= */
+app.get("/api/ask-bhakti-all", (req, res) => {
+  const q = (req.query.q || "").toLowerCase().trim();
+  const devtaKey = Object.keys(bhaktiMaster).find(
+    key => key.toLowerCase() === q
+  );
+
+  if (!devtaKey) {
+    return res.status(404).json({ success: false, message: "देवता की जानकारी उपलब्ध नहीं है" });
+  }
+
+  const data = bhaktiMaster[devtaKey];
+  res.json({ success: true, data });
+});
+
+// =========================
+// Root
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
@@ -156,6 +165,6 @@ app.get("/", (req, res) => {
    START SERVER
 ========================= */
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
