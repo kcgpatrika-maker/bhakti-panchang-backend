@@ -126,15 +126,23 @@ app.get("/api/panchang", (req, res) => {
 // =======================
 // Ask Bhakti : Single Devta
 // =======================
-app.get("/api/ask-bhakti/:devta", (req, res) => {
-  const devtaKey = req.params.devta.toLowerCase().trim();
-  const data = bhaktiMaster[devtaKey];
+app.get("/api/ask-bhakti-all", (req, res) => {
+  let q = (req.query.q || "").toLowerCase().trim();
+
+  const alias = {
+    "शिव": "shiv",
+    "महादेव": "shiv",
+    "भोलेनाथ": "shiv",
+    "हनुमान": "hanuman",
+    "राम": "ram"
+  };
+
+  q = alias[q] || q;
+
+  const data = bhaktiMaster[q];
 
   if (!data) {
-    return res.status(404).json({
-      success: false,
-      message: "देवता की जानकारी उपलब्ध नहीं है"
-    });
+    return res.json({ success: false });
   }
 
   res.json({
@@ -142,6 +150,7 @@ app.get("/api/ask-bhakti/:devta", (req, res) => {
     data
   });
 });
+
 
 // =======================
 // Ask Bhakti : Devta List
