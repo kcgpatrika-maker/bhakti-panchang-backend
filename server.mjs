@@ -8,7 +8,13 @@ import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { tithiCalendar } from "./data/tithiCalendar.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
-
+app.get("/__fingerprint", (req, res) => {
+  res.json({
+    backend: "Bhakti Panchang",
+    version: "v1-working-or-broken",
+    time: new Date().toISOString()
+  });
+});
 /* =========================
    PATH FIX
 ========================= */
