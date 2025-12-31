@@ -1,30 +1,19 @@
 import express from "express";
 import cors from "cors";
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import bhaktiMaster from "./data/bhaktiMaster.js";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { vratTyoharMap } from "./data/vratTyohar.js";
 import { tithiCalendar } from "./data/tithiCalendar.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
+
 /* =========================
    PATH FIX
 ========================= */
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-/* =========================
-   LOAD BHAKTI DATA
-========================= */
-const bhaktiPath = path.join(
-  __dirname,
-  "data",
-  "bhakti-mantra-aarti.json"
-);
-const BHAKTI_DB = JSON.parse(
-  fs.readFileSync(bhaktiPath, "utf-8")
-);
 
 /* =========================
    APP INIT
@@ -47,65 +36,13 @@ function getHindiMonth(i) {
   ][i];
 }
 
-/* =========================
-   TITHI TABLE (2025 – BASE)
-========================= */
-const tithiTable2025 = {
-  "12-25": { masa: "पौष", tithi: "शुक्ल पक्ष पंचमी" },
-  "12-26": { masa: "पौष", tithi: "शुक्ल पक्ष षष्ठी" },
-  "12-27": { masa: "पौष", tithi: "शुक्ल पक्ष सप्तमी" }
-};
-
-/* =========================
-   PANCHANG CORE
-========================= */
-function getPanchang() {
-  const now = new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata"
-    })
-  );
-
-  const dd = pad(now.getDate());
-  const mm = pad(now.getMonth() + 1);
-  const yyyy = now.getFullYear();
-  const key = `${mm}-${dd}`;
-
-  const tithiInfo =
-    tithiTable2025[key] || {
-      masa: "पौष",
-      tithi: "जानकारी उपलब्ध नहीं"
-    };
-
-  /* 🔹 अलग-अलग लिस्ट */
-  const vratList = vratTyoharMap[key] || [];
-  const diwasList = bharatDiwasMap[key] || [];
-
-  return {
-    date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
-    day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
-
-    sunMoon: {
-      sunrise: "06:55",
-      sunset: "17:42",
-      moonrise: "19:10",
-      moonset: "07:30"
-    },
-
-    vikram_samvat: 2082,
-    shak_samvat: 1947,
-
-    masa: tithiInfo.masa,
-    paksha_tithi: tithiInfo.tithi,
-
-    vratList,
-    diwasList
-  };
-}
 function getDateKey(dateObj) {
   return dateObj.toISOString().split("T")[0];
 }
 
+/* =========================
+   PANCHANG CORE
+========================= */
 function getTithiAndEvents(today) {
   const dateKey = getDateKey(today);
   const info = tithiCalendar[dateKey];
@@ -113,7 +50,7 @@ function getTithiAndEvents(today) {
   if (!info) {
     return {
       masa: "—",
-      tithi: "जानकारी उपलब्ध नहीं",
+      tithi: "तिथि जानकारी अपडेट प्रक्रिया में है",
       vrat: [],
       diwas: []
     };
@@ -134,22 +71,20 @@ function getTithiAndEvents(today) {
     diwas: events
   };
 }
+
 /* =========================
    APIs
 ========================= */
-app.get("/api/panchang", (req, res) => {
 
+// Panchang API
+app.get("/api/panchang", (req, res) => {
   const now = new Date(
-    new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Kolkata"
-    })
+    new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
   );
 
   const dd = pad(now.getDate());
-  const mm = pad(now.getMonth() + 1);
   const yyyy = now.getFullYear();
 
-  // 🔹 TITHI + EVENTS
   const tithiData = getTithiAndEvents(now);
 
   res.json({
@@ -180,24 +115,23 @@ app.get("/api/panchang", (req, res) => {
         : ["कोई विशेष दिवस नहीं"]
     }
   });
-
 });
 
 // Ask Bhakti API
-app.get("/api/ask-bhakti-all", (req, res) => {
-  const q = (req.query.q || "").trim();
+app.get("/api/ask-bhakti/:devta", (req, res) => {
+  const devtaKey = req.params.devta.toLowerCase().trim();
+  const data = bhaktiMaster[devtaKey];
 
-  if (!q || !BHAKTI_DB[q]) {
-    return res.json({
+  if (!data) {
+    return res.status(404).json({
       success: false,
-      message: "डेटा उपलब्ध नहीं"
+      message: "देवता की जानकारी उपलब्ध नहीं है"
     });
   }
 
   res.json({
     success: true,
-    deity: q,
-    data: BHAKTI_DB[q]
+    data
   });
 });
 
