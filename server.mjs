@@ -37,9 +37,14 @@ function getHindiMonth(i) {
 }
 
 function getDateKey(dateObj) {
-  return dateObj.toISOString().split("T")[0];
+  const d = new Date(
+    dateObj.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
-
 /* =========================
    PANCHANG CORE
 ========================= */
@@ -158,7 +163,24 @@ app.get("/api/ask-bhakti", (req, res) => {
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
+// =======================
+// Ask Bhakti : ALL DATA (for frontend buttons)
+// =======================
+app.get("/api/ask-bhakti-all", (req, res) => {
+  const q = (req.query.q || "").toLowerCase().trim();
+  const data = bhaktiMaster[q];
 
+  if (!data) {
+    return res.json({
+      success: false
+    });
+  }
+
+  res.json({
+    success: true,
+    data
+  });
+});
 /* =========================
    START SERVER
 ========================= */
