@@ -72,11 +72,9 @@ function getTithiAndEvents(today) {
   };
 }
 
-/* =========================
-   APIs
-========================= */
-
+// =======================
 // Panchang API
+// =======================
 app.get("/api/panchang", (req, res) => {
   const now = new Date(
     new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
@@ -103,21 +101,26 @@ app.get("/api/panchang", (req, res) => {
       vikram_samvat: 2082,
       shak_samvat: 1947,
 
-      masa: tithiData.masa,
-      paksha_tithi: tithiData.tithi,
+      masa: tithiData.masa || "—",
+      paksha_tithi: tithiData.tithi || "तिथि जानकारी अपडेट प्रक्रिया में है",
 
-      vratList: tithiData.vrat.length
-        ? tithiData.vrat
-        : ["कोई विशेष व्रत नहीं"],
+      vratList:
+        tithiData.vrat && tithiData.vrat.length
+          ? tithiData.vrat
+          : ["कोई विशेष व्रत नहीं"],
 
-      diwasList: tithiData.diwas.length
-        ? tithiData.diwas
-        : ["कोई विशेष दिवस नहीं"]
+      diwasList:
+        tithiData.diwas && tithiData.diwas.length
+          ? tithiData.diwas
+          : ["कोई विशेष दिवस नहीं"]
     }
   });
 });
 
-// Ask Bhakti API
+
+// =======================
+// Ask Bhakti : Single Devta
+// =======================
 app.get("/api/ask-bhakti/:devta", (req, res) => {
   const devtaKey = req.params.devta.toLowerCase().trim();
   const data = bhaktiMaster[devtaKey];
@@ -135,6 +138,22 @@ app.get("/api/ask-bhakti/:devta", (req, res) => {
   });
 });
 
+// =======================
+// Ask Bhakti : Devta List
+// =======================
+app.get("/api/ask-bhakti", (req, res) => {
+  const list = Object.values(bhaktiMaster).map(d => ({
+    id: d.id,
+    name: d.name
+  }));
+
+  res.json({
+    success: true,
+    data: list
+  });
+});
+
+  
 // Root
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
