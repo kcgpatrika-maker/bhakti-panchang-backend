@@ -64,14 +64,11 @@ function getTithiAndEvents(today) {
     tithiEventsMap[anyMasaKey] ||
     [];
 
-  const vratList = events.filter(e => e.type === "vrat").map(e => e.name);
-  const diwasList = events.filter(e => e.type === "diwas").map(e => e.name);
-
   return {
     masa: info.masa,
     tithi: `${info.paksha} ${info.tithi}`,
-    vrat: vratList.length ? vratList : [],
-    diwas: diwasList.length ? diwasList : []
+    vrat: events,
+    diwas: events
   };
 }
 
@@ -93,70 +90,91 @@ app.get("/api/panchang", (req, res) => {
     data: {
       date: `${dd} ${getHindiMonth(now.getMonth())} ${yyyy}`,
       day: now.toLocaleDateString("hi-IN", { weekday: "long" }),
+
       sunMoon: {
         sunrise: "06:55",
         sunset: "17:42",
         moonrise: "19:10",
         moonset: "07:30"
       },
+
       vikram_samvat: 2082,
       shak_samvat: 1947,
-      masa: tithiData.masa || "—",
-      paksha_tithi: tithiData.tithi || "तिथि जानकारी अपडेट प्रक्रिया में है",
-      vratList: tithiData.vrat.length ? tithiData.vrat : ["कोई विशेष व्रत नहीं"],
-      diwasList: tithiData.diwas.length ? tithiData.diwas : ["कोई विशेष दिवस नहीं"]
+
+      masa: tithiData.masa,
+      paksha_tithi: tithiData.tithi,
+
+      vratList: tithiData.vrat.length
+        ? tithiData.vrat
+        : ["कोई विशेष व्रत नहीं"],
+
+      diwasList: tithiData.diwas.length
+        ? tithiData.diwas
+        : ["कोई विशेष दिवस नहीं"]
     }
   });
 });
 
 /* =========================
-   Ask Bhakti : Single Devta
+   ASK BHAKTI – FULL DATA API
+   👉 यही API frontend यूज़ कर रहा है
 ========================= */
-app.get("/api/ask-bhakti/:devta", (req, res) => {
-  const devtaKey = req.params.devta.toLowerCase().trim();
-  const data = bhaktiMaster[devtaKey];
+app.get("/api/ask-bhakti-all", (req, res) => {
+  let q = (req.query.q || "").toLowerCase().trim();
 
-  if (!data) {
-    return res.status(404).json({
+  if (!q) {
+    return res.json({
       success: false,
-      message: "देवता की जानकारी उपलब्ध नहीं है"
+      message: "देवता का नाम आवश्यक है"
     });
   }
 
-  res.json({ success: true, data });
+  // alias handling
+  const aliasMap = {
+    "शिव": "shiv",
+    "mahadev": "shiv",
+    "bholenath": "shiv",
+    "hanuman": "hanuman",
+    "ram": "ram",
+    "krishna": "krishna",
+    "ganesh": "ganesh"
+  };
+
+  q = aliasMap[q] || q;
+
+  const data = bhaktiMaster[q];
+
+  if (!data) {
+    return res.json({
+      success: false,
+      message: "डेटा उपलब्ध नहीं"
+    });
+  }
+
+  res.json({
+    success: true,
+    data
+  });
 });
 
 /* =========================
-   Ask Bhakti : Full List
+   DEVTA LIST API
 ========================= */
 app.get("/api/ask-bhakti", (req, res) => {
   const list = Object.values(bhaktiMaster).map(d => ({
     id: d.id,
     name: d.name
   }));
-  res.json({ success: true, data: list });
+
+  res.json({
+    success: true,
+    data: list
+  });
 });
 
 /* =========================
-   Ask Bhakti : Query All Sections
-   (for full mantra, aarti, puja, chalisa, stotra)
+   ROOT
 ========================= */
-app.get("/api/ask-bhakti-all", (req, res) => {
-  const q = (req.query.q || "").toLowerCase().trim();
-  const devtaKey = Object.keys(bhaktiMaster).find(
-    key => key.toLowerCase() === q
-  );
-
-  if (!devtaKey) {
-    return res.status(404).json({ success: false, message: "देवता की जानकारी उपलब्ध नहीं है" });
-  }
-
-  const data = bhaktiMaster[devtaKey];
-  res.json({ success: true, data });
-});
-
-// =========================
-// Root
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang Backend Running");
 });
