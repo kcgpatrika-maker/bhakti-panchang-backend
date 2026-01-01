@@ -64,12 +64,14 @@ const bhaktiMaster = {
       pdf: "/pdf/shiv-stotra.pdf"
     },
 
-    pujaVidhi: `
-प्रातः स्नान कर स्वच्छ वस्त्र धारण करें।
-शिवलिंग पर जल, दूध, बेलपत्र अर्पित करें।
-ॐ नमः शिवाय मंत्र का जप करें।
-धूप, दीप, नैवेद्य अर्पित कर आरती करें।
-`
+    शिव: {
+    puja: [
+      {
+        title: "भगवान शिव पूजा विधि (PDF)",
+        source: "गीता प्रेस",
+        pdf: "https://archive.org/details/shiv-puja-vidhi-geeta-press"
+      }
+    ]
   },
     hanuman: {
     id: "hanuman",
@@ -130,13 +132,17 @@ const bhaktiMaster = {
       pdf: "/pdf/hanuman-stotra.pdf"
     },
 
-    pujaVidhi: `
-मंगलवार को स्नान कर लाल वस्त्र पहनें।
-हनुमान जी को सिंदूर, चमेली का तेल अर्पित करें।
-हनुमान चालीसा का पाठ करें।
-आरती कर प्रसाद बांटें।
-`
-  },
+    हनुमान: {
+    puja: [
+      {
+        title: "हनुमान जी पूजा विधि (PDF)",
+        source: "गीता प्रेस",
+        pdf: "https://archive.org/details/hanuman-puja-vidhi-geeta-press"
+      }
+    ]
+  }
+
+};
 
   ram: {
     id: "ram",
