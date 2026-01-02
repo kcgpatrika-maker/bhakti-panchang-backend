@@ -1,5 +1,22 @@
 // data/freePanchangSource.js
+function utcToIST(timeStr) {
+  if (!timeStr) return "—";
 
+  const [time, meridian] = timeStr.split(" ");
+  let [h, m, s] = time.split(":").map(Number);
+
+  if (meridian === "PM" && h !== 12) h += 12;
+  if (meridian === "AM" && h === 12) h = 0;
+
+  const date = new Date();
+  date.setUTCHours(h, m, s || 0);
+  date.setUTCMinutes(date.getUTCMinutes() + 330); // IST +5:30
+
+  return date.toLocaleTimeString("hi-IN", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 // Coordinates for Jaipur, India (example)
 const LATITUDE = 26.9124;
 const LONGITUDE = 75.7873;
