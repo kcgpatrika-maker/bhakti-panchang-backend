@@ -1,83 +1,44 @@
 // data/freePanchangSource.js
 
-// Jaipur location (example – later dynamic कर सकते हैं)
-const LATITUDE = 26.9124;
+const LATITUDE = 26.9124;   // Jaipur
 const LONGITUDE = 75.7873;
 
 export async function getPanchangFromFreeSource() {
   try {
-    /* ==========================
-       1️⃣ Sunrise / Sunset
-    ========================== */
-    const dateStr = new Date().toISOString().split("T")[0];
-    const sunUrl =
-      `https://api.sunrise-sunset.org/json?lat=${LATITUDE}&lng=${LONGITUDE}&date=${dateStr}&formatted=0`;
+    const today = new Date();
+    const dateStr = today.toISOString().split("T")[0];
 
-    const sunRes = await fetch(sunUrl);
-    const sunJson = await sunRes.json();
+    // 🌙 Moonrise / Moonset (MET.no – free, no key)
+    const moonUrl = `https://api.met.no/weatherapi/sunrise/3.0/moon?lat=${LATITUDE}&lon=${LONGITUDE}&date=${dateStr}&offset=+05:30`;
 
-    const formatIST = (utc) =>
-  new Date(utc).toLocaleTimeString("hi-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Kolkata"
-  });
+    const moonRes = await fetch(moonUrl, {
+      headers: { "User-Agent": "BhaktiPanchang/1.0" }
+    });
 
-const sunrise = sunJson.results?.sunrise
-  ? formatIST(sunJson.results.sunrise)
-  : "—";
+    const moonJson = await moonRes.json();
 
-const sunset = sunJson.results?.sunset
-  ? formatIST(sunJson.results.sunset)
-  : "—";
+    const moonrise =
+      moonJson?.location?.time?.[0]?.moonrise?.time?.slice(11, 16) ?? "—";
 
-    /* ==========================
-       2️⃣ Tithi / Masa / Paksha
-       (Drik Panchang – HTML)
-    ========================== */
-    const dpUrl = "https://www.drikpanchang.com/panchang/day-panchang.html";
-    const dpRes = await fetch(dpUrl);
-    const html = await dpRes.text();
-
-    // Simple regex based extract (safe + light)
-    const tithiMatch = html.match(/Tithi<\/td>\s*<td[^>]*>(.*?)<\/td>/i);
-    const pakshaMatch = html.match(/Paksha<\/td>\s*<td[^>]*>(.*?)<\/td>/i);
-    const masaMatch = html.match(/Amanta Masa<\/td>\s*<td[^>]*>(.*?)<\/td>/i);
-
-    const clean = (v) =>
-      v ? v.replace(/<[^>]+>/g, "").trim() : "—";
-
-    const tithi = clean(tithiMatch?.[1]);
-    const paksha = clean(pakshaMatch?.[1]);
-    const masa = clean(masaMatch?.[1]);
+    const moonset =
+      moonJson?.location?.time?.[0]?.moonset?.time?.slice(11, 16) ?? "—";
 
     return {
-      sunrise,
-      sunset,
-      moonrise: "—",
-      moonset: "—",
-      vikram_samvat: "—",
-      shak_samvat: "—",
-      masa,
-      tithi,
-      paksha,
-      note: "Drik Panchang + Sunrise API (Free)"
+      sunrise: null,
+      sunset: null,
+      moonrise,
+      moonset,
+      note: "MET.no Moon API (Free)"
     };
 
   } catch (err) {
-    console.error("Free Panchang Source Error:", err);
-
+    console.error("Moon API error:", err);
     return {
-      sunrise: "—",
-      sunset: "—",
+      sunrise: null,
+      sunset: null,
       moonrise: "—",
       moonset: "—",
-      vikram_samvat: "—",
-      shak_samvat: "—",
-      masa: "—",
-      tithi: "—",
-      paksha: "—",
-      note: "Free source unavailable"
+      note: "Moon data unavailable"
     };
   }
 }
