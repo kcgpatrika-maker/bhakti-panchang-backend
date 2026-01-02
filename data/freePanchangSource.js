@@ -30,8 +30,8 @@ export async function getPanchangFromFreeSource() {
     const response = await fetch(url);
     const json = await response.json();
 
-    const sunrise = json.results?.sunrise || null;
-    const sunset = json.results?.sunset || null;
+    const sunrise = utcToIST(json.results?.sunrise);
+    const sunset  = utcToIST(json.results?.sunset);
 
     // 2) Placeholder values for now
     const moonrise = "—";
