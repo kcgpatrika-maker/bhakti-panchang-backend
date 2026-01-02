@@ -1,7 +1,5 @@
 // data/freePanchangSource.js
 
-import fetch from "node-fetch";
-
 // Coordinates for Jaipur, India (example)
 const LATITUDE = 26.9124;
 const LONGITUDE = 75.7873;
