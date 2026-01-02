@@ -1,13 +1,9 @@
-export const tithiCalendar = {
-  "2025-12-27": {
-    masa: "पौष",
-    paksha: "शुक्ल पक्ष",
-    tithi: "सप्तमी"
-  },
+// data/tithiCalendar.js
 
-  "2025-12-29": {
-    masa: "पौष",
-    paksha: "शुक्ल पक्ष",
-    tithi: "नवमी"
-  }
-};
+export function getTithiData(dateObj) {
+  // फिलहाल स्थिर लेकिन auto-rotate ready
+  return {
+    masa: "—",
+    tithi: "तिथि जानकारी अपडेट प्रक्रिया में है"
+  };
+}
