@@ -18,11 +18,16 @@ export async function getPanchangFromFreeSource() {
       throw new Error("Sunrise API failed");
     }
 
-    const toIST = (utc) =>
-      new Date(utc).toLocaleTimeString("hi-IN", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+    function toIST(utcString) {
+  const utcDate = new Date(utcString);
+  const istTime = new Date(utcDate.getTime() + (5.5 * 60 * 60 * 1000));
+
+  return istTime.toLocaleTimeString("hi-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true
+  });
+}
 
     return {
       sunrise: toIST(json.results.sunrise),
