@@ -35,27 +35,24 @@ app.get("/api/panchang", async (req, res) => {
     const festivalList = tithiEventsMap[key] || ["कोई विशेष व्रत नहीं"];
 
     res.json({
-      success: true,
-      data: {
-        date: today.toLocaleDateString("hi-IN", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-          weekday: "long",
-        }),
-        sunrise: freePanchang.sunrise ?? "—",
-        sunset: freePanchang.sunset ?? "—",
-        moonrise: freePanchang.moonrise ?? "—",
-        moonset: freePanchang.moonset ?? "—",
-        vikram_samvat: freePanchang.vikram_samvat ?? "—",
-        shak_samvat: freePanchang.shak_samvat ?? "—",
-        masa: freePanchang.masa ?? "—",
-        tithi: freePanchang.tithi ?? "—",
-        paksha: freePanchang.paksha ?? "—",
-        source: freePanchang.note ?? "Free Source",
-        festivalList,
-      },
-    });
+  date: today.toLocaleDateString("hi-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    weekday: "long",
+  }),
+  sunrise: freePanchang.sunrise ?? "—",
+  sunset: freePanchang.sunset ?? "—",
+  moonrise: freePanchang.moonrise ?? "—",
+  moonset: freePanchang.moonset ?? "—",
+  vikram_samvat: freePanchang.vikram_samvat ?? "—",
+  shak_samvat: freePanchang.shak_samvat ?? "—",
+  masa: freePanchang.masa ?? "—",
+  tithi: freePanchang.tithi ?? "—",
+  paksha: freePanchang.paksha ?? "—",
+  source: freePanchang.note ?? "Free Source",
+  festivalList
+});
   } catch (err) {
     console.error("Panchang API Error:", err);
 
