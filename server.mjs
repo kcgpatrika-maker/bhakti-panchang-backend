@@ -1,68 +1,92 @@
 import express from "express";
 import cors from "cors";
 
-import bhaktiMaster from "./data/bhaktiMaster.js";
-import { getTithiData } from "./data/tithiCalendar.js";
-import { getTithiEvents } from "./data/tithiEvents.js";
+import { getTodayPanchang } from "./data/panchangEngine.js";
+import { tithiEventsMap } from "./data/tithiEvents.js";
 
 const app = express();
 app.use(cors());
 
-/* ---------------- PANCHANG API ---------------- */
+/* ===============================
+   HELPER: FESTIVAL FINDER (SAFE)
+=============================== */
+function getFestivalList(masa, tithi) {
+  const list = [];
 
+  if (!masa || !tithi) return list;
+
+  const exactKey = `${masa} | ${tithi}`;
+  const anyMasaKey = `किसी भी मास | ${tithi}`;
+
+  if (Array.isArray(tithiEventsMap[exactKey])) {
+    list.push(...tithiEventsMap[exactKey]);
+  }
+
+  if (Array.isArray(tithiEventsMap[anyMasaKey])) {
+    list.push(...tithiEventsMap[anyMasaKey]);
+  }
+
+  return list;
+}
+
+/* ===============================
+   PANCHANG API
+=============================== */
 app.get("/api/panchang", (req, res) => {
-  const today = new Date();
+  try {
+    const p = getTodayPanchang();
 
-  const dateStr = today.toLocaleDateString("hi-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric"
-  });
+    const masa = p.masa || "";
+    const tithi = p.tithi || "";
 
-  const dayStr = today.toLocaleDateString("hi-IN", {
-    weekday: "long"
-  });
+    const festivalList = getFestivalList(masa, tithi);
 
-  const tithiData = getTithiData(today);
-  const events = getTithiEvents(today);
+    res.json({
+      success: true,
+      data: {
+        date: p.date,
+        day: p.day,
 
-  res.json({
-    success: true,
-    data: {
-      date: dateStr,
-      day: dayStr,
-      sunMoon: {
-        sunrise: "06:55",
-        sunset: "17:42",
-        moonrise: "19:10",
-        moonset: "07:30"
-      },
-      vikram_samvat: 2082,
-      shak_samvat: 1947,
-      masa: tithiData.masa,
-      paksha_tithi: tithiData.tithi,
-      vratList: events.vrat.length ? events.vrat : ["कोई विशेष व्रत नहीं"],
-      diwasList: events.diwas.length ? events.diwas : ["कोई विशेष दिवस नहीं"]
-    }
-  });
+        sunMoon: {
+          sunrise: p.sunrise,
+          sunset: p.sunset,
+          moonrise: p.moonrise,
+          moonset: p.moonset
+        },
+
+        vikram_samvat: p.vikram_samvat,
+        shak_samvat: p.shak_samvat,
+        masa: masa || "—",
+        paksha_tithi: tithi || "तिथि जानकारी अपडेट प्रक्रिया में है",
+
+        festivalList: Array.isArray(festivalList) && festivalList.length > 0
+          ? festivalList
+          : ["कोई विशेष व्रत नहीं"]
+      }
+    });
+
+  } catch (err) {
+    console.error("Panchang API Error:", err);
+
+    res.json({
+      success: false,
+      message: "पंचांग लोड नहीं हो सका"
+    });
+  }
 });
 
-/* ---------------- ASK BHAKTI ---------------- */
-
-app.get("/api/ask-bhakti", (req, res) => {
-  const q = req.query.q || "";
-
-  const list = Object.keys(bhaktiMaster).map(key => ({
-    id: key,
-    name: bhaktiMaster[key].name
-  }));
-
-  res.json({ success: true, data: list });
+/* ===============================
+   ROOT
+=============================== */
+app.get("/", (req, res) => {
+  res.send("Bhakti Panchang backend running");
 });
 
-/* ---------------- SERVER ---------------- */
+/* ===============================
+   SERVER START
+=============================== */
+const PORT = process.env.PORT || 10000;
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("Bhakti Panchang backend running on port", PORT);
 });
