@@ -7,7 +7,6 @@ import cors from "cors";
 import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
-import { getSamvat } from "./data/samvatCalculator.js";
 
 const app = express();
 app.use(cors());
@@ -29,8 +28,7 @@ app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
     const tithiData = getTithiData(today);
-    const samvat = getSamvat(today);
-
+    
     // Free source fetch
     const freePanchang = await getPanchangFromFreeSource();
     
@@ -74,8 +72,6 @@ if (festivalList.length === 0) {
   sunset: freePanchang.sunset ?? "—",
   moonrise: freePanchang.moonrise ?? "—",
   moonset: freePanchang.moonset ?? "—",
-  vikram_samvat: samvat.vikram_samvat,
-  shak_samvat: samvat.shak_samvat,
   masa: tithiData.masa ?? "—",
   tithi: tithiData.tithi,
   paksha: tithiData.paksha,
