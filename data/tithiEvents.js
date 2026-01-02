@@ -122,3 +122,15 @@ export const tithiEventsMap = {
   ]
 
 };
+// 👇 यह function ADD करें (नीचे)
+
+export function getTithiEvents(masa, tithi) {
+  const exactKey = `${masa} | ${tithi}`;
+  const anyMonthKey = `किसी भी मास | ${tithi}`;
+
+  return (
+    tithiEventsMap[exactKey] ||
+    tithiEventsMap[anyMonthKey] ||
+    []
+  );
+}
