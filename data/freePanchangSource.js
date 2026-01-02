@@ -6,39 +6,39 @@ const LONGITUDE = 75.7873;
 export async function getPanchangFromFreeSource() {
   try {
     const today = new Date();
-    const dateStr = today.toISOString().split("T")[0];
+    const dateStr = today.toISOString().split("T")[0]; // YYYY-MM-DD
 
-    // 🌙 Moonrise / Moonset (MET.no – free, no key)
-    const moonUrl = `https://api.met.no/weatherapi/sunrise/3.0/moon?lat=${LATITUDE}&lon=${LONGITUDE}&date=${dateStr}&offset=+05:30`;
+    const url =
+      `https://api.sunrise-sunset.org/json?lat=${LATITUDE}&lng=${LONGITUDE}&date=${dateStr}&formatted=0`;
 
-    const moonRes = await fetch(moonUrl, {
-      headers: { "User-Agent": "BhaktiPanchang/1.0" }
-    });
+    const res = await fetch(url);
+    const json = await res.json();
 
-    const moonJson = await moonRes.json();
+    if (json.status !== "OK") {
+      throw new Error("Sunrise API failed");
+    }
 
-    const moonrise =
-      moonJson?.location?.time?.[0]?.moonrise?.time?.slice(11, 16) ?? "—";
-
-    const moonset =
-      moonJson?.location?.time?.[0]?.moonset?.time?.slice(11, 16) ?? "—";
+    const toIST = (utc) =>
+      new Date(utc).toLocaleTimeString("hi-IN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
 
     return {
-      sunrise: null,
-      sunset: null,
-      moonrise,
-      moonset,
-      note: "MET.no Moon API (Free)"
-    };
-
-  } catch (err) {
-    console.error("Moon API error:", err);
-    return {
-      sunrise: null,
-      sunset: null,
+      sunrise: toIST(json.results.sunrise),
+      sunset: toIST(json.results.sunset),
       moonrise: "—",
       moonset: "—",
-      note: "Moon data unavailable"
+      note: "Sunrise-Sunset.org (Free)"
+    };
+  } catch (err) {
+    console.error("Free Panchang error:", err);
+    return {
+      sunrise: "—",
+      sunset: "—",
+      moonrise: "—",
+      moonset: "—",
+      note: "Free source unavailable"
     };
   }
 }
