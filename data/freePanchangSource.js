@@ -16,19 +16,20 @@ export async function getPanchangFromFreeSource() {
     const sunRes = await fetch(sunUrl);
     const sunJson = await sunRes.json();
 
-    const sunrise = sunJson.results?.sunrise
-      ? new Date(sunJson.results.sunrise).toLocaleTimeString("hi-IN", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      : "—";
+    const formatIST = (utc) =>
+  new Date(utc).toLocaleTimeString("hi-IN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Kolkata"
+  });
 
-    const sunset = sunJson.results?.sunset
-      ? new Date(sunJson.results.sunset).toLocaleTimeString("hi-IN", {
-          hour: "2-digit",
-          minute: "2-digit"
-        })
-      : "—";
+const sunrise = sunJson.results?.sunrise
+  ? formatIST(sunJson.results.sunrise)
+  : "—";
+
+const sunset = sunJson.results?.sunset
+  ? formatIST(sunJson.results.sunset)
+  : "—";
 
     /* ==========================
        2️⃣ Tithi / Masa / Paksha
