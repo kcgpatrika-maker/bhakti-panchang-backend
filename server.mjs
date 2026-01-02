@@ -6,6 +6,7 @@ import cors from "cors";
 // ===== Data imports =====
 import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
+import { getTithiData } from "./data/tithiCalendar.js";
 
 const app = express();
 app.use(cors());
@@ -26,12 +27,13 @@ app.get("/", (req, res) => {
 app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
+    const tithiData = getTithiData(today);
 
     // Free source fetch
     const freePanchang = await getPanchangFromFreeSource();
 
     // Festival / व्रत list
-    const key = `${freePanchang.masa} | ${freePanchang.tithi}`;
+    const key = `${tithiData.masa} | ${tithiData.tithi}`;
     const festivalList = tithiEventsMap[key] || ["कोई विशेष व्रत नहीं"];
 
     res.json({
@@ -46,9 +48,9 @@ app.get("/api/panchang", async (req, res) => {
   moonset: freePanchang.moonset ?? "—",
   vikram_samvat: freePanchang.vikram_samvat ?? "—",
   shak_samvat: freePanchang.shak_samvat ?? "—",
-  masa: freePanchang.masa ?? "—",
-  tithi: freePanchang.tithi ?? "—",
-  paksha: freePanchang.paksha ?? "—",
+  masa: tithiData.masa ?? "—",
+  tithi: tithiData.tithi,
+  paksha: tithiData.paksha,
   source: freePanchang.note ?? "Free Source",
   festivalList
 });
