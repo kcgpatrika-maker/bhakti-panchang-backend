@@ -1,35 +1,28 @@
-// data/freePanchangSource.js
-
-const LAT = 26.9124;   // Jaipur
-const LON = 75.7873;
-
 export async function getPanchangFromFreeSource() {
   try {
-    const date = new Date().toISOString().split("T")[0];
-
-    // 🌅 Sunrise / Sunset
-    const sunRes = await fetch(
-      `https://api.sunrise-sunset.org/json?lat=${LAT}&lng=${LON}&date=${date}&formatted=0`
+    const res = await fetch(
+      "https://api.sunrise-sunset.org/json?lat=26.9124&lng=75.7873&formatted=0"
     );
-    const sunJson = await sunRes.json();
 
-    // 🌙 Moonrise / Moonset (MET.no)
-    const moonRes = await fetch(
-      `https://api.met.no/weatherapi/sunrise/3.0/?lat=${LAT}&lon=${LON}&date=${date}&offset=+05:30`
-    );
-    const moonJson = await moonRes.json();
-    const moon = moonJson.location?.time?.[0];
+    const data = await res.json();
+    const r = data.results;
 
     return {
-      sunrise: sunJson.results.sunrise,
-      sunset: sunJson.results.sunset,
-      moonrise: moon?.moonrise?.time ?? "—",
-      moonset: moon?.moonset?.time ?? "—",
-      note: "Sunrise-Sunset.org + MET.no (Free)"
+      sunrise: new Date(r.sunrise).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
+      sunset: new Date(r.sunset).toLocaleTimeString("en-IN", {
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
+      moonrise: "—",
+      moonset: "—",
+      note: "Sunrise-Sunset.org (Free)"
     };
 
   } catch (err) {
-    console.error("Panchang free source error:", err);
+    console.error("Free source error:", err);
     return {
       sunrise: "—",
       sunset: "—",
