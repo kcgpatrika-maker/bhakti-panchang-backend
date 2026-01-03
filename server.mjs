@@ -6,6 +6,7 @@ import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
+import { getMasa } from "./data/masaCalculator.js";
 
 const app = express();
 app.use(cors());
@@ -30,6 +31,7 @@ app.get("/api/panchang", async (req, res) => {
     const freePanchang = await getPanchangFromFreeSource();
     const tithiData = getTithiFromTable(today);
     const samvat = getSamvat(today);
+    const masa = getMasa(today);
 
     let festivalList = [];
 
@@ -72,7 +74,7 @@ app.get("/api/panchang", async (req, res) => {
       moonset: freePanchang.moonset ?? "—",
       vikram_samvat: samvat.vikram_samvat,
       shak_samvat: samvat.shak_samvat,
-      masa: tithiData.masa,
+      masa,
       tithi: tithiData.tithi,
       paksha: tithiData.paksha,
       source: freePanchang.note,
