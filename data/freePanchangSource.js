@@ -8,28 +8,43 @@ function formatIST(dateStr) {
   });
 }
 
-export async function getMoonData() {
+export async function getPanchangFromFreeSource() {
+  let sunrise = "—", sunset = "—";
+  let moonrise = "—", moonset = "—";
+  let note = [];
+
+  // ☀️ SUN
   try {
-    const url =
+    const sunUrl =
+      "https://api.sunrise-sunset.org/json?lat=26.9124&lng=75.7873&formatted=0";
+    const sunRes = await fetch(sunUrl);
+    const sunJson = await sunRes.json();
+
+    sunrise = formatIST(sunJson.results.sunrise);
+    sunset  = formatIST(sunJson.results.sunset);
+    note.push("Sunrise-Sunset.org");
+  } catch {}
+
+  // 🌙 MOON (best free attempt)
+  try {
+    const moonUrl =
       "https://api.met.no/weatherapi/sunrise/3.0/moon?lat=26.9124&lon=75.7873";
-
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Bhakti-Panchang-App" }
+    const moonRes = await fetch(moonUrl, {
+      headers: { "User-Agent": "Bhakti-Panchang" }
     });
+    const moonJson = await moonRes.json();
+    const t = moonJson.location?.time?.[0];
 
-    const json = await res.json();
-    const today = json.location.time[0];
+    moonrise = formatIST(t?.moonrise?.time);
+    moonset  = formatIST(t?.moonset?.time);
+    note.push("MET.no Moon");
+  } catch {}
 
-    return {
-      moonrise: formatIST(today.moonrise?.time),
-      moonset: formatIST(today.moonset?.time)
-    };
-
-  } catch (e) {
-    console.error("Moon API error", e);
-    return {
-      moonrise: "—",
-      moonset: "—"
-    };
-  }
+  return {
+    sunrise,
+    sunset,
+    moonrise,
+    moonset,
+    note: note.join(" + ") || "Free source unavailable"
+  };
 }
