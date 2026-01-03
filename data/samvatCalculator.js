@@ -12,7 +12,7 @@ export function getSamvat(dateObj) {
   }
 
   return {
-    vikram_samvat: "विक्रम संवत " + vikram,
-    shak_samvat: "शक संवत " + shak
-  };
+  vikram_samvat: "2082",
+  shak_samvat: "1947"
+};
 }
