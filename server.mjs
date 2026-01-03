@@ -6,6 +6,7 @@ import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
 import { getMasa } from "./data/masaCalculator.js";
+import { dharmikMessages } from "./data/dharmikMessages.js";
 
 const app = express();
 app.use(cors());
@@ -98,6 +99,7 @@ app.get("/api/panchang", async (req, res) => {
       masa,
       paksha: tithiData.paksha,
       tithi: tithiData.tithi,
+      dharmikMessage,
       source: freePanchang.note ?? "Free source",
       festivalList
     };
@@ -108,6 +110,29 @@ app.get("/api/panchang", async (req, res) => {
     dailyPanchangCache.dateKey = todayKey;
     dailyPanchangCache.data = responseData;
 
+    // ===============================
+// DHARMIK MESSAGE LOGIC
+// ===============================
+let dharmikMessage = dharmikMessages.default;
+
+// 1️⃣ Festival priority
+const festivalKey = `${masa} | ${tithiData.tithi}`;
+if (dharmikMessages.festival[festivalKey]) {
+  dharmikMessage = dharmikMessages.festival[festivalKey];
+}
+
+// 2️⃣ Tithi priority
+else if (dharmikMessages.tithi[tithiData.tithi]) {
+  dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
+}
+
+// 3️⃣ Weekday fallback
+else {
+  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
+  if (dharmikMessages.weekday[weekday]) {
+    dharmikMessage = dharmikMessages.weekday[weekday];
+  }
+}
     // ===============================
     // RESPONSE
     // ===============================
