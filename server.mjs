@@ -103,14 +103,7 @@ app.get("/api/panchang", async (req, res) => {
       source: freePanchang.note ?? "Free source",
       festivalList
     };
-
-    // ===============================
-    // SAVE TO CACHE
-    // ===============================
-    dailyPanchangCache.dateKey = todayKey;
-    dailyPanchangCache.data = responseData;
-
-    // ===============================
+// ===============================
 // DHARMIK MESSAGE LOGIC
 // ===============================
 let dharmikMessage = dharmikMessages.default;
@@ -133,6 +126,13 @@ else {
     dharmikMessage = dharmikMessages.weekday[weekday];
   }
 }
+
+    // ===============================
+    // SAVE TO CACHE
+    // ===============================
+    dailyPanchangCache.dateKey = todayKey;
+    dailyPanchangCache.data = responseData;
+
     // ===============================
     // RESPONSE
     // ===============================
