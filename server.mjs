@@ -4,6 +4,7 @@ import cors from "cors";
 import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
+import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
 
 const app = express();
@@ -27,7 +28,7 @@ app.get("/api/panchang", async (req, res) => {
     const today = new Date();
 
     const freePanchang = await getPanchangFromFreeSource();
-    const tithiData = getTithiData(today);
+    const tithiData = getTithiFromTable(today);
     const samvat = getSamvat(today);
 
     let festivalList = [];
