@@ -3,7 +3,6 @@ import cors from "cors";
 
 import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
-import { getTithiData } from "./data/tithiCalendar.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
 import { getMasa } from "./data/masaCalculator.js";
@@ -13,6 +12,14 @@ app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
+
+// ===============================
+// PANCHANG DAILY CACHE
+// ===============================
+let dailyPanchangCache = {
+  dateKey: null,
+  data: null
+};
 
 // ===============================
 // HEALTH CHECK
@@ -27,21 +34,31 @@ app.get("/", (req, res) => {
 app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10); // YYYY-MM-DD
 
+    // ✅ CACHE HIT
+    if (dailyPanchangCache.dateKey === todayKey) {
+      return res.json(dailyPanchangCache.data);
+    }
+
+    // ===============================
+    // DATA SOURCES
+    // ===============================
     const freePanchang = await getPanchangFromFreeSource();
     const tithiData = getTithiFromTable(today);
     const samvat = getSamvat(today);
     const masa = getMasa(today);
-    
+
+    // ===============================
+    // FESTIVAL LOGIC
+    // ===============================
     let festivalList = [];
 
-    // 1️⃣ Exact match
-    const exactKey = `${tithiData.masa} | ${tithiData.paksha} ${tithiData.tithi}`;
+    const exactKey = `${masa} | ${tithiData.paksha} ${tithiData.tithi}`;
     if (tithiEventsMap[exactKey]) {
       festivalList = tithiEventsMap[exactKey];
     }
 
-    // 2️⃣ Any मास
     if (festivalList.length === 0) {
       const anyKey = `किसी भी मास | ${tithiData.paksha} ${tithiData.tithi}`;
       if (tithiEventsMap[anyKey]) {
@@ -49,9 +66,8 @@ app.get("/api/panchang", async (req, res) => {
       }
     }
 
-    // 3️⃣ Simple तिथि
     if (festivalList.length === 0) {
-      const simpleKey = `${tithiData.masa} | ${tithiData.tithi}`;
+      const simpleKey = `${masa} | ${tithiData.tithi}`;
       if (tithiEventsMap[simpleKey]) {
         festivalList = tithiEventsMap[simpleKey];
       }
@@ -61,27 +77,41 @@ app.get("/api/panchang", async (req, res) => {
       festivalList = ["कोई विशेष व्रत नहीं"];
     }
 
-    res.json({
+    // ===============================
+    // FINAL RESPONSE OBJECT
+    // ===============================
+    const responseData = {
       date: today.toLocaleDateString("hi-IN", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric"
-}),
-weekday: today.toLocaleDateString("hi-IN", {
-  weekday: "long"
-}),
-  sunrise: freePanchang.sunrise ?? "—",
-  sunset: freePanchang.sunset ?? "—",
-  moonrise: freePanchang.moonrise,
-  moonset: freePanchang.moonset,
-  vikram_samvat: samvat.vikram_samvat,
-  shak_samvat: samvat.shak_samvat,
-  masa,
-  tithi: tithiData.tithi,
-  paksha: tithiData.paksha,
-  source: freePanchang.note ?? "Free source",
-  festivalList
-});
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }),
+      weekday: today.toLocaleDateString("hi-IN", {
+        weekday: "long"
+      }),
+      sunrise: freePanchang.sunrise ?? "—",
+      sunset: freePanchang.sunset ?? "—",
+      moonrise: freePanchang.moonrise ?? "—",
+      moonset: freePanchang.moonset ?? "—",
+      vikram_samvat: samvat.vikram_samvat,
+      shak_samvat: samvat.shak_samvat,
+      masa,
+      paksha: tithiData.paksha,
+      tithi: tithiData.tithi,
+      source: freePanchang.note ?? "Free source",
+      festivalList
+    };
+
+    // ===============================
+    // SAVE TO CACHE
+    // ===============================
+    dailyPanchangCache.dateKey = todayKey;
+    dailyPanchangCache.data = responseData;
+
+    // ===============================
+    // RESPONSE
+    // ===============================
+    res.json(responseData);
 
   } catch (err) {
     console.error("Panchang API Error:", err);
@@ -89,6 +119,7 @@ weekday: today.toLocaleDateString("hi-IN", {
   }
 });
 
+// ===============================
 app.listen(PORT, () => {
   console.log("Bhakti Panchang backend running on port", PORT);
 });
