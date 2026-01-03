@@ -1,5 +1,5 @@
 // data/tithiCalendar.js
-
+import { getMasa } from "./masaCalculator.js";
 const TITHI_NAMES = [
   "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
   "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
@@ -23,9 +23,8 @@ export function getTithiData(dateObj) {
   const tithi = TITHI_NAMES[lunarDay - 1];
   const paksha = lunarDay <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
 
-  return {
-    masa: "—",   // STEP-C.2 में आएगा
-    tithi,
-    paksha
-  };
-}
+ return {
+  masa: getMasa(dateObj),
+  tithi,
+  paksha
+};
