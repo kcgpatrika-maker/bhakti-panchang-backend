@@ -1,3 +1,15 @@
+function formatIST(utcString) {
+  const date = new Date(utcString);
+
+  // IST offset = +5:30
+  date.setMinutes(date.getMinutes() + 330);
+
+  return date.toLocaleTimeString("en-IN", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
 export async function getPanchangFromFreeSource() {
   try {
     const res = await fetch(
@@ -8,14 +20,8 @@ export async function getPanchangFromFreeSource() {
     const r = data.results;
 
     return {
-      sunrise: new Date(r.sunrise).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit"
-      }),
-      sunset: new Date(r.sunset).toLocaleTimeString("en-IN", {
-        hour: "2-digit",
-        minute: "2-digit"
-      }),
+      sunrise: formatIST(r.sunrise),
+      sunset: formatIST(r.sunset),
       moonrise: "—",
       moonset: "—",
       note: "Sunrise-Sunset.org (Free)"
