@@ -63,11 +63,13 @@ app.get("/api/panchang", async (req, res) => {
 
     res.json({
       date: today.toLocaleDateString("hi-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    weekday: "long"
-  }),
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+}),
+weekday: today.toLocaleDateString("hi-IN", {
+  weekday: "long"
+}),
   sunrise: freePanchang.sunrise ?? "—",
   sunset: freePanchang.sunset ?? "—",
   moonrise: freePanchang.moonrise,
