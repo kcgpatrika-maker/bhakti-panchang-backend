@@ -7,6 +7,7 @@ import cors from "cors";
 import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
+import { getDrikPanchangToday } from "./data/drikScraper.js";
 
 const app = express();
 app.use(cors());
@@ -27,10 +28,24 @@ app.get("/", (req, res) => {
 app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
-    const tithiData = getTithiData(today);
+    // STEP-D : Try Drik Panchang first
+const drikData = await getDrikPanchangToday();
+
+// fallback to calculated tithi
+const tithiData = drikData
+  ? {
+      masa: drikData.masa,
+      tithi: drikData.tithi,
+      paksha: drikData.tithi?.includes("पूर्णिमा")
+        ? "शुक्ल पक्ष"
+        : drikData.tithi?.includes("अमावस्या")
+        ? "कृष्ण पक्ष"
+        : getTithiData(today).paksha
+    }
+  : getTithiData(today);
     
     // Free source fetch
-    const freePanchang = await getPanchangFromFreeSource();
+    source: drikData?.source || freePanchang.note || "Free Source",
     
 
     let festivalList = [];
