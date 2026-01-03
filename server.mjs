@@ -30,7 +30,7 @@ app.get("/api/panchang", async (req, res) => {
     const today = new Date();
     // STEP-D : Try Drik Panchang first
 const drikData = await getDrikPanchangToday();
-
+console.log("DRIK DATA =>", drikData);
 // fallback to calculated tithi
 const tithiData = drikData
   ? {
