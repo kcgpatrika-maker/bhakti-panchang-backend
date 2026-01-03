@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import { getFreePanchang } from "./data/freePanchangSource.js";
+import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
@@ -70,8 +70,8 @@ app.get("/api/panchang", async (req, res) => {
   }),
   sunrise: freePanchang.sunrise ?? "—",
   sunset: freePanchang.sunset ?? "—",
-  moonrise: freePanchang.moonrise ?? "—",
-  moonset: freePanchang.moonset ?? "—",
+  moonrise: freePanchang.moonrise,
+  moonset: freePanchang.moonset,
   vikram_samvat: samvat.vikram_samvat,
   shak_samvat: samvat.shak_samvat,
   masa,
