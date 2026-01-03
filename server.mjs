@@ -1,13 +1,12 @@
 import express from "express";
 import cors from "cors";
 
-import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
+import { getFreePanchang } from "./data/freePanchangSource.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiData } from "./data/tithiCalendar.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
 import { getMasa } from "./data/masaCalculator.js";
-import { getMoonData } from "./data/freeMoonSource.js";
 
 const app = express();
 app.use(cors());
@@ -33,8 +32,7 @@ app.get("/api/panchang", async (req, res) => {
     const tithiData = getTithiFromTable(today);
     const samvat = getSamvat(today);
     const masa = getMasa(today);
-    const moonData = await getMoonData();
-
+    
     let festivalList = [];
 
     // 1️⃣ Exact match
@@ -65,23 +63,23 @@ app.get("/api/panchang", async (req, res) => {
 
     res.json({
       date: today.toLocaleDateString("hi-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        weekday: "long"
-      }),
-      sunrise: freePanchang.sunrise ?? "—",
-      sunset: freePanchang.sunset ?? "—",
-      moonrise: moonData.moonrise,
-      moonset: moonData.moonset,
-      vikram_samvat: samvat.vikram_samvat,
-      shak_samvat: samvat.shak_samvat,
-      masa,
-      tithi: tithiData.tithi,
-      paksha: tithiData.paksha,
-      source: freePanchang.note,
-      festivalList
-    });
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    weekday: "long"
+  }),
+  sunrise: freePanchang.sunrise ?? "—",
+  sunset: freePanchang.sunset ?? "—",
+  moonrise: freePanchang.moonrise ?? "—",
+  moonset: freePanchang.moonset ?? "—",
+  vikram_samvat: samvat.vikram_samvat,
+  shak_samvat: samvat.shak_samvat,
+  masa,
+  tithi: tithiData.tithi,
+  paksha: tithiData.paksha,
+  source: freePanchang.note ?? "Free source",
+  festivalList
+});
 
   } catch (err) {
     console.error("Panchang API Error:", err);
