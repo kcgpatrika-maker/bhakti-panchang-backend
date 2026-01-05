@@ -14,128 +14,101 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
 
-// ===============================
-// DAILY CACHE
-// ===============================
+/* ===============================
+   DAILY CACHE
+================================ */
 let dailyPanchangCache = {
   dateKey: null,
   data: null
 };
 
-// ===============================
-// TITHI FORMULA FALLBACK (SAFE)
-// ===============================
+/* ===============================
+   TITHI FALLBACK (FINAL AUTHORITY)
+================================ */
 function getTithiByMoonFormula(date) {
-  const REF_AMAVASYA = new Date("2025-12-30T00:00:00Z");
-  const LUNAR_DAYS = 29.530588;
+  const knownNewMoon = new Date("2024-01-11T11:57:00Z");
+  const diffDays = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
 
-  const diffDays =
-    (date - REF_AMAVASYA) / (1000 * 60 * 60 * 24);
+  const moonAge = ((diffDays % 29.53) + 29.53) % 29.53;
+  const index = Math.floor(moonAge / 0.984) + 1;
 
-  let lunarDay =
-    Math.floor((diffDays % LUNAR_DAYS + LUNAR_DAYS) % LUNAR_DAYS) + 1;
-
-  const TITHI_NAMES = [
-    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
-    "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
-    "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
-    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
-    "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
-    "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
+  const names = [
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
   ];
 
-  return {
-    tithi: TITHI_NAMES[lunarDay - 1],
-    paksha: lunarDay <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष"
-  };
+  const tithi = names[index - 1] || "—";
+  const paksha = index <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+
+  return { tithi, paksha };
 }
 
-// ===============================
-// HEALTH CHECK
-// ===============================
-app.get("/", (req, res) => {
-  res.send("Bhakti Panchang backend running");
-});
-
-// ===============================
-// PANCHANG API
-// ===============================
+/* ===============================
+   API
+================================ */
 app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
     const todayKey = today.toISOString().slice(0, 10);
 
-    // ✅ CACHE HIT
     if (dailyPanchangCache.dateKey === todayKey) {
       return res.json(dailyPanchangCache.data);
     }
 
-    // ===============================
-    // DATA SOURCES
-    // ===============================
     const freePanchang = await getPanchangFromFreeSource();
     const samvat = getSamvat(today);
     const masa = getMasa(today);
 
     let tithiData = getTithiFromTable(today);
 
-    // 🔁 FALLBACK (GUARANTEED TITHI)
-    if (!tithiData || !tithiData.tithi || !tithiData.paksha) {
+    if (!tithiData?.tithi || !tithiData?.paksha) {
       tithiData = getTithiByMoonFormula(today);
     }
 
-    // ===============================
-    // FESTIVAL LOGIC
-    // ===============================
+    /* ===============================
+       FESTIVAL
+    ================================ */
     let festivalList = [];
 
-    const exactKey = `${masa} | ${tithiData.paksha} ${tithiData.tithi}`;
-    if (tithiEventsMap[exactKey]) {
-      festivalList = tithiEventsMap[exactKey];
-    }
-
-    if (festivalList.length === 0) {
-      const anyKey = `किसी भी मास | ${tithiData.paksha} ${tithiData.tithi}`;
-      if (tithiEventsMap[anyKey]) {
-        festivalList = tithiEventsMap[anyKey];
-      }
+    const festKey = `${masa} | ${tithiData.tithi}`;
+    if (tithiEventsMap[festKey]) {
+      festivalList = tithiEventsMap[festKey];
     }
 
     if (festivalList.length === 0) {
       festivalList = ["कोई विशेष व्रत नहीं"];
     }
 
-    // ===============================
-    // DHARMIK MESSAGE (STEP-J FIXED)
-    // ===============================
+    /* ===============================
+       DHARMIK MESSAGE (FINAL FIX)
+    ================================ */
     let dharmikMessage = dharmikMessages.default;
 
-    const festKey = `${masa} | ${tithiData.tithi}`;
-    if (dharmikMessages.festival[festKey]) {
-      dharmikMessage = dharmikMessages.festival[festKey];
-    } 
+    // Festival priority
+    const msgKey = `${masa} | ${tithiData.tithi}`;
+    if (dharmikMessages.festival[msgKey]) {
+      dharmikMessage = dharmikMessages.festival[msgKey];
+    }
+    // Tithi
     else if (dharmikMessages.tithi[tithiData.tithi]) {
       dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-    } 
+    }
+    // Weekday
     else {
       const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-      if (dharmikMessages.weekday[weekday]) {
-        dharmikMessage = dharmikMessages.weekday[weekday];
-      }
+      dharmikMessage =
+        dharmikMessages.weekday[weekday] ?? dharmikMessages.default;
     }
 
-    // ===============================
-    // FINAL RESPONSE
-    // ===============================
     const responseData = {
       date: today.toLocaleDateString("hi-IN", {
         day: "2-digit",
         month: "long",
         year: "numeric"
       }),
-      weekday: today.toLocaleDateString("hi-IN", {
-        weekday: "long"
-      }),
+      weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
       sunrise: freePanchang.sunrise ?? "—",
       sunset: freePanchang.sunset ?? "—",
       moonrise: freePanchang.moonrise ?? "—",
@@ -150,10 +123,7 @@ app.get("/api/panchang", async (req, res) => {
       source: freePanchang.note ?? "Free source"
     };
 
-    // SAVE CACHE
-    dailyPanchangCache.dateKey = todayKey;
-    dailyPanchangCache.data = responseData;
-
+    dailyPanchangCache = { dateKey: todayKey, data: responseData };
     res.json(responseData);
 
   } catch (err) {
@@ -162,7 +132,6 @@ app.get("/api/panchang", async (req, res) => {
   }
 });
 
-// ===============================
 app.listen(PORT, () => {
   console.log("Bhakti Panchang backend running on port", PORT);
 });
