@@ -115,7 +115,7 @@ if (festivalList.length > 0 && festivalList[0] !== "कोई विशेष �
 }
 
 // 2️⃣ Masa based (तिथि fail होने पर भी काम करेगा)
-else if (dharmikMessages.masa[masa]) {
+else if (dharmikMessages.masa && dharmikMessages.masa[masa]) {
   dharmikMessage = dharmikMessages.masa[masa];
 }
 
