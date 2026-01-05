@@ -85,19 +85,19 @@ let dharmikMessage = dharmikMessages.default;
 
 // 1️⃣ Festival priority
 const festivalKey = `${masa} | ${tithiData.tithi}`;
-if (dharmikMessages.festival[festivalKey]) {
+if (dharmikMessages.festival?.[festivalKey]) {
   dharmikMessage = dharmikMessages.festival[festivalKey];
 }
 
 // 2️⃣ Tithi priority
-else if (dharmikMessages.tithi[tithiData.tithi]) {
+else if (dharmikMessages.tithi?.[tithiData.tithi]) {
   dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
 }
 
 // 3️⃣ Weekday fallback
 else {
   const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-  if (dharmikMessages.weekday[weekday]) {
+  if (dharmikMessages.weekday?.[weekday]) {
     dharmikMessage = dharmikMessages.weekday[weekday];
   }
 }
