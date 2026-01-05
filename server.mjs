@@ -102,21 +102,30 @@ app.get("/api/panchang", async (req, res) => {
     }
 
     // ===============================
-    // DHARMIK MESSAGE
-    // ===============================
-    let dharmikMessage = dharmikMessages.default;
+// DHARMIK MESSAGE LOGIC (STEP-J)
+// ===============================
+let dharmikMessage = dharmikMessages.default;
 
-    const festivalKey = `${masa} | ${tithiData.tithi}`;
-    if (dharmikMessages.festival[festivalKey]) {
-      dharmikMessage = dharmikMessages.festival[festivalKey];
-    } else if (dharmikMessages.tithi[tithiData.tithi]) {
-      dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-    } else {
-      const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-      if (dharmikMessages.weekday[weekday]) {
-        dharmikMessage = dharmikMessages.weekday[weekday];
-      }
-    }
+// 1️⃣ Festival based (अगर festival मिला हो)
+if (festivalList.length > 0 && festivalList[0] !== "कोई विशेष व्रत नहीं") {
+  const fest = festivalList[0];
+  if (dharmikMessages.festival[fest]) {
+    dharmikMessage = dharmikMessages.festival[fest];
+  }
+}
+
+// 2️⃣ Masa based (तिथि fail होने पर भी काम करेगा)
+else if (dharmikMessages.masa[masa]) {
+  dharmikMessage = dharmikMessages.masa[masa];
+}
+
+// 3️⃣ Weekday based (हर दिन अलग)
+else {
+  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
+  if (dharmikMessages.weekday[weekday]) {
+    dharmikMessage = dharmikMessages.weekday[weekday];
+  }
+}
 
     // ===============================
     // FINAL RESPONSE
