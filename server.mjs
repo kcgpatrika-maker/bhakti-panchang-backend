@@ -23,27 +23,31 @@ let dailyPanchangCache = {
 };
 
 // ===============================
-// TITHI FORMULA FALLBACK
+// TITHI FORMULA FALLBACK (SAFE)
 // ===============================
 function getTithiByMoonFormula(date) {
-  const knownNewMoon = new Date("2024-01-11T11:57:00Z"); // reference
-  const diffMs = date - knownNewMoon;
-  const days = diffMs / (1000 * 60 * 60 * 24);
+  const REF_AMAVASYA = new Date("2025-12-30T00:00:00Z");
+  const LUNAR_DAYS = 29.530588;
 
-  const moonAge = ((days % 29.53) + 29.53) % 29.53;
-  const tithiIndex = Math.floor(moonAge / 0.984) + 1;
+  const diffDays =
+    (date - REF_AMAVASYA) / (1000 * 60 * 60 * 24);
 
-  const tithiNames = [
-    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
-    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
-    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
-    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
+  let lunarDay =
+    Math.floor((diffDays % LUNAR_DAYS + LUNAR_DAYS) % LUNAR_DAYS) + 1;
+
+  const TITHI_NAMES = [
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
+    "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
+    "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
+    "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
+    "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
   ];
 
-  const tithi = tithiNames[tithiIndex - 1] || "—";
-  const paksha = tithiIndex <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-
-  return { tithi, paksha };
+  return {
+    tithi: TITHI_NAMES[lunarDay - 1],
+    paksha: lunarDay <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष"
+  };
 }
 
 // ===============================
@@ -75,7 +79,7 @@ app.get("/api/panchang", async (req, res) => {
 
     let tithiData = getTithiFromTable(today);
 
-    // 👉 FALLBACK if table fails
+    // 🔁 FALLBACK (GUARANTEED TITHI)
     if (!tithiData || !tithiData.tithi || !tithiData.paksha) {
       tithiData = getTithiByMoonFormula(today);
     }
@@ -102,30 +106,23 @@ app.get("/api/panchang", async (req, res) => {
     }
 
     // ===============================
-// DHARMIK MESSAGE LOGIC (STEP-J)
-// ===============================
-let dharmikMessage = dharmikMessages.default;
+    // DHARMIK MESSAGE (STEP-J FIXED)
+    // ===============================
+    let dharmikMessage = dharmikMessages.default;
 
-// 1️⃣ Festival based (अगर festival मिला हो)
-if (festivalList.length > 0 && festivalList[0] !== "कोई विशेष व्रत नहीं") {
-  const fest = festivalList[0];
-  if (dharmikMessages.festival[fest]) {
-    dharmikMessage = dharmikMessages.festival[fest];
-  }
-}
-
-// 2️⃣ Masa based (तिथि fail होने पर भी काम करेगा)
-else if (dharmikMessages.masa && dharmikMessages.masa[masa]) {
-  dharmikMessage = dharmikMessages.masa[masa];
-}
-
-// 3️⃣ Weekday based (हर दिन अलग)
-else {
-  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-  if (dharmikMessages.weekday[weekday]) {
-    dharmikMessage = dharmikMessages.weekday[weekday];
-  }
-}
+    const festKey = `${masa} | ${tithiData.tithi}`;
+    if (dharmikMessages.festival[festKey]) {
+      dharmikMessage = dharmikMessages.festival[festKey];
+    } 
+    else if (dharmikMessages.tithi[tithiData.tithi]) {
+      dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
+    } 
+    else {
+      const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
+      if (dharmikMessages.weekday[weekday]) {
+        dharmikMessage = dharmikMessages.weekday[weekday];
+      }
+    }
 
     // ===============================
     // FINAL RESPONSE
@@ -149,8 +146,8 @@ else {
       paksha: tithiData.paksha,
       tithi: tithiData.tithi,
       dharmikMessage,
-      source: freePanchang.note ?? "Free source",
-      festivalList
+      festivalList,
+      source: freePanchang.note ?? "Free source"
     };
 
     // SAVE CACHE
