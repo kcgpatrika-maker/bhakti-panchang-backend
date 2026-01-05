@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
+import { getTithiFromMoon } from "./data/astronomy/tithiFromMoon.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
@@ -61,7 +62,7 @@ app.get("/api/panchang", async (req, res) => {
     const samvat = getSamvat(today);
     const masa = getMasa(today);
 
-    const tithiData = getTithiByMoonFormula(today);
+    const tithiData = getTithiFromMoon(today);
 
     if (!tithiData?.tithi || !tithiData?.paksha) {
       tithiData = getTithiByMoonFormula(today);
