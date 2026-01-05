@@ -78,6 +78,30 @@ app.get("/api/panchang", async (req, res) => {
       festivalList = ["कोई विशेष व्रत नहीं"];
     }
 
+// ===============================
+// DHARMIK MESSAGE LOGIC
+// ===============================
+let dharmikMessage = dharmikMessages.default;
+
+// 1️⃣ Festival priority
+const festivalKey = `${masa} | ${tithiData.tithi}`;
+if (dharmikMessages.festival[festivalKey]) {
+  dharmikMessage = dharmikMessages.festival[festivalKey];
+}
+
+// 2️⃣ Tithi priority
+else if (dharmikMessages.tithi[tithiData.tithi]) {
+  dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
+}
+
+// 3️⃣ Weekday fallback
+else {
+  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
+  if (dharmikMessages.weekday[weekday]) {
+    dharmikMessage = dharmikMessages.weekday[weekday];
+  }
+}
+
     // ===============================
     // FINAL RESPONSE OBJECT
     // ===============================
@@ -103,29 +127,6 @@ app.get("/api/panchang", async (req, res) => {
       source: freePanchang.note ?? "Free source",
       festivalList
     };
-// ===============================
-// DHARMIK MESSAGE LOGIC
-// ===============================
-let dharmikMessage = dharmikMessages.default;
-
-// 1️⃣ Festival priority
-const festivalKey = `${masa} | ${tithiData.tithi}`;
-if (dharmikMessages.festival[festivalKey]) {
-  dharmikMessage = dharmikMessages.festival[festivalKey];
-}
-
-// 2️⃣ Tithi priority
-else if (dharmikMessages.tithi[tithiData.tithi]) {
-  dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-}
-
-// 3️⃣ Weekday fallback
-else {
-  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-  if (dharmikMessages.weekday[weekday]) {
-    dharmikMessage = dharmikMessages.weekday[weekday];
-  }
-}
 
     // ===============================
     // SAVE TO CACHE
