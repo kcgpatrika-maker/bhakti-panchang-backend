@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 
-import { getPanchangFromFreeSource } from "./data/freePanchangSource.js";
+import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
@@ -57,7 +57,7 @@ app.get("/api/panchang", async (req, res) => {
       return res.json(dailyPanchangCache.data);
     }
 
-    const freePanchang = await getPanchangFromFreeSource();
+    const astro = getSunMoonData(today);
     const samvat = getSamvat(today);
     const masa = getMasa(today);
 
@@ -109,10 +109,10 @@ app.get("/api/panchang", async (req, res) => {
         year: "numeric"
       }),
       weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
-      sunrise: freePanchang.sunrise ?? "—",
-      sunset: freePanchang.sunset ?? "—",
-      moonrise: freePanchang.moonrise ?? "—",
-      moonset: freePanchang.moonset ?? "—",
+      sunrise: astro.sunrise,
+      sunset: astro.sunset,
+      moonrise: astro.moonrise,
+      moonset: astro.moonset,
       vikram_samvat: samvat.vikram_samvat,
       shak_samvat: samvat.shak_samvat,
       masa,
@@ -120,7 +120,7 @@ app.get("/api/panchang", async (req, res) => {
       tithi: tithiData.tithi,
       dharmikMessage,
       festivalList,
-      source: freePanchang.note ?? "Free source"
+      source: astro.source,
     };
 
     dailyPanchangCache = { dateKey: todayKey, data: responseData };
