@@ -61,7 +61,7 @@ app.get("/api/panchang", async (req, res) => {
     const samvat = getSamvat(today);
     const masa = getMasa(today);
 
-    let tithiData = getTithiFromTable(today);
+    const tithiData = getTithiByMoonFormula(today);
 
     if (!tithiData?.tithi || !tithiData?.paksha) {
       tithiData = getTithiByMoonFormula(today);
