@@ -15,12 +15,36 @@ app.use(express.json());
 const PORT = process.env.PORT || 10000;
 
 // ===============================
-// PANCHANG DAILY CACHE
+// DAILY CACHE
 // ===============================
 let dailyPanchangCache = {
   dateKey: null,
   data: null
 };
+
+// ===============================
+// TITHI FORMULA FALLBACK
+// ===============================
+function getTithiByMoonFormula(date) {
+  const knownNewMoon = new Date("2024-01-11T11:57:00Z"); // reference
+  const diffMs = date - knownNewMoon;
+  const days = diffMs / (1000 * 60 * 60 * 24);
+
+  const moonAge = ((days % 29.53) + 29.53) % 29.53;
+  const tithiIndex = Math.floor(moonAge / 0.984) + 1;
+
+  const tithiNames = [
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
+  ];
+
+  const tithi = tithiNames[tithiIndex - 1] || "—";
+  const paksha = tithiIndex <= 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
+
+  return { tithi, paksha };
+}
 
 // ===============================
 // HEALTH CHECK
@@ -35,7 +59,7 @@ app.get("/", (req, res) => {
 app.get("/api/panchang", async (req, res) => {
   try {
     const today = new Date();
-    const todayKey = today.toISOString().slice(0, 10); // YYYY-MM-DD
+    const todayKey = today.toISOString().slice(0, 10);
 
     // ✅ CACHE HIT
     if (dailyPanchangCache.dateKey === todayKey) {
@@ -46,9 +70,15 @@ app.get("/api/panchang", async (req, res) => {
     // DATA SOURCES
     // ===============================
     const freePanchang = await getPanchangFromFreeSource();
-    const tithiData = getTithiFromTable(today);
     const samvat = getSamvat(today);
     const masa = getMasa(today);
+
+    let tithiData = getTithiFromTable(today);
+
+    // 👉 FALLBACK if table fails
+    if (!tithiData || !tithiData.tithi || !tithiData.paksha) {
+      tithiData = getTithiByMoonFormula(today);
+    }
 
     // ===============================
     // FESTIVAL LOGIC
@@ -68,42 +98,28 @@ app.get("/api/panchang", async (req, res) => {
     }
 
     if (festivalList.length === 0) {
-      const simpleKey = `${masa} | ${tithiData.tithi}`;
-      if (tithiEventsMap[simpleKey]) {
-        festivalList = tithiEventsMap[simpleKey];
-      }
-    }
-
-    if (festivalList.length === 0) {
       festivalList = ["कोई विशेष व्रत नहीं"];
     }
 
-// ===============================
-// DHARMIK MESSAGE LOGIC
-// ===============================
-let dharmikMessage = dharmikMessages.default;
+    // ===============================
+    // DHARMIK MESSAGE
+    // ===============================
+    let dharmikMessage = dharmikMessages.default;
 
-// 1️⃣ Festival priority
-const festivalKey = `${masa} | ${tithiData.tithi}`;
-if (dharmikMessages.festival?.[festivalKey]) {
-  dharmikMessage = dharmikMessages.festival[festivalKey];
-}
-
-// 2️⃣ Tithi priority
-else if (dharmikMessages.tithi?.[tithiData.tithi]) {
-  dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-}
-
-// 3️⃣ Weekday fallback
-else {
-  const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-  if (dharmikMessages.weekday?.[weekday]) {
-    dharmikMessage = dharmikMessages.weekday[weekday];
-  }
-}
+    const festivalKey = `${masa} | ${tithiData.tithi}`;
+    if (dharmikMessages.festival[festivalKey]) {
+      dharmikMessage = dharmikMessages.festival[festivalKey];
+    } else if (dharmikMessages.tithi[tithiData.tithi]) {
+      dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
+    } else {
+      const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
+      if (dharmikMessages.weekday[weekday]) {
+        dharmikMessage = dharmikMessages.weekday[weekday];
+      }
+    }
 
     // ===============================
-    // FINAL RESPONSE OBJECT
+    // FINAL RESPONSE
     // ===============================
     const responseData = {
       date: today.toLocaleDateString("hi-IN", {
@@ -128,15 +144,10 @@ else {
       festivalList
     };
 
-    // ===============================
-    // SAVE TO CACHE
-    // ===============================
+    // SAVE CACHE
     dailyPanchangCache.dateKey = todayKey;
     dailyPanchangCache.data = responseData;
 
-    // ===============================
-    // RESPONSE
-    // ===============================
     res.json(responseData);
 
   } catch (err) {
