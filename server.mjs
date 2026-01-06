@@ -51,100 +51,111 @@ function getTithiByMoonFormula(date) {
 // ===============================
 // PANCHANG DATA (STEP-K-10 FINAL)
 // ===============================
-let panchang = null;
+app.get("/api/panchang", async (req, res) => {
+  try {
+    const today = new Date();
+    const todayKey = today.toISOString().slice(0, 10);
 
-// 1️⃣ TRY: Drik Panchang (Auto / Free / Long-term)
-try {
-  panchang = await getDrikPanchang(today);
-} catch (e) {
-  console.log("Drik Panchang failed, fallback…");
-}
+    // CACHE
+    if (dailyPanchangCache.dateKey === todayKey) {
+      return res.json(dailyPanchangCache.data);
+    }
 
-// 2️⃣ FALLBACK: PAC / Astronomy
-if (!panchang || panchang.tithi === "—") {
-  const astro = getSunMoonData(today);
-  const moonData = getMoonRiseSet(today);
-  const tithiMoon = getTithiFromMoon(today);
+    const samvat = getSamvat(today);
+    const masa = getMasa(today);
 
-  panchang = {
-    sunrise: astro.sunrise,
-    sunset: astro.sunset,
-    moonrise: moonData.moonrise,
-    moonset: moonData.moonset,
-    tithi: tithiMoon.tithi,
-    paksha: tithiMoon.paksha,
-    masa,
-    source: "Sun & Moon: PAC (Fallback)"
-  };
-}
+    /* ===============================
+       PANCHANG DATA (STEP-K-10 FINAL)
+    ================================ */
+    let panchang = null;
 
-// 3️⃣ FINAL SAFETY: Formula
-if (!panchang.tithi || !panchang.paksha) {
-  const safe = getTithiByMoonFormula(today);
-  panchang.tithi = safe.tithi;
-  panchang.paksha = safe.paksha;
-  panchang.source += " + Formula";
-}
+    // 1️⃣ TRY: Drik Panchang
+    try {
+      panchang = await getDrikPanchang(today);
+    } catch (e) {
+      console.log("Drik Panchang failed, fallback…");
+    }
+
+    // 2️⃣ FALLBACK: PAC
+    if (!panchang || !panchang.tithi) {
+      const astro = getSunMoonData(today);
+      const moon = getMoonRiseSet(today);
+      const tithiMoon = getTithiFromMoon(today);
+
+      panchang = {
+        sunrise: astro.sunrise,
+        sunset: astro.sunset,
+        moonrise: moon.moonrise,
+        moonset: moon.moonset,
+        tithi: tithiMoon.tithi,
+        paksha: tithiMoon.paksha,
+        masa,
+        source: "Sun & Moon: PAC (Fallback)"
+      };
+    }
+
+    // 3️⃣ FINAL SAFETY
+    if (!panchang.tithi || !panchang.paksha) {
+      const safe = getTithiByMoonFormula(today);
+      panchang.tithi = safe.tithi;
+      panchang.paksha = safe.paksha;
+      panchang.source += " + Formula";
+    }
+
     /* ===============================
        FESTIVAL
     ================================ */
     let festivalList = [];
-
-    const festKey = `${masa} | ${tithiData.tithi}`;
+    const festKey = `${masa} | ${panchang.tithi}`;
     if (tithiEventsMap[festKey]) {
       festivalList = tithiEventsMap[festKey];
     }
-
     if (festivalList.length === 0) {
       festivalList = ["कोई विशेष व्रत नहीं"];
     }
 
     /* ===============================
-       DHARMIK MESSAGE (FINAL FIX)
+       DHARMIK MESSAGE
     ================================ */
     let dharmikMessage = dharmikMessages.default;
 
-    // Festival priority
-    const msgKey = `${masa} | ${tithiData.tithi}`;
-    if (dharmikMessages.festival[msgKey]) {
-      dharmikMessage = dharmikMessages.festival[msgKey];
-    }
-    // Tithi
-    else if (dharmikMessages.tithi[tithiData.tithi]) {
-      dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-    }
-    // Weekday
-    else {
+    if (dharmikMessages.festival[festKey]) {
+      dharmikMessage = dharmikMessages.festival[festKey];
+    } else if (dharmikMessages.tithi[panchang.tithi]) {
+      dharmikMessage = dharmikMessages.tithi[panchang.tithi];
+    } else {
       const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
       dharmikMessage =
         dharmikMessages.weekday[weekday] ?? dharmikMessages.default;
     }
 
+    /* ===============================
+       RESPONSE
+    ================================ */
     const responseData = {
-  date: today.toLocaleDateString("hi-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric"
-  }),
-  weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
+      date: today.toLocaleDateString("hi-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }),
+      weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
 
-  sunrise: panchang.sunrise,
-  sunset: panchang.sunset,
-  moonrise: panchang.moonrise,
-  moonset: panchang.moonset,
+      sunrise: panchang.sunrise,
+      sunset: panchang.sunset,
+      moonrise: panchang.moonrise,
+      moonset: panchang.moonset,
 
-  vikram_samvat: samvat.vikram_samvat,
-  shak_samvat: samvat.shak_samvat,
+      vikram_samvat: samvat.vikram_samvat,
+      shak_samvat: samvat.shak_samvat,
 
-  masa: panchang.masa ?? masa,
-  paksha: panchang.paksha,
-  tithi: panchang.tithi,
+      masa: panchang.masa ?? masa,
+      paksha: panchang.paksha,
+      tithi: panchang.tithi,
 
-  dharmikMessage,
-  festivalList,
-
-  source: panchang.source
-};
+      dharmikMessage,
+      festivalList,
+      source: panchang.source
+    };
 
     dailyPanchangCache = { dateKey: todayKey, data: responseData };
     res.json(responseData);
