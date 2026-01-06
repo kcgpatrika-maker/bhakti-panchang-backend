@@ -29,8 +29,8 @@ app.get("/api/panchang", async (req, res) => {
     const drikDate = `${dd}/${mm}/${yyyy}`;
 
     const url =
-      `https://www.drikpanchang.com/panchang/day-panchang.html?date=${drikDate}`;
-
+  `https://www.drikpanchang.com/panchang/jaipur-panchang.html?date=${drikDate}`;
+     
     const response = await fetch(url, {
       headers: {
         "User-Agent": "Mozilla/5.0"
