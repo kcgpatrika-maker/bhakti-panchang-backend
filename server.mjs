@@ -1,14 +1,28 @@
 import express from "express";
 import cors from "cors";
+import * as cheerio from "cheerio";
 
-const router = express.Router();
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-router.get("/api/panchang", async (req, res) => {
+const PORT = process.env.PORT || 10000;
+
+/* ===============================
+   HEALTH CHECK
+================================ */
+app.get("/", (req, res) => {
+  res.send("Bhakti Panchang backend running");
+});
+
+/* ===============================
+   PANCHANG API (STEP-L-1)
+================================ */
+app.get("/api/panchang", async (req, res) => {
   try {
-    // YYYY-MM-DD expected
     const dateParam = req.query.date;
     if (!dateParam) {
-      return res.status(400).json({ error: "date required (YYYY-MM-DD)" });
+      return res.status(400).json({ error: "date required YYYY-MM-DD" });
     }
 
     const [yyyy, mm, dd] = dateParam.split("-");
@@ -19,57 +33,41 @@ router.get("/api/panchang", async (req, res) => {
 
     const response = await fetch(url, {
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        "User-Agent": "Mozilla/5.0"
       }
     });
-
-    if (!response.ok) {
-      return res.status(502).json({ error: "Failed to fetch Drik Panchang" });
-    }
 
     const html = await response.text();
     const $ = cheerio.load(html);
 
-    const rawPanchang = {};
+    const raw = {};
 
-    $("table").each((_, table) => {
-      $(table)
-        .find("tr")
-        .each((__, row) => {
-          const cols = $(row).find("td");
-          if (cols.length === 2) {
-            const key = $(cols[0]).text().trim();
-            const value = $(cols[1]).text().trim();
+    $("table tr").each((_, row) => {
+      const cols = $(row).find("td");
+      if (cols.length === 2) {
+        const key = $(cols[0]).text().trim();
+        const value = $(cols[1]).text().trim();
 
-            if (
-              key &&
-              value &&
-              /Day|Tithi|Paksha|Masa|Samvat|Sunrise|Sunset|Moonrise|Moonset/i.test(
-                key
-              )
-            ) {
-              rawPanchang[key] = value;
-            }
-          }
-        });
+        if (key && value) {
+          raw[key] = value;
+        }
+      }
     });
-
-    if (Object.keys(rawPanchang).length === 0) {
-      return res
-        .status(500)
-        .json({ error: "Panchang section not found" });
-    }
 
     res.json({
       source: "drikpanchang.com",
       date: dateParam,
-      panchang_raw: rawPanchang
+      panchang_raw: raw
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Internal server error" });
+
+  } catch (e) {
+    res.status(500).json({ error: "failed" });
   }
 });
 
-export default router;
+/* ===============================
+   START SERVER
+================================ */
+app.listen(PORT, () => {
+  console.log("Server running on", PORT);
+});
