@@ -3,6 +3,7 @@ import cors from "cors";
 
 import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
 import { getTithiFromMoon } from "./data/astronomy/tithiFromMoon.js";
+import { getMoonRiseSet } from "./data/astronomy/moonRiseSet.js";
 import { tithiEventsMap } from "./data/tithiEvents.js";
 import { getTithiFromTable } from "./data/tithiFromTable.js";
 import { getSamvat } from "./data/samvatCalculator.js";
@@ -61,6 +62,7 @@ app.get("/api/panchang", async (req, res) => {
     const astro = getSunMoonData(today);
     const samvat = getSamvat(today);
     const masa = getMasa(today);
+    const moonData = getMoonRiseSet(today);
 
     const tithiData = getTithiFromMoon(today);
 
@@ -112,8 +114,8 @@ app.get("/api/panchang", async (req, res) => {
       weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
       sunrise: astro.sunrise,
       sunset: astro.sunset,
-      moonrise: astro.moonrise,
-      moonset: astro.moonset,
+      moonrise: moonData.moonrise,
+      moonset: moonData.moonset,
       vikram_samvat: samvat.vikram_samvat,
       shak_samvat: samvat.shak_samvat,
       masa,
@@ -121,7 +123,7 @@ app.get("/api/panchang", async (req, res) => {
       tithi: tithiData.tithi,
       dharmikMessage,
       festivalList,
-      source: astro.source,
+      source: "Sun: PAC | Moon: PAC-based model",
     };
 
     dailyPanchangCache = { dateKey: todayKey, data: responseData };
