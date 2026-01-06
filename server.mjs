@@ -42,15 +42,18 @@ app.get("/api/panchang", async (req, res) => {
 
     const raw = {};
 
-    $("table tr").each((_, row) => {
-      const th = $(row).find("th");
-      const td = $(row).find("td");
-      if (th.length === 1 && td.length === 1) {
-        const key = th.text().trim();
-        const value = td.text().trim();
-        if (key && value) raw[key] = value;
-        }
-      });
+$("dl").each((_, dl) => {
+  const dts = $(dl).find("dt");
+  const dds = $(dl).find("dd");
+
+  dts.each((i, dt) => {
+    const key = $(dt).text().trim();
+    const value = $(dds[i]).text().trim();
+    if (key && value) {
+      raw[key] = value;
+    }
+  });
+});
     
     res.json({
       source: "drikpanchang.com",
