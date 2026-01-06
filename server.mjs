@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 
+import { getDrikPanchang } from "./data/drik/drikFetcher.js";
 import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
 import { getTithiFromMoon } from "./data/astronomy/tithiFromMoon.js";
 import { getMoonRiseSet } from "./data/astronomy/moonRiseSet.js";
@@ -47,29 +48,43 @@ function getTithiByMoonFormula(date) {
   return { tithi, paksha };
 }
 
-/* ===============================
-   API
-================================ */
-app.get("/api/panchang", async (req, res) => {
-  try {
-    const today = new Date();
-    const todayKey = today.toISOString().slice(0, 10);
+// ===============================
+// PANCHANG DATA (STEP-K-10 FINAL)
+// ===============================
+let panchang = null;
 
-    if (dailyPanchangCache.dateKey === todayKey) {
-      return res.json(dailyPanchangCache.data);
-    }
+// 1️⃣ TRY: Drik Panchang (Auto / Free / Long-term)
+try {
+  panchang = await getDrikPanchang(today);
+} catch (e) {
+  console.log("Drik Panchang failed, fallback…");
+}
 
-    const astro = getSunMoonData(today);
-    const samvat = getSamvat(today);
-    const masa = getMasa(today);
-    const moonData = getMoonRiseSet(today);
+// 2️⃣ FALLBACK: PAC / Astronomy
+if (!panchang || panchang.tithi === "—") {
+  const astro = getSunMoonData(today);
+  const moonData = getMoonRiseSet(today);
+  const tithiMoon = getTithiFromMoon(today);
 
-    const tithiData = getTithiFromMoon(today);
+  panchang = {
+    sunrise: astro.sunrise,
+    sunset: astro.sunset,
+    moonrise: moonData.moonrise,
+    moonset: moonData.moonset,
+    tithi: tithiMoon.tithi,
+    paksha: tithiMoon.paksha,
+    masa,
+    source: "Sun & Moon: PAC (Fallback)"
+  };
+}
 
-    if (!tithiData?.tithi || !tithiData?.paksha) {
-      tithiData = getTithiByMoonFormula(today);
-    }
-
+// 3️⃣ FINAL SAFETY: Formula
+if (!panchang.tithi || !panchang.paksha) {
+  const safe = getTithiByMoonFormula(today);
+  panchang.tithi = safe.tithi;
+  panchang.paksha = safe.paksha;
+  panchang.source += " + Formula";
+}
     /* ===============================
        FESTIVAL
     ================================ */
@@ -106,25 +121,30 @@ app.get("/api/panchang", async (req, res) => {
     }
 
     const responseData = {
-      date: today.toLocaleDateString("hi-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      }),
-      weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
-      sunrise: astro.sunrise,
-      sunset: astro.sunset,
-      moonrise: moonData.moonrise,
-      moonset: moonData.moonset,
-      vikram_samvat: samvat.vikram_samvat,
-      shak_samvat: samvat.shak_samvat,
-      masa,
-      paksha: tithiData.paksha,
-      tithi: tithiData.tithi,
-      dharmikMessage,
-      festivalList,
-      source: "Sun: PAC | Moon: PAC-based model",
-    };
+  date: today.toLocaleDateString("hi-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric"
+  }),
+  weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
+
+  sunrise: panchang.sunrise,
+  sunset: panchang.sunset,
+  moonrise: panchang.moonrise,
+  moonset: panchang.moonset,
+
+  vikram_samvat: samvat.vikram_samvat,
+  shak_samvat: samvat.shak_samvat,
+
+  masa: panchang.masa ?? masa,
+  paksha: panchang.paksha,
+  tithi: panchang.tithi,
+
+  dharmikMessage,
+  festivalList,
+
+  source: panchang.source
+};
 
     dailyPanchangCache = { dateKey: todayKey, data: responseData };
     res.json(responseData);
