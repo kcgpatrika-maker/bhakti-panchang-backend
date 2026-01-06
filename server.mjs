@@ -1,5 +1,5 @@
 import express from "express";
-import * as cheerio from "cheerio";
+import cors from "cors";
 
 const router = express.Router();
 
