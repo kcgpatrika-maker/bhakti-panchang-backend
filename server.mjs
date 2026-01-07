@@ -40,6 +40,37 @@ app.post("/api/process-drik-html", (req, res) => {
         if (key && value) raw[key] = value;
       });
     });
+/* ===============================
+   STEP-L-3 : FRONTEND TEST API
+================================ */
+app.get("/api/frontend-test", async (req, res) => {
+  try {
+    // Drik Panchang test URL (Jaipur, today)
+    const testUrl =
+      "https://www.drikpanchang.com/panchang/jaipur-panchang.html";
+
+    // Frontend-style fetch (browser headers)
+    const response = await fetch(testUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/html"
+      }
+    });
+
+    const html = await response.text();
+
+    res.json({
+      success: true,
+      htmlLength: html.length,
+      sample: html.slice(0, 500)
+    });
+  } catch (e) {
+    res.status(500).json({
+      success: false,
+      error: e.message
+    });
+  }
+});
 
     res.json({
       success: true,
