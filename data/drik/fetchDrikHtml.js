@@ -1,4 +1,5 @@
 // data/drik/fetchDrikHtml.js
+import fetch from "node-fetch";
 
 export async function fetchDrikHtml() {
   const url = "https://www.drikpanchang.com/panchang/day-panchang.html";
@@ -7,14 +8,14 @@ export async function fetchDrikHtml() {
     headers: {
       "User-Agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120",
-      "Accept-Language": "hi-IN,hi;q=0.9,en-US;q=0.8,en;q=0.7"
+      "Accept-Language": "hi-IN,hi;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Referer": "https://www.drikpanchang.com/"
     }
   });
 
   if (!res.ok) {
-    throw new Error("Drik Panchang fetch failed");
+    throw new Error("Drik Panchang fetch failed: " + res.status);
   }
 
-  const html = await res.text();
-  return html;
+  return await res.text();
 }
