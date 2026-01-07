@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as cheerio from "cheerio";
+import { fetchDrikHtml } from "./data/drik/fetchDrikHtml.js";
 
 const app = express();
 app.use(cors());
@@ -18,6 +19,14 @@ app.get("/", (req, res) => {
 /* ===============================
    PANCHANG API (STEP-L-1)
 ================================ */
+app.get("/api/test-drik", async (req, res) => {
+  try {
+    const html = await fetchDrikHtml();
+    res.send(html.slice(0, 2000)); // first 2000 chars only
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.get("/api/panchang", async (req, res) => {
   try {
     const dateParam = req.query.date;
