@@ -1,5 +1,4 @@
 // data/drik/fetchDrikHtml.js
-import fetch from "node-fetch";
 
 export async function fetchDrikHtml() {
   const url = "https://www.drikpanchang.com/panchang/day-panchang.html";
