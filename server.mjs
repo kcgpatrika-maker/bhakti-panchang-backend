@@ -1,178 +1,140 @@
 import express from "express";
-import cors from "cors";
-
-// Astronomy (PAC-based, offline)
-import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
-import { getTithiFromMoon } from "./data/astronomy/tithiFromMoon.js";
-
-// Panchang logic
-import { tithiEventsMap } from "./data/tithiEvents.js";
-import { getSamvat } from "./data/samvatCalculator.js";
-import { getMasa } from "./data/masaCalculator.js";
-import { dharmikMessages } from "./data/dharmikMessages.js";
 
 const app = express();
-app.use(cors());
-app.use(express.json());
-
 const PORT = process.env.PORT || 10000;
 
 /* ===============================
-   DAILY CACHE (per date)
+   BASIC APP
 ================================ */
-let dailyPanchangCache = {
-  dateKey: null,
-  data: null
-};
+app.use(express.json());
 
-/* ===============================
-   TITHI FALLBACK (MOON AGE)
-================================ */
-function getTithiByMoonFormula(date) {
-  const knownNewMoon = new Date("2024-01-11T11:57:00Z");
-  const diffDays = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
-
-  const moonAge = ((diffDays % 29.53) + 29.53) % 29.53;
-  const index = Math.floor(moonAge / 0.984) + 1;
-
-  const names = [
-    "à¤ªà¥�à¤°à¤¤à¤¿à¤ªà¤¦à¤¾","à¤¦à¥�à¤µà¤¿à¤¤à¥€à¤¯à¤¾","à¤¤à¥ƒà¤¤à¥€à¤¯à¤¾","à¤šà¤¤à¥�à¤°à¥�à¤¥à¥€","à¤ªà¤‚à¤šà¤®à¥€","à¤·à¤·à¥�à¤ à¥€","à¤¸à¤ªà¥�à¤¤à¤®à¥€",
-    "à¤…à¤·à¥�à¤Ÿà¤®à¥€","à¤¨à¤µà¤®à¥€","à¤¦à¤¶à¤®à¥€","à¤�à¤•à¤¾à¤¦à¤¶à¥€","à¤¦à¥�à¤µà¤¾à¤¦à¤¶à¥€","à¤¤à¥�à¤°à¤¯à¥‹à¤¦à¤¶à¥€","à¤šà¤¤à¥�à¤°à¥�à¤¦à¤¶à¥€","à¤ªà¥‚à¤°à¥�à¤£à¤¿à¤®à¤¾",
-    "à¤ªà¥�à¤°à¤¤à¤¿à¤ªà¤¦à¤¾","à¤¦à¥�à¤µà¤¿à¤¤à¥€à¤¯à¤¾","à¤¤à¥ƒà¤¤à¥€à¤¯à¤¾","à¤šà¤¤à¥�à¤°à¥�à¤¥à¥€","à¤ªà¤‚à¤šà¤®à¥€","à¤·à¤·à¥�à¤ à¥€","à¤¸à¤ªà¥�à¤¤à¤®à¥€",
-    "à¤…à¤·à¥�à¤Ÿà¤®à¥€","à¤¨à¤µà¤®à¥€","à¤¦à¤¶à¤®à¥€","à¤�à¤•à¤¾à¤¦à¤¶à¥€","à¤¦à¥�à¤µà¤¾à¤¦à¤¶à¥€","à¤¤à¥�à¤°à¤¯à¥‹à¤¦à¤¶à¥€","à¤šà¤¤à¥�à¤°à¥�à¤¦à¤¶à¥€","à¤…à¤®à¤¾à¤µà¤¸à¥�à¤¯à¤¾"
-  ];
-
-  const tithi = names[index - 1] || "â€”";
-  const paksha = index <= 15 ? "à¤¶à¥�à¤•à¥�à¤² à¤ªà¤•à¥�à¤·" : "à¤•à¥ƒà¤·à¥�à¤£ à¤ªà¤•à¥�à¤·";
-
-  return { tithi, paksha };
-}
-
-/* ===============================
-   MASA CORRECTION (AMAVASYA RULE)
-================================ */
-function correctMasa(masa, tithi, paksha) {
-  if (tithi === "à¤ªà¥�à¤°à¤¤à¤¿à¤ªà¤¦à¤¾" && paksha === "à¤¶à¥�à¤•à¥�à¤² à¤ªà¤•à¥�à¤·") {
-    const nextMasa = {
-      "à¤ªà¥Œà¤·": "à¤®à¤¾à¤˜",
-      "à¤®à¤¾à¤˜": "à¤«à¤¾à¤²à¥�à¤—à¥�à¤¨",
-      "à¤«à¤¾à¤²à¥�à¤—à¥�à¤¨": "à¤šà¥ˆà¤¤à¥�à¤°",
-      "à¤šà¥ˆà¤¤à¥�à¤°": "à¤µà¥ˆà¤¶à¤¾à¤–",
-      "à¤µà¥ˆà¤¶à¤¾à¤–": "à¤œà¥�à¤¯à¥‡à¤·à¥�à¤ ",
-      "à¤œà¥�à¤¯à¥‡à¤·à¥�à¤ ": "à¤†à¤·à¤¾à¤¢à¤¼",
-      "à¤†à¤·à¤¾à¤¢à¤¼": "à¤¶à¥�à¤°à¤¾à¤µà¤£",
-      "à¤¶à¥�à¤°à¤¾à¤µà¤£": "à¤­à¤¾à¤¦à¥�à¤°à¤ªà¤¦",
-      "à¤­à¤¾à¤¦à¥�à¤°à¤ªà¤¦": "à¤†à¤¶à¥�à¤µà¤¿à¤¨",
-      "à¤†à¤¶à¥�à¤µà¤¿à¤¨": "à¤•à¤¾à¤°à¥�à¤¤à¤¿à¤•",
-      "à¤•à¤¾à¤°à¥�à¤¤à¤¿à¤•": "à¤®à¤¾à¤°à¥�à¤—à¤¶à¥€à¤°à¥�à¤·",
-      "à¤®à¤¾à¤°à¥�à¤—à¤¶à¥€à¤°à¥�à¤·": "à¤ªà¥Œà¤·"
-    };
-    return nextMasa[masa] ?? masa;
-  }
-  return masa;
-}
-
-/* ===============================
-   HEALTH CHECK
-================================ */
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang backend running");
 });
 
 /* ===============================
-   PANCHANG API
+   CONSTANTS
 ================================ */
-app.get("/api/panchang", async (req, res) => {
+const LOCATION = "Jaipur, India";
+const SUNRISE_FIXED = "12:18 pm";
+const SUNSET_FIXED = "10:41 pm";
+
+/* ===============================
+   DATE HELPERS
+================================ */
+function getISTDate() {
+  const now = new Date();
+  return new Date(
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+  );
+}
+
+function formatDateHindi(date) {
+  return date.toLocaleDateString("hi-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    weekday: "long"
+  });
+}
+
+/* ===============================
+   SAMVAT (AUTO)
+================================ */
+function getSamvat(gDate) {
+  const year = gDate.getFullYear();
+  return {
+    vikram: year + 57,
+    shak: year - 78
+  };
+}
+
+/* ===============================
+   TITHI / PAKSHA / MAAS LOGIC
+   (Sunrise-based simplified model)
+================================ */
+const TITHI_NAMES = [
+  "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
+  "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
+  "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी"
+];
+
+const MAAS_LIST = [
+  "चैत्र","वैशाख","ज्येष्ठ","आषाढ़",
+  "श्रावण","भाद्रपद","आश्विन","कार्तिक",
+  "मार्गशीर्ष","पौष","माघ","फाल्गुन"
+];
+
+function getPanchang(date) {
+  // Reference Amavasya (fixed anchor)
+  const ref = new Date("2025-03-29T00:00:00+05:30");
+  const diffDays = Math.floor((date - ref) / (1000 * 60 * 60 * 24));
+
+  const lunarDay = ((diffDays % 30) + 30) % 30;
+
+  let paksha, tithi, maasIndex;
+
+  if (lunarDay < 15) {
+    paksha = "कृष्ण पक्ष";
+    if (lunarDay === 14) tithi = "अमावस्या";
+    else tithi = TITHI_NAMES[lunarDay];
+    maasIndex = Math.floor(diffDays / 30) % 12;
+  } else {
+    paksha = "शुक्ल पक्ष";
+    if (lunarDay === 29) tithi = "पूर्णिमा";
+    else tithi = TITHI_NAMES[lunarDay - 15];
+    maasIndex = Math.floor((diffDays + 15) / 30) % 12;
+  }
+
+  return {
+    maas: MAAS_LIST[(maasIndex + 12) % 12],
+    paksha,
+    tithi
+  };
+}
+
+/* ===============================
+   API : DAILY PANCHANG
+================================ */
+app.get("/api/panchang", (req, res) => {
   try {
-    const today = new Date();
-    const todayKey = today.toISOString().slice(0, 10);
+    const today = getISTDate();
 
-    // CACHE HIT
-    if (dailyPanchangCache.dateKey === todayKey) {
-      return res.json(dailyPanchangCache.data);
-    }
-
-    // ---- ASTRONOMY (SUN + MOON) ----
-    const astro = getSunMoonData(today);
-
-    // ---- TITHI / PAKSHA ----
-    let tithiData = getTithiFromMoon(today);
-    if (!tithiData?.tithi || !tithiData?.paksha) {
-      tithiData = getTithiByMoonFormula(today);
-    }
-
-    // ---- SAMVAT & MASA ----
     const samvat = getSamvat(today);
-    const rawMasa = getMasa(today);
-    const masa = correctMasa(rawMasa, tithiData.tithi, tithiData.paksha);
+    const panchang = getPanchang(today);
 
-    // ---- FESTIVALS ----
-    let festivalList = [];
-    const festKey = `${masa} | ${tithiData.tithi}`;
-    if (tithiEventsMap[festKey]) {
-      festivalList = tithiEventsMap[festKey];
-    }
-    if (festivalList.length === 0) {
-      festivalList = ["à¤•à¥‹à¤ˆ à¤µà¤¿à¤¶à¥‡à¤· à¤µà¥�à¤°à¤¤ à¤¨à¤¹à¥€à¤‚"];
-    }
+    res.json({
+      success: true,
+      date: formatDateHindi(today),
+      location: LOCATION,
 
-    // ---- DHARMIK MESSAGE ----
-    let dharmikMessage = dharmikMessages.default;
+      sunrise: SUNRISE_FIXED,
+      sunset: SUNSET_FIXED,
 
-    if (dharmikMessages.festival[festKey]) {
-      dharmikMessage = dharmikMessages.festival[festKey];
-    } else if (dharmikMessages.tithi[tithiData.tithi]) {
-      dharmikMessage = dharmikMessages.tithi[tithiData.tithi];
-    } else {
-      const weekday = today.toLocaleDateString("hi-IN", { weekday: "long" });
-      if (dharmikMessages.weekday[weekday]) {
-        dharmikMessage = dharmikMessages.weekday[weekday];
-      }
-    }
+      moonrise: "Auto model",
+      moonset: "Auto model",
 
-    // ---- FINAL RESPONSE ----
-    const responseData = {
-      date: today.toLocaleDateString("hi-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      }),
-      weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
+      vikram_samvat: samvat.vikram,
+      shak_samvat: samvat.shak,
 
-      sunrise: astro.sunrise,
-      sunset: astro.sunset,
-      moonrise: astro.moonrise,
-      moonset: astro.moonset,
+      maas: panchang.maas,
+      paksha: panchang.paksha,
+      tithi: panchang.tithi,
 
-      vikram_samvat: samvat.vikram_samvat,
-      shak_samvat: samvat.shak_samvat,
-
-      masa,
-      paksha: tithiData.paksha,
-      tithi: tithiData.tithi,
-
-      dharmikMessage,
-      festivalList,
-      source: astro.source
-    };
-
-    // SAVE CACHE
-    dailyPanchangCache = {
-      dateKey: todayKey,
-      data: responseData
-    };
-
-    res.json(responseData);
-
+      vrat_tyohar: "कोई विशेष व्रत नहीं",
+      source: "Sunrise-based Panchang (Simplified)"
+    });
   } catch (err) {
-    console.error("Panchang API Error:", err);
-    res.json({ success: false });
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
   }
 });
 
 /* ===============================
-   START SERVER
+   SERVER START
 ================================ */
 app.listen(PORT, () => {
-  console.log("Bhakti Panchang backend running on port", PORT);
+  console.log(`Server running on ${PORT}`);
 });
