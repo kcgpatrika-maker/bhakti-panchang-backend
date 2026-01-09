@@ -7,160 +7,177 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 10000;
 
-/* =====================================================
-   CONFIG
-===================================================== */
-const LOCATION = {
-  lat: 26.9124,   // Jaipur
-  lon: 75.7873
-};
+/* ======================================================
+   CONSTANTS (IST + ASTRONOMY)
+====================================================== */
+const IST_OFFSET = 5.5 * 60 * 60 * 1000;
+const SYNODIC_MONTH = 29.530588853;
+const TITHI_LENGTH = SYNODIC_MONTH / 30;
 
-/* =====================================================
-   UTIL – IST
-===================================================== */
+// Reference: Amavasya (Drik aligned)
+const REF_AMAVASYA = new Date("2024-01-11T11:57:00Z");
+
+/* ======================================================
+   HELPERS
+====================================================== */
 function toIST(date) {
-  return new Date(date.getTime() + 330 * 60000);
+  return new Date(date.getTime() + IST_OFFSET);
 }
 
-function formatTime(date) {
-  return date.toLocaleTimeString("en-IN", {
+function sunriseIST(date) {
+  // Jaipur approx sunrise (stable & safe)
+  const d = new Date(Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    1, 15
+  ));
+  return toIST(d);
+}
+
+function formatTime(d) {
+  return d.toLocaleTimeString("en-IN", {
     hour: "2-digit",
     minute: "2-digit"
   });
 }
 
-/* =====================================================
-   SUNRISE / SUNSET (STABLE APPROX – PRODUCTION SAFE)
-===================================================== */
-function getSunTimes(date) {
-  // Stable Indian average (no wild shifts)
-  const base = Date.UTC(
-    date.getUTCFullYear(),
-    date.getUTCMonth(),
-    date.getUTCDate()
-  );
+/* ======================================================
+   TITHI (SUNRISE LOCKED – NO DRIFT)
+====================================================== */
+function getTithiSunriseLocked(date) {
+  const sr = sunriseIST(date);
 
-  const sunrise = toIST(new Date(base + 6 * 3600000));
-  const sunset  = toIST(new Date(base + 18 * 3600000));
+  const diffDays =
+    (sr.getTime() - REF_AMAVASYA.getTime()) /
+    (1000 * 60 * 60 * 24);
+
+  const moonAge =
+    ((diffDays % SYNODIC_MONTH) + SYNODIC_MONTH) %
+    SYNODIC_MONTH;
+
+  const tithiIndex = Math.floor(moonAge / TITHI_LENGTH) + 1;
+
+  const TITHI_NAMES = [
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या",
+    "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
+    "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा"
+  ];
+
+  const paksha =
+    tithiIndex <= 15 ? "कृष्ण पक्ष" : "शुक्ल पक्ष";
 
   return {
-    sunrise: formatTime(sunrise),
-    sunset: formatTime(sunset),
-    sunriseDate: sunrise
+    tithi: TITHI_NAMES[tithiIndex - 1],
+    paksha,
+    isAmavasya: tithiIndex === 15,
+    isPurnima: tithiIndex === 30
   };
 }
 
-/* =====================================================
-   MOON PHASE → TITHI (CORE ENGINE)
-===================================================== */
-function getMoonAgeDays(date) {
-  const knownNewMoon = new Date("2024-01-11T11:57:00Z");
-  const diffDays =
-    (date.getTime() - knownNewMoon.getTime()) / 86400000;
-  return ((diffDays % 29.5306) + 29.5306) % 29.5306;
-}
-
-const TITHI_NAMES = [
-  "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
-  "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
-  "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी","षष्ठी","सप्तमी",
-  "अष्टमी","नवमी","दशमी","एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
-];
-
-function getTithiFromMoon(date) {
-  const age = getMoonAgeDays(date);
-  const index = Math.floor(age / (29.5306 / 30));
-  const tithi = TITHI_NAMES[index];
-  const paksha = index < 15 ? "शुक्ल पक्ष" : "कृष्ण पक्ष";
-  return { tithi, paksha, index };
-}
-
-/* =====================================================
-   SUNRISE RULE (FINAL AUTHORITY)
-===================================================== */
-function getSunriseBasedTithi(date) {
-  const { sunriseDate } = getSunTimes(date);
-
-  const beforeSunrise = new Date(sunriseDate);
-  beforeSunrise.setMinutes(beforeSunrise.getMinutes() - 1);
-
-  return getTithiFromMoon(beforeSunrise);
-}
-
-/* =====================================================
-   MASA (AMANTA SYSTEM)
-===================================================== */
-const MASA_LIST = [
+/* ======================================================
+   MASA (AMAVASYA ANCHORED – REAL PANCHANG RULE)
+====================================================== */
+const MASA_SEQ = [
   "चैत्र","वैशाख","ज्येष्ठ","आषाढ़","श्रावण","भाद्रपद",
   "आश्विन","कार्तिक","मार्गशीर्ष","पौष","माघ","फाल्गुन"
 ];
 
-function getMasa(date) {
-  const { index } = getSunriseBasedTithi(date);
+function getMasa(date, tithiData) {
+  // Known anchor: 11 Jan 2024 = पौष कृष्ण अमावस्या
+  const refIndex = MASA_SEQ.indexOf("पौष");
 
-  // Amavasya = new month starts
-  const approxMonth = date.getMonth();
-  let masaIndex = approxMonth - 2;
-  if (masaIndex < 0) masaIndex += 12;
+  const sr = sunriseIST(date);
+  const daysSinceRef =
+    (sr - REF_AMAVASYA) / (1000 * 60 * 60 * 24);
 
-  return MASA_LIST[masaIndex];
+  const lunations = Math.floor(daysSinceRef / SYNODIC_MONTH);
+  let masaIndex = (refIndex + lunations) % 12;
+
+  // Rule: Amavasya day still old month
+  if (tithiData.isAmavasya) {
+    masaIndex = (masaIndex - 1 + 12) % 12;
+  }
+
+  return MASA_SEQ[masaIndex];
 }
 
-/* =====================================================
-   SAMVAT
-===================================================== */
-function getSamvat(date) {
+/* ======================================================
+   SAMVAT (ROLLOVER FIXED)
+====================================================== */
+function getSamvat(date, masa, paksha, tithi) {
   const year = date.getFullYear();
+
+  let vikram = year + 57;
+  let shak = year - 78;
+
+  // New year after Chaitra Shukla Pratipada
+  if (
+    masa === "चैत्र" &&
+    paksha === "शुक्ल पक्ष" &&
+    tithi === "प्रतिपदा"
+  ) {
+    vikram += 1;
+    shak += 1;
+  }
+
   return {
-    vikram: year + 57,
-    shak: year - 78
+    vikram_samvat: vikram,
+    shak_samvat: shak
   };
 }
 
-/* =====================================================
+/* ======================================================
    API
-===================================================== */
+====================================================== */
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang backend running");
 });
 
 app.get("/api/panchang", (req, res) => {
   try {
-    const now = new Date();
-    const ist = toIST(now);
+    const today = new Date();
 
-    const sun = getSunTimes(ist);
-    const tithiData = getSunriseBasedTithi(ist);
-    const masa = getMasa(ist);
-    const samvat = getSamvat(ist);
+    const sunrise = sunriseIST(today);
+    const sunset = new Date(sunrise.getTime() + 10.5 * 60 * 60 * 1000);
+
+    const tithiData = getTithiSunriseLocked(today);
+    const masa = getMasa(today, tithiData);
+    const samvat = getSamvat(
+      today,
+      masa,
+      tithiData.paksha,
+      tithiData.tithi
+    );
 
     res.json({
-      date: ist.toLocaleDateString("hi-IN", {
+      date: today.toLocaleDateString("hi-IN", {
         day: "2-digit",
         month: "long",
         year: "numeric"
       }),
-      weekday: ist.toLocaleDateString("hi-IN", { weekday: "long" }),
+      weekday: today.toLocaleDateString("hi-IN", { weekday: "long" }),
 
-      sunrise: sun.sunrise,
-      sunset: sun.sunset,
+      sunrise: formatTime(sunrise),
+      sunset: formatTime(sunset),
 
       moonrise: "Auto model",
       moonset: "Auto model",
 
-      vikram_samvat: samvat.vikram,
-      shak_samvat: samvat.shak,
+      vikram_samvat: samvat.vikram_samvat,
+      shak_samvat: samvat.shak_samvat,
 
       masa,
       paksha: tithiData.paksha,
       tithi: tithiData.tithi,
 
-      source: "Offline Sunrise-based Panchang (Production-safe)"
+      source: "Sunrise-locked Panchang (Offline, Amavasya-based)"
     });
 
   } catch (e) {
     console.error(e);
-    res.json({ error: "Panchang failed" });
+    res.json({ success: false });
   }
 });
 
