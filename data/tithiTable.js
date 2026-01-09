@@ -13,7 +13,7 @@ export const TITHI_TABLE = {
     paksha: "शुक्ल पक्ष"
   },
   "2026-01-04": {
-    masa: "पौष",
+    masa: "माघ",
     tithi: "प्रतिपदा",
     paksha: "कृष्ण पक्ष"
   }
