@@ -1,7 +1,7 @@
 export function getSamvat(date) {
   const year = date.getFullYear();
   return {
-    vikram_samvat: year + 57,
-    shak_samvat: year - 78
+    vikram_samvat: year + 56,
+    shak_samvat: year - 77
   };
 }
