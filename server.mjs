@@ -1,140 +1,81 @@
 import express from "express";
+import cors from "cors";
+
+import { getSunMoonData } from "./data/astronomy/sunMoonCalculator.js";
+import { getTithiFromMoon } from "./data/astronomy/tithiFromMoon.js";
+import { getMasa } from "./data/masaCalculator.js";
+import { getSamvat } from "./data/samvatCalculator.js";
+import { tithiEventsMap } from "./data/tithiEvents.js";
+import { dharmikMessages } from "./data/dharmikMessages.js";
 
 const app = express();
+app.use(cors());
+app.use(express.json());
+
 const PORT = process.env.PORT || 10000;
 
-/* ===============================
-   BASIC APP
-================================ */
-app.use(express.json());
+let cache = { date: null, data: null };
 
 app.get("/", (req, res) => {
   res.send("Bhakti Panchang backend running");
 });
 
-/* ===============================
-   CONSTANTS
-================================ */
-const LOCATION = "Jaipur, India";
-const SUNRISE_FIXED = "12:18 pm";
-const SUNSET_FIXED = "10:41 pm";
-
-/* ===============================
-   DATE HELPERS
-================================ */
-function getISTDate() {
-  const now = new Date();
-  return new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
-  );
-}
-
-function formatDateHindi(date) {
-  return date.toLocaleDateString("hi-IN", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    weekday: "long"
-  });
-}
-
-/* ===============================
-   SAMVAT (AUTO)
-================================ */
-function getSamvat(gDate) {
-  const year = gDate.getFullYear();
-  return {
-    vikram: year + 57,
-    shak: year - 78
-  };
-}
-
-/* ===============================
-   TITHI / PAKSHA / MAAS LOGIC
-   (Sunrise-based simplified model)
-================================ */
-const TITHI_NAMES = [
-  "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
-  "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
-  "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी"
-];
-
-const MAAS_LIST = [
-  "चैत्र","वैशाख","ज्येष्ठ","आषाढ़",
-  "श्रावण","भाद्रपद","आश्विन","कार्तिक",
-  "मार्गशीर्ष","पौष","माघ","फाल्गुन"
-];
-
-function getPanchang(date) {
-  // Reference Amavasya (fixed anchor)
-  const ref = new Date("2025-03-29T00:00:00+05:30");
-  const diffDays = Math.floor((date - ref) / (1000 * 60 * 60 * 24));
-
-  const lunarDay = ((diffDays % 30) + 30) % 30;
-
-  let paksha, tithi, maasIndex;
-
-  if (lunarDay < 15) {
-    paksha = "कृष्ण पक्ष";
-    if (lunarDay === 14) tithi = "अमावस्या";
-    else tithi = TITHI_NAMES[lunarDay];
-    maasIndex = Math.floor(diffDays / 30) % 12;
-  } else {
-    paksha = "शुक्ल पक्ष";
-    if (lunarDay === 29) tithi = "पूर्णिमा";
-    else tithi = TITHI_NAMES[lunarDay - 15];
-    maasIndex = Math.floor((diffDays + 15) / 30) % 12;
-  }
-
-  return {
-    maas: MAAS_LIST[(maasIndex + 12) % 12],
-    paksha,
-    tithi
-  };
-}
-
-/* ===============================
-   API : DAILY PANCHANG
-================================ */
 app.get("/api/panchang", (req, res) => {
   try {
-    const today = getISTDate();
+    const now = new Date();
+    const todayKey = now.toISOString().slice(0, 10);
 
-    const samvat = getSamvat(today);
-    const panchang = getPanchang(today);
+    if (cache.date === todayKey) {
+      return res.json(cache.data);
+    }
 
-    res.json({
-      success: true,
-      date: formatDateHindi(today),
-      location: LOCATION,
+    const astro = getSunMoonData(now);
+    const { tithi, paksha } = getTithiFromMoon(now);
+    const masa = getMasa(now, tithi);
+    const samvat = getSamvat(now);
 
-      sunrise: SUNRISE_FIXED,
-      sunset: SUNSET_FIXED,
+    const festKey = `${masa} | ${tithi}`;
+    const festivalList =
+      tithiEventsMap[festKey] || ["कोई विशेष व्रत नहीं"];
 
-      moonrise: "Auto model",
-      moonset: "Auto model",
+    const weekday = now.toLocaleDateString("hi-IN", { weekday: "long" });
 
-      vikram_samvat: samvat.vikram,
-      shak_samvat: samvat.shak,
+    let dharmikMessage =
+      dharmikMessages.festival[festKey] ||
+      dharmikMessages.tithi[tithi] ||
+      dharmikMessages.weekday[weekday] ||
+      dharmikMessages.default;
 
-      maas: panchang.maas,
-      paksha: panchang.paksha,
-      tithi: panchang.tithi,
+    const response = {
+      date: now.toLocaleDateString("hi-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric"
+      }),
+      weekday,
+      sunrise: astro.sunrise,
+      sunset: astro.sunset,
+      moonrise: astro.moonrise,
+      moonset: astro.moonset,
+      vikram_samvat: samvat.vikram_samvat,
+      shak_samvat: samvat.shak_samvat,
+      masa,
+      paksha,
+      tithi,
+      dharmikMessage,
+      festivalList,
+      source: astro.source
+    };
 
-      vrat_tyohar: "कोई विशेष व्रत नहीं",
-      source: "Sunrise-based Panchang (Simplified)"
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      error: err.message
-    });
+    cache = { date: todayKey, data: response };
+    res.json(response);
+
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ success: false });
   }
 });
 
-/* ===============================
-   SERVER START
-================================ */
 app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
+  console.log("Bhakti Panchang backend running on", PORT);
 });
