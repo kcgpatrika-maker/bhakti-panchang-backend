@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-
+import { fetchProkeralaPanchang } from "./data/prokerala/fetchProkeralaPanchang.js";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -170,6 +170,14 @@ app.get("/api/panchang", (req, res) => {
   } catch (err) {
     console.error("Panchang Error:", err);
     res.json({ success: false });
+  }
+});
+app.get("/api/test-prokerala", async (req, res) => {
+  try {
+    const data = await fetchProkeralaPanchang("2026-01-10");
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
 });
 
