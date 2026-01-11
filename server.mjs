@@ -1,6 +1,6 @@
-const express = require("express");
-const cors = require("cors");
-const cheerio = require("cheerio");
+import express from "express";
+import cors from "cors";
+import cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
