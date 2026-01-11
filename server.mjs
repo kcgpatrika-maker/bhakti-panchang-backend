@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 
 const app = express();
 app.use(cors());
