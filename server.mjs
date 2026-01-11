@@ -11,8 +11,7 @@ const panchangCache = { date: null, data: null, timestamp: 0 };
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 async function fetchDrikPanchang(dateISO) {
-  const url = `https://www.drikpanchang.com/panchang/panchang/${dateISO}-panchang.html`;
-
+  const url = `https://www.drikpanchang.com/panchang/day-panchang.html?date=${dateISO}`;
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error("Drik Panchang fetch failed");
 
