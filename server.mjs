@@ -11,22 +11,23 @@ const panchangCache = { date: null, data: null, timestamp: 0 };
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 async function fetchDrikPanchang(dateISO) {
+  // सही URL format
   const url = `https://www.drikpanchang.com/panchang/day-panchang.html?date=${dateISO}`;
+
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
   if (!res.ok) throw new Error("Drik Panchang fetch failed");
 
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  function getValue(label) {
+  // Helper: label और value निकालना
+  function getValueByLabel(label) {
     let value = "—";
-    $("table tr").each((_, tr) => {
-      const tds = $(tr).find("td");
-      if (tds.length === 2) {
-        const key = $(tds[0]).text().trim();
-        if (key.includes(label)) {
-          value = $(tds[1]).text().trim();
-        }
+    $(".dpElement").each((_, el) => {
+      const key = $(el).find(".dpElementLabel").text().trim();
+      const val = $(el).find(".dpElementValue").text().trim();
+      if (key.includes(label)) {
+        value = val;
       }
     });
     return value;
@@ -34,15 +35,15 @@ async function fetchDrikPanchang(dateISO) {
 
   return {
     date: dateISO,
-    sunrise: getValue("Sunrise"),
-    sunset: getValue("Sunset"),
-    moonrise: getValue("Moonrise"),
-    moonset: getValue("Moonset"),
-    vikram_samvat: getValue("Vikram Samvat"),
-    shak_samvat: getValue("Shaka Samvat"),
-    masa: getValue("Month"),
-    paksha: getValue("Paksha"),
-    tithi: getValue("Tithi"),
+    sunrise: getValueByLabel("Sunrise"),
+    sunset: getValueByLabel("Sunset"),
+    moonrise: getValueByLabel("Moonrise"),
+    moonset: getValueByLabel("Moonset"),
+    vikram_samvat: getValueByLabel("Vikram Samvat"),
+    shak_samvat: getValueByLabel("Shaka Samvat"),
+    masa: getValueByLabel("Month"),
+    paksha: getValueByLabel("Paksha"),
+    tithi: getValueByLabel("Tithi"),
     source: "Drik Panchang (scraped)"
   };
 }
