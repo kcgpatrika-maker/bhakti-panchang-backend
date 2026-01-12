@@ -32,15 +32,21 @@ async function fetchDrikPanchang(dateISO) {
   const html = await res.text();
   const $ = cheerio.load(html);
 
+  // Direct selectors for sunrise/sunset/moonrise/moonset
+  const sunrise = $("#dpSunrise").text().trim() || getValueByLabels($, ["Sunrise", "सूर्योदय"]);
+  const sunset = $("#dpSunset").text().trim() || getValueByLabels($, ["Sunset", "सूर्यास्त"]);
+  const moonrise = $("#dpMoonrise").text().trim() || getValueByLabels($, ["Moonrise", "चंद्रोदय"]);
+  const moonset = $("#dpMoonset").text().trim() || getValueByLabels($, ["Moonset", "चंद्रास्त"]);
+
   return {
     date: dateISO,
-    sunrise: getValueByLabels($, ["Sunrise", "सूर्योदय"]),
-    sunset: getValueByLabels($, ["Sunset", "सूर्यास्त"]),
-    moonrise: getValueByLabels($, ["Moonrise", "चंद्रोदय"]),
-    moonset: getValueByLabels($, ["Moonset", "चंद्रास्त"]),
+    sunrise: sunrise || "—",
+    sunset: sunset || "—",
+    moonrise: moonrise || "—",
+    moonset: moonset || "—",
     vikram_samvat: getValueByLabels($, ["Vikram Samvat", "विक्रम संवत"]),
     shak_samvat: getValueByLabels($, ["Shaka Samvat", "शक संवत"]),
-    masa: getValueByLabels($, ["Month", "मास"]),
+    masa: getValueByLabels($, ["Month", "मास", "Chandramasa"]),
     paksha: getValueByLabels($, ["Paksha", "पक्ष"]),
     tithi: getValueByLabels($, ["Tithi", "तिथि"]),
     source: "Drik Panchang (scraped)"
