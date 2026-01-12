@@ -19,10 +19,37 @@ function formatTime(dateObj) {
   return dateObj.toTimeString().slice(0, 5); // HH:MM
 }
 
-async function fetchBasicPanchang(dateISO, lat = DEFAULT_LAT, lon = DEFAULT_LON) {
+// Demo Panchang dataset (expand later or replace with API)
+const demoPanchang = {
+  "2026-01-12": {
+    vikram_samvat: "2082",
+    shak_samvat: "1947",
+    masa: "पौष",
+    paksha: "शुक्ल",
+    tithi: "द्वितीया"
+  },
+  "2026-01-13": {
+    vikram_samvat: "2082",
+    shak_samvat: "1947",
+    masa: "पौष",
+    paksha: "शुक्ल",
+    tithi: "तृतीया"
+  }
+  // आगे और dates जोड़ सकते हो
+};
+
+async function fetchPanchang(dateISO, lat = DEFAULT_LAT, lon = DEFAULT_LON) {
   const date = new Date(dateISO);
   const times = SunCalc.getTimes(date, lat, lon);
   const moonTimes = SunCalc.getMoonTimes(date, lat, lon);
+
+  const dataset = demoPanchang[dateISO] || {
+    vikram_samvat: "—",
+    shak_samvat: "—",
+    masa: "—",
+    paksha: "—",
+    tithi: "—"
+  };
 
   return {
     date: dateISO,
@@ -30,12 +57,8 @@ async function fetchBasicPanchang(dateISO, lat = DEFAULT_LAT, lon = DEFAULT_LON)
     sunset: formatTime(times.sunset),
     moonrise: moonTimes.rise ? formatTime(moonTimes.rise) : "—",
     moonset: moonTimes.set ? formatTime(moonTimes.set) : "—",
-    vikram_samvat: "—", // Placeholder
-    shak_samvat: "—",   // Placeholder
-    masa: "—",          // Placeholder
-    paksha: "—",        // Placeholder
-    tithi: "—",         // Placeholder
-    source: "SunCalc (astronomical calculation)"
+    ...dataset,
+    source: "SunCalc + Demo Dataset"
   };
 }
 
@@ -50,7 +73,7 @@ app.get("/api/panchang", async (req, res) => {
       return res.json({ ...panchangCache.data, cached: true });
     }
 
-    const data = await fetchBasicPanchang(dateISO, lat, lon);
+    const data = await fetchPanchang(dateISO, lat, lon);
     panchangCache.date = dateISO;
     panchangCache.data = data;
     panchangCache.timestamp = now;
@@ -61,6 +84,6 @@ app.get("/api/panchang", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => res.send("Basic Panchang API running"));
+app.get("/", (req, res) => res.send("Panchang API running"));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
