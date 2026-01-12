@@ -1,5 +1,5 @@
 // data/masaCalculator.js
-// Adapter to fetch Tithi, Masa, Paksha daily with robust cleaning
+// Adapter to fetch Tithi, Masa, Paksha daily with refined Prokerala fallback
 
 function cleanText(v) {
   if (!v) return "—";
@@ -14,7 +14,7 @@ function cleanText(v) {
     .slice(0, 30);
 }
 
-// --- Primary: Panchang.click JSON API (currently not working without API key)
+// --- Primary: Panchang.click JSON API (needs API key, so usually null)
 async function fetchFromPanchangClick(dateISO) {
   try {
     const url = `https://panchang.click/panchang-api?date=${dateISO}`;
