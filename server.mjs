@@ -81,7 +81,7 @@ function getSunTimes(utcMidnight, lat, lon) {
   return { sunrise: calcTime(true), sunset: calcTime(false) };
 }
 
-// --- Moonrise/Moonset (approximation)
+// --- Moonrise/Moonset (approximation by altitude crossing)
 function getMoonTimes(utcMidnight, latDeg, lonDeg) {
   function moonCoords(ms) {
     const dDays = (ms - Date.UTC(2000, 0, 1, 12)) / 86400000;
@@ -127,25 +127,181 @@ function getMoonTimes(utcMidnight, latDeg, lonDeg) {
   return findCrossing(0);
 }
 
-// --- Samvats
+// --- Samvats (North India convention)
 function computeSamvats(localDate) {
   const y = localDate.getFullYear();
   const m = localDate.getMonth() + 1;
   const d = localDate.getDate();
   const isLeap = ((y % 4 === 0) && (y % 100 !== 0)) || (y % 400 === 0);
-  const shakaStartDay = isLeap ? 21 : 22;
+  const shakaStartDay = isLeap ? 21 : 22; // Mar 21/22
   const shak = (m > 3 || (m === 3 && d >= shakaStartDay)) ? (y - 78) : (y - 79);
   const vikram = (m >= 4) ? (y + 57) : (y + 56);
   return { vikram_samvat: String(vikram), shak_samvat: String(shak) };
 }
 
-// --- Tithi/Masa/Paksha adapter
-async function fetchTMP(dateISO) {
-  const candidates = [
+// --- Tithi/Masa/Paksha adapter (panchang.click, hinducalendar.com)
+function cleanText(v) {
+  return v ? String(v).replace(/[\s<>]+/g, " ").trim() : "—";
+}
+
+async function fetchFromPanchangClick(dateISO) {
+  const urls = [
     `https://panchang.click/panchang-api?date=${dateISO}`,
-    `https://www.hinducalendar.com/panchang/${dateISO}`
+    `https://panchang.click/panchang-widget?date=${dateISO}`
   ];
-  for (const url of candidates) {
+  for (const url of urls) {
     try {
       const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
       if (!res.ok) continue;
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("application/json")) {
+        const j = await res.json();
+        const tithi = j.tithi || j.data?.tithi || j.panchang?.tithi;
+        const masa = j.masa || j.data?.masa || j.panchang?.masa;
+        const paksha = j.paksha || j.data?.paksha || j.panchang?.paksha;
+        if (tithi || masa || paksha) {
+          return {
+            tithi: cleanText(tithi),
+            masa: cleanText(masa),
+            paksha: cleanText(paksha),
+            sourceNote: "panchang.click (JSON)"
+          };
+        }
+      } else {
+        const html = await res.text();
+        const tithi = (html.match(/Tithi\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+        const masa = (html.match(/Masa\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+        const paksha = (html.match(/Paksha\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+        if (tithi || masa || paksha) {
+          return {
+            tithi: cleanText(tithi),
+            masa: cleanText(masa),
+            paksha: cleanText(paksha),
+            sourceNote: "panchang.click (HTML)"
+          };
+        }
+      }
+    } catch {
+      // try next URL
+    }
+  }
+  return null;
+}
+
+async function fetchFromHinduCalendar(dateISO) {
+  const url = `https://www.hinducalendar.com/panchang/${dateISO}`;
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+    if (!res.ok) return null;
+    const html = await res.text();
+    // Generic patterns; may need tuning if site’s markup is different
+    const tithi = (html.match(/Tithi\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+    const masa = (html.match(/M[aā]sa\s*[:\-]\s*([^\n<]+)/i) || html.match(/Month\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+    const paksha = (html.match(/Paksha\s*[:\-]\s*([^\n<]+)/i) || [])[1];
+    if (tithi || masa || paksha) {
+      return {
+        tithi: cleanText(tithi),
+        masa: cleanText(masa),
+        paksha: cleanText(paksha),
+        sourceNote: "hinducalendar.com (HTML)"
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchTMP(dateISO) {
+  const pc = await fetchFromPanchangClick(dateISO);
+  if (pc) return pc;
+  const hc = await fetchFromHinduCalendar(dateISO);
+  if (hc) return hc;
+  return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
+}
+async function buildPanchang(dateISO, lat, lon, tz = DEFAULT_TZ) {
+  const localDate = new Date(dateISO);
+  const utcDay = new Date(Date.UTC(localDate.getFullYear(), localDate.getMonth(), localDate.getDate()));
+
+  const { sunrise, sunset } = getSunTimes(utcDay, lat, lon);
+  const { rise: moonrise, set: moonset } = getMoonTimes(utcDay, lat, lon);
+
+  const samvats = computeSamvats(localDate);
+  const tmp = await fetchTMP(dateISO);
+
+  return {
+    date: dateISO,
+    display_date: formatHindiDate(dateISO),
+    sunrise: fmtTime(sunrise, tz),
+    sunset: fmtTime(sunset, tz),
+    moonrise: fmtTime(moonrise, tz),
+    moonset: fmtTime(moonset, tz),
+    vikram_samvat: samvats.vikram_samvat,
+    shak_samvat: samvats.shak_samvat,
+    masa: tmp.masa,
+    paksha: tmp.paksha,
+    tithi: tmp.tithi,
+    source: "NOAA+moon approximation + adapter",
+    note: tmp.sourceNote
+  };
+}
+
+// --- Cache
+const cache = new Map();
+const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+
+app.get("/api/panchang", async (req, res) => {
+  try {
+    const dateISO = (req.query.date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+    const lat = req.query.lat ? parseFloat(req.query.lat) : DEFAULT_LAT;
+    const lon = req.query.lon ? parseFloat(req.query.lon) : DEFAULT_LON;
+    const tz = req.query.tz || DEFAULT_TZ;
+
+    const key = `${dateISO}:${lat}:${lon}:${tz}`;
+    const now = Date.now();
+    const cached = cache.get(key);
+    if (cached && (now - cached.ts) < CACHE_TTL) {
+      return res.json({ ...cached.data, cached: true });
+    }
+
+    const data = await buildPanchang(dateISO, lat, lon, tz);
+    cache.set(key, { ts: now, data });
+    res.json({ ...data, cached: false });
+  } catch (err) {
+    res.status(500).json({ error: "Panchang data unavailable", detail: err?.message || String(err) });
+  }
+});
+
+// Optional: formatted view for frontend
+app.get("/api/panchang/view", async (req, res) => {
+  try {
+    const dateISO = (req.query.date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+    const lat = req.query.lat ? parseFloat(req.query.lat) : DEFAULT_LAT;
+    const lon = req.query.lon ? parseFloat(req.query.lon) : DEFAULT_LON;
+    const tz = req.query.tz || DEFAULT_TZ;
+
+    const data = await buildPanchang(dateISO, lat, lon, tz);
+
+    const lines = [
+      `📅 ${dateISO} | ${data.display_date}`,
+      ``,
+      `🌅 सूर्योदय: ${data.sunrise} | 🌇 सूर्यास्त: ${data.sunset}`,
+      ``,
+      `🌙 चंद्रोदय: ${data.moonrise} | 🌑 चंद्रास्त: ${data.moonset}`,
+      ``,
+      `विक्रम संवत: ${data.vikram_samvat} | शक संवत: ${data.shak_samvat}`,
+      ``,
+      `मास: ${data.masa} | पक्ष: ${data.paksha} | तिथि: ${data.tithi}`,
+      ``,
+      `📌 स्रोत: ${data.source} (${data.note})`
+    ];
+
+    res.json({ lines, data });
+  } catch (err) {
+    res.status(500).json({ error: "View unavailable", detail: err?.message || String(err) });
+  }
+});
+
+app.get("/", (req, res) => res.send("Panchang API running (no external packages)"));
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
