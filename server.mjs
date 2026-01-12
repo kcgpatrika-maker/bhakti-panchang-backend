@@ -10,8 +10,20 @@ const PORT = process.env.PORT || 3000;
 const panchangCache = { date: null, data: null, timestamp: 0 };
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
+// Helper: bilingual label matching
+function getValueByLabels($, labels) {
+  let value = "—";
+  $(".dpElement").each((_, el) => {
+    const key = $(el).find(".dpElementLabel").text().trim();
+    const val = $(el).find(".dpElementValue").text().trim();
+    if (labels.some(l => key.includes(l))) {
+      value = val;
+    }
+  });
+  return value;
+}
+
 async function fetchDrikPanchang(dateISO) {
-  // सही URL format
   const url = `https://www.drikpanchang.com/panchang/day-panchang.html?date=${dateISO}`;
 
   const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
@@ -20,30 +32,17 @@ async function fetchDrikPanchang(dateISO) {
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  // Helper: label और value निकालना
-  function getValueByLabel($, label) {
-    let value = "—";
-    $(".dpElement").each((_, el) => {
-      const key = $(el).find(".dpElementLabel").text().trim();
-      const val = $(el).find(".dpElementValue").text().trim();
-      if (key && key.includes(label)) {
-        value = val;
-      }
-    });
-    return value;
-  }
-
   return {
     date: dateISO,
-    sunrise: getValueByLabel($, "Sunrise"),
-    sunset: getValueByLabel($, "Sunset"),
-    moonrise: getValueByLabel($, "Moonrise"),
-    moonset: getValueByLabel($, "Moonset"),
-    vikram_samvat: getValueByLabel($, "Vikram Samvat"),
-    shak_samvat: getValueByLabel($, "Shaka Samvat"),
-    masa: getValueByLabel($, "Masa"),
-    paksha: getValueByLabel($, "Paksha"),
-    tithi: getValueByLabel($, "Tithi"),
+    sunrise: getValueByLabels($, ["Sunrise", "सूर्योदय"]),
+    sunset: getValueByLabels($, ["Sunset", "सूर्यास्त"]),
+    moonrise: getValueByLabels($, ["Moonrise", "चंद्रोदय"]),
+    moonset: getValueByLabels($, ["Moonset", "चंद्रास्त"]),
+    vikram_samvat: getValueByLabels($, ["Vikram Samvat", "विक्रम संवत"]),
+    shak_samvat: getValueByLabels($, ["Shaka Samvat", "शक संवत"]),
+    masa: getValueByLabels($, ["Month", "मास"]),
+    paksha: getValueByLabels($, ["Paksha", "पक्ष"]),
+    tithi: getValueByLabels($, ["Tithi", "तिथि"]),
     source: "Drik Panchang (scraped)"
   };
 }
