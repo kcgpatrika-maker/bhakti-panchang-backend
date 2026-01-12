@@ -1,17 +1,12 @@
-// Hindu lunar month (Amavasya based)
+function cleanText(v) { return v ? String(v).trim() : "—"; }
 
-const MASA_SEQUENCE = [
-  "चैत्र","वैशाख","ज्येष्ठ","आषाढ़","श्रावण","भाद्रपद",
-  "आश्विन","कार्तिक","मार्गशीर्ष","पौष","माघ","फाल्गुन"
-];
+async function fetchFromPanchangClick(dateISO) { /* try JSON/HTML */ }
+async function fetchFromHinduCalendar(dateISO) { /* try HTML */ }
 
-export function getMasa(date, tithi) {
-  const baseMonthIndex = date.getMonth(); // rough anchor
-  let masaIndex = (baseMonthIndex + 8) % 12; // align with lunar
-
-  if (tithi === "प्रतिपदा") {
-    masaIndex = (masaIndex + 1) % 12;
-  }
-
-  return MASA_SEQUENCE[masaIndex];
+export async function fetchTMP(dateISO) {
+  const pc = await fetchFromPanchangClick(dateISO);
+  if (pc) return pc;
+  const hc = await fetchFromHinduCalendar(dateISO);
+  if (hc) return hc;
+  return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
 }
