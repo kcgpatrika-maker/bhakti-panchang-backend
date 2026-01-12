@@ -1,68 +1,56 @@
 import express from "express";
 import cors from "cors";
-import * as cheerio from "cheerio";
+import * as SunCalc from "suncalc";
 
 const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
+// Default location (Delhi, India) – आप चाहें तो latitude/longitude बदल सकते हैं
+const DEFAULT_LAT = 28.6139;
+const DEFAULT_LON = 77.2090;
+
 const panchangCache = { date: null, data: null, timestamp: 0 };
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
-// Helper: bilingual label matching
-function getValueByLabels($, labels) {
-  let value = "—";
-  $(".dpElement").each((_, el) => {
-    const key = $(el).find(".dpElementLabel").text().trim();
-    const val = $(el).find(".dpElementValue").text().trim();
-    if (labels.some(l => key.includes(l))) {
-      value = val;
-    }
-  });
-  return value;
+function formatTime(dateObj) {
+  if (!dateObj) return "—";
+  return dateObj.toTimeString().slice(0, 5); // HH:MM
 }
 
-async function fetchDrikPanchang(dateISO) {
-  const url = `https://www.drikpanchang.com/panchang/day-panchang.html?date=${dateISO}`;
-
-  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
-  if (!res.ok) throw new Error("Drik Panchang fetch failed");
-
-  const html = await res.text();
-  const $ = cheerio.load(html);
-
-  // Direct selectors for sunrise/sunset/moonrise/moonset
-  const sunrise = $("#dpSunrise").text().trim() || getValueByLabels($, ["Sunrise", "सूर्योदय"]);
-  const sunset = $("#dpSunset").text().trim() || getValueByLabels($, ["Sunset", "सूर्यास्त"]);
-  const moonrise = $("#dpMoonrise").text().trim() || getValueByLabels($, ["Moonrise", "चंद्रोदय"]);
-  const moonset = $("#dpMoonset").text().trim() || getValueByLabels($, ["Moonset", "चंद्रास्त"]);
+async function fetchBasicPanchang(dateISO, lat = DEFAULT_LAT, lon = DEFAULT_LON) {
+  const date = new Date(dateISO);
+  const times = SunCalc.getTimes(date, lat, lon);
+  const moonTimes = SunCalc.getMoonTimes(date, lat, lon);
 
   return {
     date: dateISO,
-    sunrise: sunrise || "—",
-    sunset: sunset || "—",
-    moonrise: moonrise || "—",
-    moonset: moonset || "—",
-    vikram_samvat: getValueByLabels($, ["Vikram Samvat", "विक्रम संवत"]),
-    shak_samvat: getValueByLabels($, ["Shaka Samvat", "शक संवत"]),
-    masa: getValueByLabels($, ["Month", "मास", "Chandramasa"]),
-    paksha: getValueByLabels($, ["Paksha", "पक्ष"]),
-    tithi: getValueByLabels($, ["Tithi", "तिथि"]),
-    source: "Drik Panchang (scraped)"
+    sunrise: formatTime(times.sunrise),
+    sunset: formatTime(times.sunset),
+    moonrise: moonTimes.rise ? formatTime(moonTimes.rise) : "—",
+    moonset: moonTimes.set ? formatTime(moonTimes.set) : "—",
+    vikram_samvat: "—", // Placeholder
+    shak_samvat: "—",   // Placeholder
+    masa: "—",          // Placeholder
+    paksha: "—",        // Placeholder
+    tithi: "—",         // Placeholder
+    source: "SunCalc (astronomical calculation)"
   };
 }
 
 app.get("/api/panchang", async (req, res) => {
   try {
     const dateISO = req.query.date || new Date().toISOString().slice(0, 10);
+    const lat = req.query.lat ? parseFloat(req.query.lat) : DEFAULT_LAT;
+    const lon = req.query.lon ? parseFloat(req.query.lon) : DEFAULT_LON;
     const now = Date.now();
 
     if (panchangCache.date === dateISO && now - panchangCache.timestamp < CACHE_TTL) {
       return res.json({ ...panchangCache.data, cached: true });
     }
 
-    const data = await fetchDrikPanchang(dateISO);
+    const data = await fetchBasicPanchang(dateISO, lat, lon);
     panchangCache.date = dateISO;
     panchangCache.data = data;
     panchangCache.timestamp = now;
@@ -73,6 +61,6 @@ app.get("/api/panchang", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => res.send("Drik Panchang API running"));
+app.get("/", (req, res) => res.send("Basic Panchang API running"));
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
