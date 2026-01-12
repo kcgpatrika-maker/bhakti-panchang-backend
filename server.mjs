@@ -21,12 +21,12 @@ async function fetchDrikPanchang(dateISO) {
   const $ = cheerio.load(html);
 
   // Helper: label और value निकालना
-  function getValueByLabel(label) {
+  function getValueByLabel($, label) {
     let value = "—";
     $(".dpElement").each((_, el) => {
       const key = $(el).find(".dpElementLabel").text().trim();
       const val = $(el).find(".dpElementValue").text().trim();
-      if (key.includes(label)) {
+      if (key && key.includes(label)) {
         value = val;
       }
     });
@@ -35,15 +35,15 @@ async function fetchDrikPanchang(dateISO) {
 
   return {
     date: dateISO,
-    sunrise: getValueByLabel("Sunrise"),
-    sunset: getValueByLabel("Sunset"),
-    moonrise: getValueByLabel("Moonrise"),
-    moonset: getValueByLabel("Moonset"),
-    vikram_samvat: getValueByLabel("Vikram Samvat"),
-    shak_samvat: getValueByLabel("Shaka Samvat"),
-    masa: getValueByLabel("Month"),
-    paksha: getValueByLabel("Paksha"),
-    tithi: getValueByLabel("Tithi"),
+    sunrise: getValueByLabel($, "Sunrise"),
+    sunset: getValueByLabel($, "Sunset"),
+    moonrise: getValueByLabel($, "Moonrise"),
+    moonset: getValueByLabel($, "Moonset"),
+    vikram_samvat: getValueByLabel($, "Vikram Samvat"),
+    shak_samvat: getValueByLabel($, "Shaka Samvat"),
+    masa: getValueByLabel($, "Masa"),
+    paksha: getValueByLabel($, "Paksha"),
+    tithi: getValueByLabel($, "Tithi"),
     source: "Drik Panchang (scraped)"
   };
 }
