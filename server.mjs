@@ -1,15 +1,15 @@
 import express from "express";
 import cors from "cors";
-import * as SunCalc from "suncalc";
+import SunCalc from "suncalc";
 
 const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-// Default location (Delhi, India) – आप चाहें तो latitude/longitude बदल सकते हैं
-const DEFAULT_LAT = 28.6139;
-const DEFAULT_LON = 77.2090;
+// Default location (Jaipur, India)
+const DEFAULT_LAT = 26.9124;
+const DEFAULT_LON = 75.7873;
 
 const panchangCache = { date: null, data: null, timestamp: 0 };
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
