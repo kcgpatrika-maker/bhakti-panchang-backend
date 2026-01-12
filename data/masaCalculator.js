@@ -5,22 +5,13 @@
 function cleanText(v) {
   if (!v) return "—";
   return String(v)
-    // Remove style/script tags and their content quickly if captured
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    // Remove any remaining HTML tags
-    .replace(/<[^>]*>/g, "")
-    // Remove CSS blocks like {...}
-    .replace(/\{[^}]*\}/g, "")
-    // Replace special entities
-    .replace(/&nbsp;|&amp;|&quot;|&#39;|&lt;|&gt;/g, " ")
-    // Keep only letters (English + Devanagari) and spaces
-    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ")
-    // Collapse whitespace
-    .replace(/\s+/g, " ")
+    .replace(/<[^>]*>/g, "")          // HTML tags हटाओ
+    .replace(/\{[^}]*\}/g, "")        // CSS blocks हटाओ
+    .replace(/https?:\/\/\S+/g, "")   // URLs हटाओ
+    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // सिर्फ अक्षर और स्पेस रखो
+    .replace(/\s+/g, " ")             // extra spaces हटाओ
     .trim()
-    // Limit length to avoid accidental long garbage
-    .slice(0, 60);
+    .slice(0, 30);                    // लंबाई सीमित करो
 }
 
 // --- Primary: Panchang.click JSON API
