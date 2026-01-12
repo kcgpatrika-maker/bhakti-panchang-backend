@@ -1,5 +1,5 @@
 // data/masaCalculator.js
-// Daily Tithi, Masa, Paksha adapter with robust cleaning & primary JSON source
+// Adapter to fetch Tithi, Masa, Paksha daily with robust cleaning
 
 // Clean up HTML/CSS/script noise and keep readable Devanagari/Latin words
 function cleanText(v) {
@@ -17,7 +17,7 @@ function cleanText(v) {
     .slice(0, 40);                            // avoid long garbage
 }
 
-// --- Primary: Panchang.click JSON API (no regex here)
+// --- Primary: Panchang.click JSON API
 async function fetchFromPanchangClick(dateISO) {
   try {
     const url = `https://panchang.click/panchang-api?date=${dateISO}`;
@@ -46,7 +46,7 @@ async function fetchFromPanchangClick(dateISO) {
   }
 }
 
-// --- Fallback: Prokerala Panchang HTML (regex-based)
+// --- Fallback: Prokerala Panchang HTML
 async function fetchFromProkerala(dateISO) {
   try {
     const url = "https://www.prokerala.com/astrology/panchang/";
@@ -57,18 +57,9 @@ async function fetchFromProkerala(dateISO) {
 
     const html = await res.text();
 
-    // Prefer concise label captures; page may vary
-    const tithiMatch =
-      html.match(/Tithi[^:]*:\s*([^\n<]+)/i) ||
-      html.match(/Tithi<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
-
-    const masaMatch =
-      html.match(/(?:Month|Masa)[^:]*:\s*([^\n<]+)/i) ||
-      html.match(/(?:Month|Masa)<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
-
-    const pakshaMatch =
-      html.match(/Paksha[^:]*:\s*([^\n<]+)/i) ||
-      html.match(/Paksha<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
+    const tithiMatch  = html.match(/Tithi[^:]*:\s*([^\n<]+)/i);
+    const masaMatch   = html.match(/(?:Month|Masa)[^:]*:\s*([^\n<]+)/i);
+    const pakshaMatch = html.match(/Paksha[^:]*:\s*([^\n<]+)/i);
 
     const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
     const masa   = masaMatch && masaMatch[1]   ? cleanText(masaMatch[1])   : "—";
