@@ -1,42 +1,44 @@
 // data/masaCalculator.js
-// Adapter to fetch Tithi, Masa, Paksha daily with robust cleaning
+// Daily Tithi, Masa, Paksha adapter with robust cleaning & primary JSON source
 
 // Clean up HTML/CSS/script noise and keep readable Devanagari/Latin words
 function cleanText(v) {
   if (!v) return "—";
   return String(v)
-    .replace(/<[^>]*>/g, "")          // HTML tags हटाओ
-    .replace(/\{[^}]*\}/g, "")        // CSS blocks हटाओ
-    .replace(/https?:\/\/\S+/g, "")   // URLs हटाओ
-    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // सिर्फ अक्षर और स्पेस रखो
-    .replace(/\s+/g, " ")             // extra spaces हटाओ
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<[^>]*>/g, "")                  // remove any HTML tags
+    .replace(/\{[^}]*\}/g, "")                // remove CSS blocks {...}
+    .replace(/https?:\/\/\S+/g, "")           // remove URLs
+    .replace(/&nbsp;|&amp;|&quot;|&#39;|&lt;|&gt;/g, " ")
+    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // keep only letters (EN + Devanagari) and spaces
+    .replace(/\s+/g, " ")                     // collapse spaces
     .trim()
-    .slice(0, 30);                    // लंबाई सीमित करो
+    .slice(0, 40);                            // avoid long garbage
 }
 
-// --- Primary: Panchang.click JSON API
+// --- Primary: Panchang.click JSON API (no regex here)
 async function fetchFromPanchangClick(dateISO) {
   try {
     const url = `https://panchang.click/panchang-api?date=${dateISO}`;
     const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (PanchangFetcher)" },
-      // Keep a modest timeout via AbortController if needed (optional)
+      headers: { "User-Agent": "Mozilla/5.0 (PanchangFetcher)" }
     });
     if (!res.ok) return null;
+
     const j = await res.json();
 
-    // Try common shapes
-    const tithiMatch = html.match(/Tithi[^:]*:\s*([^\n<]+)/i);
-    const masaMatch = html.match(/(?:Month|Masa)[^:]*:\s*([^\n<]+)/i);
-    const pakshaMatch= html.match(/Paksha[^:]*:\s*([^\n<]+)/i);
+    // Try common shapes: flat or nested
+    const tithiRaw  = j.tithi ?? j.data?.tithi ?? j.panchang?.tithi;
+    const masaRaw   = j.masa  ?? j.data?.masa  ?? j.panchang?.masa;
+    const pakshaRaw = j.paksha?? j.data?.paksha?? j.panchang?.paksha;
 
-    if (tithi || masa || paksha) {
-      return {
-        tithi: cleanText(tithi),
-        masa: cleanText(masa),
-        paksha: cleanText(paksha),
-        sourceNote: "panchang.click JSON"
-      };
+    const tithi  = cleanText(tithiRaw);
+    const masa   = cleanText(masaRaw);
+    const paksha = cleanText(pakshaRaw);
+
+    if (tithi !== "—" || masa !== "—" || paksha !== "—") {
+      return { tithi, masa, paksha, sourceNote: "panchang.click JSON" };
     }
     return null;
   } catch {
@@ -44,44 +46,36 @@ async function fetchFromPanchangClick(dateISO) {
   }
 }
 
-// --- Fallback: Prokerala Panchang HTML
-// Note: Prokerala page may vary; regex aims to capture visible labels.
+// --- Fallback: Prokerala Panchang HTML (regex-based)
 async function fetchFromProkerala(dateISO) {
   try {
-    // Prokerala date filtering is page-driven; we parse general labels.
     const url = "https://www.prokerala.com/astrology/panchang/";
     const res = await fetch(url, {
       headers: { "User-Agent": "Mozilla/5.0 (PanchangFetcher)" }
     });
     if (!res.ok) return null;
+
     const html = await res.text();
 
-    // Try multiple patterns to improve resilience
+    // Prefer concise label captures; page may vary
     const tithiMatch =
       html.match(/Tithi[^:]*:\s*([^\n<]+)/i) ||
       html.match(/Tithi<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
 
-    const monthMatch =
-      html.match(/Month[^:]*:\s*([^\n<]+)/i) ||
-      html.match(/Masa[^:]*:\s*([^\n<]+)/i) ||
-      html.match(/Month<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i) ||
-      html.match(/Masa<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
+    const masaMatch =
+      html.match(/(?:Month|Masa)[^:]*:\s*([^\n<]+)/i) ||
+      html.match(/(?:Month|Masa)<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
 
     const pakshaMatch =
       html.match(/Paksha[^:]*:\s*([^\n<]+)/i) ||
       html.match(/Paksha<\/[^>]*>\s*<\/[^>]*>\s*([^<]+)/i);
 
-    const tithi = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
-    const masa = monthMatch && monthMatch[1] ? cleanText(monthMatch[1]) : "—";
-    const paksha = pakshaMatch && pakshaMatch[1] ? cleanText(pakshaMatch[1]) : "—";
+    const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
+    const masa   = masaMatch && masaMatch[1]   ? cleanText(masaMatch[1])   : "—";
+    const paksha = pakshaMatch && pakshaMatch[1]? cleanText(pakshaMatch[1]) : "—";
 
     if (tithi !== "—" || masa !== "—" || paksha !== "—") {
-      return {
-        tithi,
-        masa,
-        paksha,
-        sourceNote: "prokerala.com HTML"
-      };
+      return { tithi, masa, paksha, sourceNote: "prokerala.com HTML" };
     }
     return null;
   } catch {
