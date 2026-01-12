@@ -26,9 +26,9 @@ async function fetchFromPanchangClick(dateISO) {
     const j = await res.json();
 
     // Try common shapes
-    const tithi = j.tithi ?? j.data?.tithi ?? j.panchang?.tithi;
-    const masa  = j.masa  ?? j.data?.masa  ?? j.panchang?.masa;
-    const paksha= j.paksha?? j.data?.paksha?? j.panchang?.paksha;
+    const tithiMatch = html.match(/Tithi[^:]*:\s*([^\n<]+)/i);
+    const masaMatch = html.match(/(?:Month|Masa)[^:]*:\s*([^\n<]+)/i);
+    const pakshaMatch= html.match(/Paksha[^:]*:\s*([^\n<]+)/i);
 
     if (tithi || masa || paksha) {
       return {
