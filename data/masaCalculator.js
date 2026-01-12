@@ -1,34 +1,25 @@
 // data/masaCalculator.js
-// Adapter to fetch Tithi, Masa, Paksha daily with robust cleaning
 
-// Clean up HTML/CSS/script noise and keep readable Devanagari/Latin words
 function cleanText(v) {
   if (!v) return "—";
   return String(v)
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<[^>]*>/g, "")                  // remove any HTML tags
+    .replace(/<[^>]*>/g, "")                  // remove HTML tags
     .replace(/\{[^}]*\}/g, "")                // remove CSS blocks {...}
     .replace(/https?:\/\/\S+/g, "")           // remove URLs
-    .replace(/&nbsp;|&amp;|&quot;|&#39;|&lt;|&gt;/g, " ")
-    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // keep only letters (EN + Devanagari) and spaces
+    .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // keep only letters (EN + Devanagari)
     .replace(/\s+/g, " ")                     // collapse spaces
     .trim()
-    .slice(0, 40);                            // avoid long garbage
+    .slice(0, 30);
 }
 
 // --- Primary: Panchang.click JSON API
 async function fetchFromPanchangClick(dateISO) {
   try {
     const url = `https://panchang.click/panchang-api?date=${dateISO}`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (PanchangFetcher)" }
-    });
+    const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
     if (!res.ok) return null;
-
     const j = await res.json();
 
-    // Try common shapes: flat or nested
     const tithiRaw  = j.tithi ?? j.data?.tithi ?? j.panchang?.tithi;
     const masaRaw   = j.masa  ?? j.data?.masa  ?? j.panchang?.masa;
     const pakshaRaw = j.paksha?? j.data?.paksha?? j.panchang?.paksha;
@@ -49,12 +40,10 @@ async function fetchFromPanchangClick(dateISO) {
 // --- Fallback: Prokerala Panchang HTML
 async function fetchFromProkerala(dateISO) {
   try {
-    const url = "https://www.prokerala.com/astrology/panchang/";
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Mozilla/5.0 (PanchangFetcher)" }
+    const res = await fetch("https://www.prokerala.com/astrology/panchang/", {
+      headers: { "User-Agent": "Mozilla/5.0" }
     });
     if (!res.ok) return null;
-
     const html = await res.text();
 
     const tithiMatch  = html.match(/Tithi[^:]*:\s*([^\n<]+)/i);
@@ -74,16 +63,13 @@ async function fetchFromProkerala(dateISO) {
   }
 }
 
-// --- Unified fetch (TMP = Tithi/Masa/Paksha)
+// --- Unified fetch
 export async function fetchTMP(dateISO) {
-  // 1) Try Panchang.click
   const pc = await fetchFromPanchangClick(dateISO);
   if (pc) return pc;
 
-  // 2) Fallback to Prokerala HTML
   const pk = await fetchFromProkerala(dateISO);
   if (pk) return pk;
 
-  // 3) Final fallback
   return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
 }
