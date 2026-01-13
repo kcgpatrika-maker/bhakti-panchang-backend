@@ -71,9 +71,7 @@ app.get("/api/panchang", async (req, res) => {
 
     // Primary: Gurdeep Arora
     let data = await fetchGurdeep(dateISO);
-    // Fallback: AstroShade
-    if (!data) data = await fetchAstroShade(dateISO);
-
+    
     const sunrise = data?.sunrise || "—";
     const sunset = data?.sunset || "—";
     const moonrise = data?.moonrise || "—";
