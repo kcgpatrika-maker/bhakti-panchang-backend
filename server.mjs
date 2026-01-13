@@ -1,4 +1,5 @@
 import express from "express";
+import cheerio from "cheerio";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -29,7 +30,7 @@ function cleanText(v) {
     .trim()
     .slice(0, 40);
 }
-// Panchang fetch (Gurdeep Arora primary)
+// Panchang fetch (Gurdeep Arora primary, using cheerio)
 async function fetchGurdeep(dateISO) {
   try {
     const res = await fetch("https://www.profgurdeeparora.com/panchang/today", {
@@ -37,26 +38,26 @@ async function fetchGurdeep(dateISO) {
     });
     if (!res.ok) return null;
     const html = await res.text();
+    const $ = cheerio.load(html);
 
-    // Helper to extract value from table row (tolerant regex)
-    function extractValue(label) {
-      const regex = new RegExp(
-        `<td[^>]*>${label}\\s*<\\/td>\\s*<td[^>]*>(.*?)<\\/td>`,
-        "i"
-      );
-      const match = html.match(regex);
-      return match ? cleanText(match[1]) : "—";
-    }
+    let dataMap = {};
+    $("table tr").each((_, el) => {
+      const title = $(el).find("td").eq(0).text().trim();
+      const value = $(el).find("td").eq(1).text().trim();
+      if (title && value) {
+        dataMap[title] = cleanText(value);
+      }
+    });
 
     return {
-      sunrise: extractValue("Sun Rise Time"),
-      sunset: extractValue("Sun Set Time"),
-      moonrise: extractValue("Moon Rise"),
-      moonset: extractValue("Moon Set"),
-      tithi: extractValue("Tithi"),
-      paksha: extractValue("Paksha"),
-      masa: extractValue("Hindu Month"),
-      vikram_samvat: extractValue("Vikram Samvat"),
+      sunrise: dataMap["Sun Rise Time"] || "—",
+      sunset: dataMap["Sun Set Time"] || "—",
+      moonrise: dataMap["Moon Rise"] || "—",
+      moonset: dataMap["Moon Set"] || "—",
+      tithi: dataMap["Tithi"] || "—",
+      paksha: dataMap["Paksha"] || "—",
+      masa: dataMap["Hindu Month"] || "—",
+      vikram_samvat: dataMap["Vikram Samvat"] || "—",
       sourceNote: "profgurdeeparora.com HTML"
     };
   } catch {
@@ -72,30 +73,44 @@ app.get("/api/panchang", async (req, res) => {
 
     // Primary: Gurdeep Arora
     let data = await fetchGurdeep(dateISO);
-    
-    const sunrise = data?.sunrise || "—";
-    const sunset = data?.sunset || "—";
-    const moonrise = data?.moonrise || "—";
-    const moonset = data?.moonset || "—";
-    const vikram_samvat = data?.vikram_samvat || "—";
-    const shak_samvat = "1947"; // स्थिर मान, चाहें तो regex से जोड़ सकते हैं
+
+    // अगर Gurdeep से डेटा न मिले तो fallback note दिखाएँ
+    if (!data) {
+      return res.json({
+        date: dateISO,
+        display_date,
+        sunrise: "—",
+        sunset: "—",
+        moonrise: "—",
+        moonset: "—",
+        vikram_samvat: "—",
+        shak_samvat: "1947",
+        panchang: {
+          tithi: "—",
+          paksha: "—",
+          masa: "—"
+        },
+        source: "fallback",
+        note: "Gurdeep Arora site not reachable"
+      });
+    }
 
     res.json({
       date: dateISO,
       display_date,
-      sunrise,
-      sunset,
-      moonrise,
-      moonset,
-      vikram_samvat,
-      shak_samvat,
+      sunrise: data.sunrise,
+      sunset: data.sunset,
+      moonrise: data.moonrise,
+      moonset: data.moonset,
+      vikram_samvat: data.vikram_samvat,
+      shak_samvat: "1947", // स्थिर मान
       panchang: {
-        tithi: data?.tithi || "—",
-        paksha: data?.paksha || "—",
-        masa: data?.masa || "—"
+        tithi: data.tithi,
+        paksha: data.paksha,
+        masa: data.masa
       },
-      source: data?.sourceNote || "fallback",
-      note: data?.sourceNote || "fallback"
+      source: data.sourceNote,
+      note: data.sourceNote
     });
   } catch (err) {
     console.error(err);
