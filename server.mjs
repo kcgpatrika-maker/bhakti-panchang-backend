@@ -11,8 +11,7 @@ async function fetchGurdeep() {
   try {
     const browser = await puppeteer.launch({
       headless: "new",
-      // Render या Linux servers पर अक्सर chromium path होता है:
-      executablePath: process.env.CHROME_PATH || "/usr/bin/chromium-browser"
+      executablePath: process.env.CHROME_PATH || "/usr/bin/google-chrome"
     });
     const page = await browser.newPage();
     await page.goto("https://www.profgurdeeparora.com/panchang/today", {
@@ -52,7 +51,7 @@ async function fetchGurdeep() {
   }
 }
 
-// Fallback fetch (AstroSage – only tithi/paksha/masa)
+// Fallback fetch (AstroSage – refined regex)
 async function fetchFallback() {
   try {
     const res = await fetch("https://www.astrosage.com/panchang/");
@@ -60,7 +59,7 @@ async function fetchFallback() {
     const html = await res.text();
 
     function extract(label) {
-      const regex = new RegExp(`${label}\\s*:?\\s*([^<]+)<`, "i");
+      const regex = new RegExp(`${label}[^:]*:?\\s*([^<\\r\\n]+)`, "i");
       const match = html.match(regex);
       return match ? match[1].trim() : "—";
     }
@@ -77,7 +76,8 @@ async function fetchFallback() {
       vikram_samvat: "—",
       source: "astrosage.com (fallback)"
     };
-  } catch {
+  } catch (err) {
+    console.error("Fallback fetch error:", err);
     return null;
   }
 }
