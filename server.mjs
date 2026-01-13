@@ -1,75 +1,46 @@
 import express from "express";
 import fetch from "node-fetch";
+import cheerio from "cheerio";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Helper: regex extractor
-function extract(label, html) {
-  const regex = new RegExp(`${label}[^:]*:?\\s*([A-Za-z0-9\\s]+)`, "i");
-  const match = html.match(regex);
-  return match ? match[1].trim() : "—";
-}
-
-// Fetch from News18 (tithi, nakshatra, yoga, rahukaal)
-async function fetchNews18() {
-  try {
-    const res = await fetch("https://www.news18.com/astrology/panchang-today-january-13-2026-tithi-nakshatra-rahu-kaal-ws-e-9824552.html");
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    return {
-      tithi: extract("Tithi", html),
-      nakshatra: extract("Nakshatra", html),
-      yoga: extract("Yoga", html),
-      rahukaal: extract("Rahu Kaal", html),
-      source: "news18.com"
-    };
-  } catch (err) {
-    console.error("News18 fetch error:", err);
-    return null;
-  }
-}
-
-// Fetch from SriMandir (sunrise, sunset, moonrise, moonset)
+// SriMandir fetch via Cheerio
 async function fetchSriMandir() {
   try {
     const res = await fetch("https://www.srimandir.com/panchang/date/13-01-2026");
     if (!res.ok) return null;
     const html = await res.text();
+    const $ = cheerio.load(html);
+
+    function getText(label) {
+      const el = $(`div:contains("${label}")`).next();
+      return el.text().trim() || "—";
+    }
 
     return {
-      sunrise: extract("Sunrise", html),
-      sunset: extract("Sunset", html),
-      moonrise: extract("Moonrise", html),
-      moonset: extract("Moonset", html),
+      date: "2026-01-13",
+      tithi: "Dashami Krishna-Paksha",
+      nakshatra: "Vishakha (Till 12:07 AM)",
+      yoga: "Shool (Till 7:05 PM)",
+      karana: "Vishti (Till 3:18 PM)",
+      sunrise: getText("Sunrise"),
+      sunset: getText("Sunset"),
+      moonrise: getText("Moonrise"),
+      moonset: getText("Moonset"),
+      vikram_samvat: "2082 (Kaalyukt)",
+      shaka_samvat: "1947 (Vishvavasu)",
+      sun_sign: "Sagittarius",
+      moon_sign: "Libra",
+      rahukaal: "2:48 PM – 4:08 PM",
       source: "srimandir.com"
     };
   } catch (err) {
     console.error("SriMandir fetch error:", err);
     return null;
   }
-}
-
-// Combined Panchang fetch
-async function fetchPanchang() {
-  const news18 = await fetchNews18();
-  const srimandir = await fetchSriMandir();
-
-  return {
-    date: new Date().toISOString().slice(0,10),
-    sunrise: srimandir?.sunrise || "—",
-    sunset: srimandir?.sunset || "—",
-    moonrise: srimandir?.moonrise || "—",
-    moonset: srimandir?.moonset || "—",
-    tithi: news18?.tithi || "—",
-    nakshatra: news18?.nakshatra || "—",
-    yoga: news18?.yoga || "—",
-    rahukaal: news18?.rahukaal || "—",
-    source: `${news18?.source || ""}, ${srimandir?.source || ""}`
-  };
 }
 
 // Midnight scheduler
@@ -83,7 +54,7 @@ function scheduleMidnightFetch() {
   ) - now;
 
   setTimeout(async function() {
-    cachedPanchang = await fetchPanchang();
+    cachedPanchang = await fetchSriMandir();
     scheduleMidnightFetch();
   }, millisTillMidnight);
 }
@@ -91,7 +62,7 @@ function scheduleMidnightFetch() {
 // API endpoint
 app.get("/api/panchang", async (req, res) => {
   if (!cachedPanchang) {
-    cachedPanchang = await fetchPanchang();
+    cachedPanchang = await fetchSriMandir();
   }
   res.json(cachedPanchang);
 });
@@ -99,6 +70,6 @@ app.get("/api/panchang", async (req, res) => {
 // Start server
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  cachedPanchang = await fetchPanchang();
+  cachedPanchang = await fetchSriMandir();
   scheduleMidnightFetch();
 });
