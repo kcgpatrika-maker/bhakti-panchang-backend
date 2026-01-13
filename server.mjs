@@ -39,8 +39,8 @@ async function fetchTMP(dateISO) {
     const html = await res.text();
 
     // Regex tuned for Prokerala HTML
-    const tithiMatch  = html.match(/<strong>तिथि<\/strong>\s*([^<]+)/i);
-    const masaMatch   = html.match(/<strong>पूर्णिमांत<\/strong>\s*([^<]+)/i);
+    const tithiMatch  = html.match(/<strong>तिथि<\/strong>\s*<span[^>]*>([^<]+)/i);
+    const masaMatch   = html.match(/<strong>पूर्णिमांत<\/strong>\s*<span[^>]*>([^<]+)/i);
     const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
 
     const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
