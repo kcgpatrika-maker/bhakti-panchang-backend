@@ -61,29 +61,41 @@ async function fetchAstroShade(dateISO) {
     return null;
   }
 }
-// Panchang fetch (Gurdeep Arora fallback)
+// Panchang fetch (Gurdeep Arora primary)
 async function fetchGurdeep(dateISO) {
   try {
-    const res = await fetch("https://profgurdeeparora.com/panchang/today", {
+    const res = await fetch("https://www.profgurdeeparora.com/panchang/today", {
       headers: { "User-Agent": "Mozilla/5.0" }
     });
     if (!res.ok) return null;
     const html = await res.text();
 
-    const tithiMatch  = html.match(/तिथि[^<]*:\s*([^<]+)/i);
-    const masaMatch   = html.match(/मास[^<]*:\s*([^<]+)/i);
-    const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
+    // Regex tuned for Gurdeep Arora HTML
+    const sunriseMatch   = html.match(/Sun Rise Time\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const sunsetMatch    = html.match(/Sun Set Time\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const moonriseMatch  = html.match(/Moon Rise\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const moonsetMatch   = html.match(/Moon Set\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const tithiMatch     = html.match(/Tithi\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const pakshaMatch    = html.match(/Paksha\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const masaMatch      = html.match(/Hindu Month\s*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const samvatMatch    = html.match(/Vikram Samvat\s*<\/td>\s*<td[^>]*>([^<]+)/i);
 
     return {
+      sunrise: sunriseMatch ? cleanText(sunriseMatch[1]) : "—",
+      sunset: sunsetMatch ? cleanText(sunsetMatch[1]) : "—",
+      moonrise: moonriseMatch ? cleanText(moonriseMatch[1]) : "—",
+      moonset: moonsetMatch ? cleanText(moonsetMatch[1]) : "—",
       tithi: tithiMatch ? cleanText(tithiMatch[1]) : "—",
+      paksha: pakshaMatch ? cleanText(pakshaMatch[1]) : "—",
       masa: masaMatch ? cleanText(masaMatch[1]) : "—",
-      paksha: pakshaMatch ? cleanText(pakshaMatch[0]) : "—",
+      vikram_samvat: samvatMatch ? cleanText(samvatMatch[1]) : "—",
       sourceNote: "profgurdeeparora.com HTML"
     };
   } catch {
     return null;
   }
 }
+
 // Panchang API endpoint
 app.get("/api/panchang", async (req, res) => {
   try {
