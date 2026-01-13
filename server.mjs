@@ -102,15 +102,17 @@ app.get("/api/panchang", async (req, res) => {
     const dateISO = req.query.date || new Date().toISOString().slice(0,10);
     const display_date = formatHindiDate(dateISO);
 
-    let data = await fetchAstroShade(dateISO);
-    if (!data) data = await fetchGurdeep(dateISO);
+    // Primary: Gurdeep Arora
+    let data = await fetchGurdeep(dateISO);
+    // Fallback: AstroShade
+    if (!data) data = await fetchAstroShade(dateISO);
 
-    const sunrise = data?.sunrise || "07:17";
-    const sunset = data?.sunset || "17:52";
-    const moonrise = data?.moonrise || "09:20";
-    const moonset = data?.moonset || "20:25";
-    const vikram_samvat = "2082";
-    const shak_samvat = "1947";
+    const sunrise = data?.sunrise || "—";
+    const sunset = data?.sunset || "—";
+    const moonrise = data?.moonrise || "—";
+    const moonset = data?.moonset || "—";
+    const vikram_samvat = data?.vikram_samvat || "—";
+    const shak_samvat = "1947"; // स्थिर मान, चाहें तो regex से जोड़ सकते हैं
 
     res.json({
       date: dateISO,
@@ -138,3 +140,4 @@ app.get("/api/panchang", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
