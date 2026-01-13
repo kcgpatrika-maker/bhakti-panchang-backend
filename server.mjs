@@ -6,10 +6,14 @@ const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Gurdeep fetch (via Puppeteer)
+// Gurdeep fetch (via Puppeteer with safe executablePath)
 async function fetchGurdeep() {
   try {
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+      headless: "new",
+      // Render या Linux servers पर अक्सर chromium path होता है:
+      executablePath: process.env.CHROME_PATH || "/usr/bin/chromium-browser"
+    });
     const page = await browser.newPage();
     await page.goto("https://www.profgurdeeparora.com/panchang/today", {
       waitUntil: "networkidle2"
