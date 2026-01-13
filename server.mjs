@@ -6,7 +6,7 @@ const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Puppeteer adapter: Gurdeep Arora Panchang
+// Gurdeep fetch (via Puppeteer)
 async function fetchGurdeep() {
   try {
     const browser = await puppeteer.launch({ headless: "new" });
@@ -43,7 +43,38 @@ async function fetchGurdeep() {
       source: "profgurdeeparora.com (via Puppeteer)"
     };
   } catch (err) {
-    console.error("Fetch error:", err);
+    console.error("Gurdeep fetch error:", err);
+    return null;
+  }
+}
+
+// Fallback fetch (AstroShade – only tithi/paksha/masa)
+async function fetchFallback() {
+  try {
+    const res = await fetch("https://www.astrosage.com/panchang/");
+    if (!res.ok) return null;
+    const html = await res.text();
+
+    // Simple regex for fallback
+    function extract(label) {
+      const regex = new RegExp(`${label}\\s*:?\\s*([^<]+)<`, "i");
+      const match = html.match(regex);
+      return match ? match[1].trim() : "—";
+    }
+
+    return {
+      date: new Date().toISOString().slice(0,10),
+      sunrise: "—",
+      sunset: "—",
+      moonrise: "—",
+      moonset: "—",
+      tithi: extract("Tithi"),
+      paksha: extract("Paksha"),
+      masa: extract("Month"),
+      vikram_samvat: "—",
+      source: "astrosage.com (fallback)"
+    };
+  } catch {
     return null;
   }
 }
@@ -60,6 +91,9 @@ function scheduleMidnightFetch() {
 
   setTimeout(async function() {
     cachedPanchang = await fetchGurdeep();
+    if (!cachedPanchang) {
+      cachedPanchang = await fetchFallback();
+    }
     scheduleMidnightFetch(); // reschedule for next midnight
   }, millisTillMidnight);
 }
@@ -76,6 +110,9 @@ app.get("/api/panchang", (req, res) => {
 // Start server
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  cachedPanchang = await fetchGurdeep(); // initial fetch at startup
-  scheduleMidnightFetch(); // schedule daily fetch
+  cachedPanchang = await fetchGurdeep();
+  if (!cachedPanchang) {
+    cachedPanchang = await fetchFallback();
+  }
+  scheduleMidnightFetch();
 });
