@@ -1,5 +1,4 @@
 import express from "express";
-import fetch from "node-fetch";
 import cheerio from "cheerio";
 
 const app = express();
@@ -7,7 +6,23 @@ const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// SriMandir fetch via Cheerio
+// Helper: refined extractor
+function getValueByLabel($, label) {
+  let value = "—";
+  $("div").each((i, el) => {
+    const text = $(el).text().trim();
+    if (text.includes(label)) {
+      const parent = $(el).parent();
+      const possible = parent.find("div").last().text().trim();
+      if (possible && !possible.includes("px") && !possible.includes("transparent")) {
+        value = possible;
+      }
+    }
+  });
+  return value;
+}
+
+// SriMandir fetch
 async function fetchSriMandir() {
   try {
     const res = await fetch("https://www.srimandir.com/panchang/date/13-01-2026");
@@ -15,21 +30,16 @@ async function fetchSriMandir() {
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    function getText(label) {
-      const el = $(`div:contains("${label}")`).next();
-      return el.text().trim() || "—";
-    }
-
     return {
       date: "2026-01-13",
       tithi: "Dashami Krishna-Paksha",
       nakshatra: "Vishakha (Till 12:07 AM)",
       yoga: "Shool (Till 7:05 PM)",
       karana: "Vishti (Till 3:18 PM)",
-      sunrise: getText("Sunrise"),
-      sunset: getText("Sunset"),
-      moonrise: getText("Moonrise"),
-      moonset: getText("Moonset"),
+      sunrise: getValueByLabel($, "Sunrise"),
+      sunset: getValueByLabel($, "Sunset"),
+      moonrise: getValueByLabel($, "Moonrise"),
+      moonset: getValueByLabel($, "Moonset"),
       vikram_samvat: "2082 (Kaalyukt)",
       shaka_samvat: "1947 (Vishvavasu)",
       sun_sign: "Sagittarius",
