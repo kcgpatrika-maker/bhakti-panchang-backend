@@ -1,90 +1,62 @@
 import express from "express";
-import cors from "cors";
-import { getSunTimes, getMoonTimes } from "./data/astronomy/sunMoonCalculator.js";
-import { computeSamvats } from "./data/samvatCalculator.js";
 import { fetchTMP } from "./data/masaCalculator.js";
 
 const app = express();
-app.use(cors());
 const PORT = process.env.PORT || 3000;
-const DEFAULT_LAT = 26.9124;
-const DEFAULT_LON = 75.7873;
-const DEFAULT_TZ = "Asia/Kolkata";
 
-// --- Utility functions
-function fmtTime(d, tz = DEFAULT_TZ) {
-  if (!d) return "—";
-  return new Intl.DateTimeFormat("en-IN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: tz
-  }).format(d);
-}
-
-const hindiMonths = ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
-const hindiWeekdays = ["रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"];
-
+// Helper: हिंदी में तारीख़ format करना
 function formatHindiDate(dateISO) {
+  const days = ["रविवार","सोमवार","मंगलवार","बुधवार","गुरुवार","शुक्रवार","शनिवार"];
+  const months = ["जनवरी","फ़रवरी","मार्च","अप्रैल","मई","जून","जुलाई","अगस्त","सितंबर","अक्टूबर","नवंबर","दिसंबर"];
+
   const d = new Date(dateISO);
-  return `${d.getDate()} ${hindiMonths[d.getMonth()]} ${d.getFullYear()} | ${hindiWeekdays[d.getDay()]}`;
+  const dayName = days[d.getDay()];
+  const monthName = months[d.getMonth()];
+  const dayNum = d.getDate();
+
+  return `${dayNum} ${monthName} ${d.getFullYear()} | ${dayName}`;
 }
 
-// --- Panchang builder
-async function buildPanchang(dateISO, lat, lon, tz = DEFAULT_TZ) {
-  const localDate = new Date(dateISO);
-  const utcDay = new Date(Date.UTC(localDate.getFullYear(), localDate.getMonth(), localDate.getDate()));
-
-  const { sunrise, sunset } = getSunTimes(utcDay, lat, lon);
-  const { rise: moonrise, set: moonset } = getMoonTimes(utcDay, lat, lon);
-  const samvats = computeSamvats(localDate);
-  const tmp = await fetchTMP(dateISO);
-
-  return {
-    date: dateISO,
-    display_date: formatHindiDate(dateISO),
-    sunrise: fmtTime(sunrise, tz),
-    sunset: fmtTime(sunset, tz),
-    moonrise: fmtTime(moonrise, tz),
-    moonset: fmtTime(moonset, tz),
-    vikram_samvat: samvats.vikram_samvat,
-    shak_samvat: samvats.shak_samvat,
-    masa: tmp.masa,
-    paksha: tmp.paksha,
-    tithi: tmp.tithi,
-    source: "NOAA+moon approximation + adapter",
-    note: tmp.sourceNote
-  };
-}
-
-// --- Routes
+// Panchang API endpoint
 app.get("/api/panchang", async (req, res) => {
-  const dateISO = (req.query.date || new Date().toISOString().slice(0, 10));
-  const lat = req.query.lat ? parseFloat(req.query.lat) : DEFAULT_LAT;
-  const lon = req.query.lon ? parseFloat(req.query.lon) : DEFAULT_LON;
-  const tz = req.query.tz || DEFAULT_TZ;
+  try {
+    const dateISO = req.query.date || new Date().toISOString().slice(0,10);
+    const display_date = formatHindiDate(dateISO);
 
-  const data = await buildPanchang(dateISO, lat, lon, tz);
-  res.json(data);
+    // Panchang तिथि/मास/पक्ष निकालना
+    const tmp = await fetchTMP(dateISO);
+
+    // Example static values (तुम चाहो तो इन्हें dynamic कर सकते हो)
+    const sunrise = "07:17";
+    const sunset = "17:52";
+    const moonrise = "09:20";
+    const moonset = "20:25";
+    const vikram_samvat = "2082";
+    const shak_samvat = "1947";
+
+    res.json({
+      date: dateISO,
+      display_date,
+      sunrise,
+      sunset,
+      moonrise,
+      moonset,
+      vikram_samvat,
+      shak_samvat,
+      panchang: {
+        tithi: tmp.tithi,
+        paksha: tmp.paksha,
+        masa: tmp.masa
+      },
+      source: tmp.sourceNote,
+      note: tmp.sourceNote
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
-app.get("/api/panchang/view", async (req, res) => {
-  const dateISO = (req.query.date || new Date().toISOString().slice(0, 10));
-  const lat = req.query.lat ? parseFloat(req.query.lat) : DEFAULT_LAT;
-  const lon = req.query.lon ? parseFloat(req.query.lon) : DEFAULT_LON;
-  const tz = req.query.tz || DEFAULT_TZ;
-
-  const data = await buildPanchang(dateISO, lat, lon, tz);
-  const lines = [
-    `📅 ${dateISO} | ${data.display_date}`,
-    `🌅 सूर्योदय: ${data.sunrise} | 🌇 सूर्यास्त: ${data.sunset}`,
-    `🌙 चंद्रोदय: ${data.moonrise} | 🌑 चंद्रास्त: ${data.moonset}`,
-    `विक्रम संवत: ${data.vikram_samvat} | शक संवत: ${data.shak_samvat}`,
-    `मास: ${data.masa} | पक्ष: ${data.paksha} | तिथि: ${data.tithi}`,
-    `📌 स्रोत: ${data.source} (${data.note})`
-  ];
-  res.json({ lines, data });
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
-app.get("/", (req, res) => res.send("Panchang API running"));
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
