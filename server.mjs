@@ -39,9 +39,10 @@ async function fetchTMP(dateISO) {
     if (!res.ok) return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
     const html = await res.text();
 
-    const tithiMatch  = html.match(/<td[^>]*>Tithi<\/td>\s*<td[^>]*>([^<]+)/i);
-    const masaMatch   = html.match(/<td[^>]*>(?:Month|Masa)<\/td>\s*<td[^>]*>([^<]+)/i);
-    const pakshaMatch = html.match(/<td[^>]*>Paksha<\/td>\s*<td[^>]*>([^<]+)/i);
+    // Regex tuned for Prokerala HTML
+    const tithiMatch  = html.match(/तिथि[^<]*<\/strong>\s*([^<]+)/i);
+    const masaMatch   = html.match(/पूर्णिमांत[^<]*<\/strong>\s*([^<]+)/i);
+    const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
 
     const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
     const masa   = masaMatch && masaMatch[1]   ? cleanText(masaMatch[1])   : "—";
