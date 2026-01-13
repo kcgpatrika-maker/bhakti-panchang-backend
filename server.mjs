@@ -29,38 +29,6 @@ function cleanText(v) {
     .trim()
     .slice(0, 40);
 }
-// Panchang fetch (AstroShade primary)
-async function fetchAstroShade(dateISO) {
-  try {
-    const res = await fetch("https://www.astroshade.com/panchang", {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    // Regex tuned for AstroShade HTML
-    const tithiMatch  = html.match(/तिथि[^<]*:\s*([^<]+)/i);
-    const masaMatch   = html.match(/मास[^<]*:\s*([^<]+)/i);
-    const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
-    const sunriseMatch = html.match(/सूर्योदय[^<]*:\s*([^<]+)/i);
-    const sunsetMatch  = html.match(/सूर्यास्त[^<]*:\s*([^<]+)/i);
-    const moonriseMatch = html.match(/चन्द्रोदय[^<]*:\s*([^<]+)/i);
-    const moonsetMatch  = html.match(/चंद्रास्त[^<]*:\s*([^<]+)/i);
-
-    return {
-      tithi: tithiMatch ? cleanText(tithiMatch[1]) : "—",
-      masa: masaMatch ? cleanText(masaMatch[1]) : "—",
-      paksha: pakshaMatch ? cleanText(pakshaMatch[0]) : "—",
-      sunrise: sunriseMatch ? cleanText(sunriseMatch[1]) : "—",
-      sunset: sunsetMatch ? cleanText(sunsetMatch[1]) : "—",
-      moonrise: moonriseMatch ? cleanText(moonriseMatch[1]) : "—",
-      moonset: moonsetMatch ? cleanText(moonsetMatch[1]) : "—",
-      sourceNote: "astroshade.com HTML"
-    };
-  } catch {
-    return null;
-  }
-}
 // Panchang fetch (Gurdeep Arora primary)
 async function fetchGurdeep(dateISO) {
   try {
@@ -95,7 +63,29 @@ async function fetchGurdeep(dateISO) {
     return null;
   }
 }
+// Panchang fetch (Gurdeep Arora fallback)
+async function fetchGurdeep(dateISO) {
+  try {
+    const res = await fetch("https://profgurdeeparora.com/panchang/today", {
+      headers: { "User-Agent": "Mozilla/5.0" }
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
 
+    const tithiMatch  = html.match(/तिथि[^<]*:\s*([^<]+)/i);
+    const masaMatch   = html.match(/मास[^<]*:\s*([^<]+)/i);
+    const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
+
+    return {
+      tithi: tithiMatch ? cleanText(tithiMatch[1]) : "—",
+      masa: masaMatch ? cleanText(masaMatch[1]) : "—",
+      paksha: pakshaMatch ? cleanText(pakshaMatch[0]) : "—",
+      sourceNote: "profgurdeeparora.com HTML"
+    };
+  } catch {
+    return null;
+  }
+}
 // Panchang API endpoint
 app.get("/api/panchang", async (req, res) => {
   try {
@@ -140,4 +130,3 @@ app.get("/api/panchang", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
