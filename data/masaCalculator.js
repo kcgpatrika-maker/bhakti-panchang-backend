@@ -11,7 +11,7 @@ function cleanText(v) {
     .replace(/[^a-zA-Z\u0900-\u097F\s]/g, " ") // keep only letters (EN + Devanagari)
     .replace(/\s+/g, " ")                     // collapse spaces
     .trim()
-    .slice(0, 30);
+    .slice(0, 40);
 }
 
 // --- Primary: Panchang.click JSON API (needs API key, so usually null)
@@ -49,9 +49,9 @@ async function fetchFromProkerala(dateISO) {
     const html = await res.text();
 
     // Capture only visible table cell text
-    const tithiMatch  = html.match(/Tithi[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-    const masaMatch   = html.match(/(?:Month|Masa)[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
-    const pakshaMatch = html.match(/Paksha[^<]*<\/td>\s*<td[^>]*>([^<]+)/i);
+    const tithiMatch  = html.match(/<td[^>]*>Tithi<\/td>\s*<td[^>]*>([^<]+)/i);
+    const masaMatch   = html.match(/<td[^>]*>(?:Month|Masa)<\/td>\s*<td[^>]*>([^<]+)/i);
+    const pakshaMatch = html.match(/<td[^>]*>Paksha<\/td>\s*<td[^>]*>([^<]+)/i);
 
     const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
     const masa   = masaMatch && masaMatch[1]   ? cleanText(masaMatch[1])   : "—";
