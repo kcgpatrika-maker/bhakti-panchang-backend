@@ -39,9 +39,14 @@ async function fetchTMP(dateISO) {
     if (!res.ok) return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
     const html = await res.text();
 
+    // Debug: HTML को console में दिखाओ (पहले 2000 characters)
+    console.log("=== RAW HTML START ===");
+    console.log(html.slice(0, 2000));
+    console.log("=== RAW HTML END ===");
+
     // Regex tuned for Prokerala HTML
-    const tithiMatch  = html.match(/तिथि[^<]*<\/strong>\s*([^<]+)/i);
-    const masaMatch   = html.match(/पूर्णिमांत[^<]*<\/strong>\s*([^<]+)/i);
+    const tithiMatch  = html.match(/<strong>तिथि<\/strong>\s*([^<]+)/i);
+    const masaMatch   = html.match(/<strong>पूर्णिमांत<\/strong>\s*([^<]+)/i);
     const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
 
     const tithi  = tithiMatch && tithiMatch[1] ? cleanText(tithiMatch[1]) : "—";
@@ -49,7 +54,8 @@ async function fetchTMP(dateISO) {
     const paksha = pakshaMatch && pakshaMatch[1]? cleanText(pakshaMatch[1]) : "—";
 
     return { tithi, masa, paksha, sourceNote: "prokerala.com HTML" };
-  } catch {
+  } catch (err) {
+    console.error("Fetch error:", err);
     return { tithi: "—", masa: "—", paksha: "—", sourceNote: "fallback" };
   }
 }
