@@ -1,29 +1,34 @@
 import express from "express";
-import * as cheerio from "cheerio";
+import puppeteer from "puppeteer";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Gurdeep fetch (only essential fields)
+// Puppeteer adapter: Gurdeep Arora Panchang
 async function fetchGurdeep() {
   try {
-    const res = await fetch("https://www.profgurdeeparora.com/panchang/today", {
-      headers: { "User-Agent": "Mozilla/5.0" }
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.goto("https://www.profgurdeeparora.com/panchang/today", {
+      waitUntil: "networkidle2"
     });
-    if (!res.ok) return null;
-    const html = await res.text();
-    const $ = cheerio.load(html);
 
-    let dataMap = {};
-    $("table tr").each((_, el) => {
-      const title = $(el).find("td").eq(0).text().trim();
-      const value = $(el).find("td").eq(1).text().trim();
-      if (title && value) {
-        dataMap[title] = value;
-      }
+    const dataMap = await page.evaluate(() => {
+      let map = {};
+      document.querySelectorAll("table tr").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        if (cells.length >= 2) {
+          const title = cells[0].innerText.trim();
+          const value = cells[1].innerText.trim();
+          map[title] = value;
+        }
+      });
+      return map;
     });
+
+    await browser.close();
 
     return {
       date: new Date().toISOString().slice(0,10),
@@ -35,9 +40,10 @@ async function fetchGurdeep() {
       paksha: dataMap["Paksha"] || "—",
       masa: dataMap["Hindu Month"] || "—",
       vikram_samvat: dataMap["Vikram Samvat"] || "—",
-      source: "profgurdeeparora.com"
+      source: "profgurdeeparora.com (via Puppeteer)"
     };
-  } catch {
+  } catch (err) {
+    console.error("Fetch error:", err);
     return null;
   }
 }
@@ -70,6 +76,6 @@ app.get("/api/panchang", (req, res) => {
 // Start server
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
-  cachedPanchang = await fetchGurdeep(); // initial fetch
+  cachedPanchang = await fetchGurdeep(); // initial fetch at startup
   scheduleMidnightFetch(); // schedule daily fetch
 });
