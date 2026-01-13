@@ -167,12 +167,6 @@ async function fetchTMP(dateISO) {
   }
 }
       
-    } catch {
-      // try next URL
-    }
-  }
-  return null;
-}
 
 async function fetchFromHinduCalendar(dateISO) {
   const url = `https://www.hinducalendar.com/panchang/${dateISO}`;
