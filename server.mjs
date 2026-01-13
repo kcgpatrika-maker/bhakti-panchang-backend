@@ -6,13 +6,10 @@ const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Gurdeep fetch (via Puppeteer with safe executablePath)
+// Gurdeep fetch (via Puppeteer default Chromium)
 async function fetchGurdeep() {
   try {
-    const browser = await puppeteer.launch({
-      headless: "new",
-      executablePath: process.env.CHROME_PATH || "/usr/bin/google-chrome"
-    });
+    const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
     await page.goto("https://www.profgurdeeparora.com/panchang/today", {
       waitUntil: "networkidle2"
