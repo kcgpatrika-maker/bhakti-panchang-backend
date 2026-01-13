@@ -56,7 +56,7 @@ async function fetchFallback() {
     const html = await res.text();
 
     function extract(label) {
-      const regex = new RegExp(`${label}[^:]*:?\\s*([^<\\r\\n]+)`, "i");
+      const regex = new RegExp(`${label}[^:]*:?\\s*([A-Za-z0-9\\s]+)`, "i");
       const match = html.match(regex);
       return match ? match[1].trim() : "—";
     }
@@ -67,9 +67,9 @@ async function fetchFallback() {
       sunset: "—",
       moonrise: "—",
       moonset: "—",
-      tithi: extract("Tithi"),
-      paksha: extract("Paksha"),
-      masa: extract("Month"),
+      tithi: extract("Tithi", html),
+      paksha: extract("Paksha", html),
+      masa: extract("Month", html),
       vikram_samvat: "—",
       source: "astrosage.com (fallback)"
     };
