@@ -63,29 +63,6 @@ async function fetchGurdeep(dateISO) {
     return null;
   }
 }
-// Panchang fetch (Gurdeep Arora fallback)
-async function fetchGurdeep(dateISO) {
-  try {
-    const res = await fetch("https://profgurdeeparora.com/panchang/today", {
-      headers: { "User-Agent": "Mozilla/5.0" }
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-
-    const tithiMatch  = html.match(/तिथि[^<]*:\s*([^<]+)/i);
-    const masaMatch   = html.match(/मास[^<]*:\s*([^<]+)/i);
-    const pakshaMatch = html.match(/(कृष्ण पक्ष|शुक्ल पक्ष)/i);
-
-    return {
-      tithi: tithiMatch ? cleanText(tithiMatch[1]) : "—",
-      masa: masaMatch ? cleanText(masaMatch[1]) : "—",
-      paksha: pakshaMatch ? cleanText(pakshaMatch[0]) : "—",
-      sourceNote: "profgurdeeparora.com HTML"
-    };
-  } catch {
-    return null;
-  }
-}
 // Panchang API endpoint
 app.get("/api/panchang", async (req, res) => {
   try {
