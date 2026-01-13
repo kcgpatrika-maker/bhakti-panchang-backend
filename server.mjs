@@ -1,5 +1,5 @@
-import express from "express";
-import cheerio from "cheerio";
+import express from "express"; 
+import * as cheerio from "cheerio";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,12 +23,10 @@ function getValueByLabel($, label) {
 }
 
 // SriMandir fetch
-async function fetchSriMandir() {
-  try {
-    const res = await fetch("https://www.srimandir.com/panchang/date/13-01-2026");
-    if (!res.ok) return null;
-    const html = await res.text();
-    const $ = cheerio.load(html);
+async function fetchSriMandir() { 
+  const res = await fetch("https://www.srimandir.com/panchang/date/13-01-2026"); 
+  const html = await res.text(); 
+  const $ = cheerio.load(html);
 
     return {
       date: "2026-01-13",
