@@ -44,12 +44,12 @@ app.get("/api/panchang", async (req, res) => {
       vikram_samvat,
       shak_samvat,
       panchang: {
-        tithi: tmp.tithi,
-        paksha: tmp.paksha,
-        masa: tmp.masa
+        tithi: tmp.tithi || "—",
+        paksha: tmp.paksha || "—",
+        masa: tmp.masa || "—"
       },
-      source: tmp.sourceNote,
-      note: tmp.sourceNote
+      source: tmp.sourceNote || "fallback",
+      note: tmp.sourceNote || "fallback"
     });
   } catch (err) {
     console.error(err);
