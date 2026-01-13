@@ -22,9 +22,9 @@ async function fetchFromPanchangClick(dateISO) {
     if (!res.ok) return null;
     const j = await res.json();
 
-    const tithiRaw  = j.tithi ?? j.data?.tithi ?? j.panchang?.tithi;
-    const masaRaw   = j.masa  ?? j.data?.masa  ?? j.panchang?.masa;
-    const pakshaRaw = j.paksha?? j.data?.paksha?? j.panchang?.paksha;
+    const tithiMatch = html.match(/<td[^>]*>Tithi<\/td>\s*<td[^>]*>([^<]+)/i);
+    const masaMatch = html.match(/<td[^>]*>(?:Month|Masa)<\/td>\s*<td[^>]*>([^<]+)/i);
+    const pakshaMatch = html.match(/<td[^>]*>Paksha<\/td>\s*<td[^>]*>([^<]+)/i);
 
     const tithi  = cleanText(tithiRaw);
     const masa   = cleanText(masaRaw);
