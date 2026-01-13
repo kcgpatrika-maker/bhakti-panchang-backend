@@ -48,14 +48,13 @@ async function fetchGurdeep() {
   }
 }
 
-// Fallback fetch (AstroShade – only tithi/paksha/masa)
+// Fallback fetch (AstroSage – only tithi/paksha/masa)
 async function fetchFallback() {
   try {
     const res = await fetch("https://www.astrosage.com/panchang/");
     if (!res.ok) return null;
     const html = await res.text();
 
-    // Simple regex for fallback
     function extract(label) {
       const regex = new RegExp(`${label}\\s*:?\\s*([^<]+)<`, "i");
       const match = html.match(regex);
