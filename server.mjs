@@ -38,9 +38,12 @@ async function fetchGurdeep(dateISO) {
     if (!res.ok) return null;
     const html = await res.text();
 
-    // Helper to extract value from table row
+    // Helper to extract value from table row (tolerant regex)
     function extractValue(label) {
-      const regex = new RegExp(`<td[^>]*>${label}\\s*<\\/td>\\s*<td[^>]*>([^<]+)<\\/td>`, "i");
+      const regex = new RegExp(
+        `<td[^>]*>${label}\\s*<\\/td>\\s*<td[^>]*>(.*?)<\\/td>`,
+        "i"
+      );
       const match = html.match(regex);
       return match ? cleanText(match[1]) : "—";
     }
