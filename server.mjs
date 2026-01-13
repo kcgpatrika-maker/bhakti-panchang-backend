@@ -1,5 +1,5 @@
 import express from "express";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -30,6 +30,7 @@ function cleanText(v) {
     .trim()
     .slice(0, 40);
 }
+
 // Panchang fetch (Gurdeep Arora primary, using cheerio)
 async function fetchGurdeep(dateISO) {
   try {
