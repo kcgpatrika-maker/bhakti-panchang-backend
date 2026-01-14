@@ -6,30 +6,26 @@ const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 10000;
-const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
+const SRIMANDIR_URL = "https://www.srimandir.com/hi/panchang";
 
 /* ===============================
-   FETCH RAW SRIMANDIR DATA
+   FETCH SRIMANDIR RAW DATA
 ================================ */
 async function fetchSrimandirData() {
-  try {
-    const response = await fetch(SOURCE_URL);
-    const html = await response.text();
-
-    const $ = cheerio.load(html);
-    const nextData = $("#__NEXT_DATA__").html();
-
-    if (!nextData) {
-      return null;
+  const res = await fetch(SRIMANDIR_URL, {
+    headers: {
+      "User-Agent": "Mozilla/5.0"
     }
+  });
 
-    const parsed = JSON.parse(nextData);
-    return parsed?.props?.pageProps || null;
+  const html = await res.text();
+  const $ = cheerio.load(html);
 
-  } catch (err) {
-    console.error("Fetch error:", err);
-    return null;
-  }
+  const nextData = $("#__NEXT_DATA__").html();
+  if (!nextData) return null;
+
+  const json = JSON.parse(nextData);
+  return json?.props?.pageProps || null;
 }
 
 /* ===============================
@@ -40,62 +36,53 @@ app.get("/", (req, res) => {
 });
 
 /* ===============================
-   PANCHANG API
+   PANCHANG API (STEP-1)
+   ✔ Tithi
+   ✔ Masa (Amant + Purnimant)
+   ✔ Samvat
 ================================ */
 app.get("/api/panchang", async (req, res) => {
-  const raw = await fetchSrimandirData();
-
-  if (!raw) {
-    return res.json({ success: false });
-  }
-
   try {
+    const raw = await fetchSrimandirData();
+    if (!raw) {
+      return res.json({ success: false, error: "No data" });
+    }
+
     // ---- TITHI ----
     const tithiObj = raw?.panchangOne?.panchangOne
-      ?.find(i => i.title === "तिथि");
+      ?.find(item => item.title === "तिथि");
 
     const tithi = tithiObj
       ? `${tithiObj.description} (${tithiObj.time})`
       : "—";
 
     // ---- MASA ----
-    const amant = raw?.panchangTwo?.[0]
+    const masaAmant = raw?.panchangTwo?.[0]
       ?.find(i => i.title.includes("अमान्त"))?.description || "—";
 
-    const purnimant = raw?.panchangTwo?.[0]
+    const masaPurnimant = raw?.panchangTwo?.[0]
       ?.find(i => i.title.includes("पूर्णिमांत"))?.description || "—";
 
     // ---- SAMVAT ----
-    const vikram = raw?.panchangTwo?.[1]
+    const vikramSamvat = raw?.panchangTwo?.[1]
       ?.find(i => i.title.includes("विक्रम"))?.description || "—";
 
-    const shak = raw?.panchangTwo?.[1]
+    const shakSamvat = raw?.panchangTwo?.[1]
       ?.find(i => i.title.includes("शक"))?.description || "—";
 
     res.json({
       success: true,
       tithi,
-      masa_amant: amant,
-      masa_purnimant: purnimant,
-      vikram_samvat: vikram,
-      shak_samvat: shak,
+      masa_amant: masaAmant,
+      masa_purnimant: masaPurnimant,
+      vikram_samvat: vikramSamvat,
+      shak_samvat: shakSamvat,
       source: "Srimandir Panchang (Parsed)"
     });
 
-  } catch (e) {
-    console.error(e);
-    res.json({ success: false });
-  }
-});
-
-    res.json(result);
-
   } catch (err) {
-    console.error("Parse error:", err);
-    res.json({
-      success: false,
-      message: "Error parsing Panchang data"
-    });
+    console.error("Panchang API error:", err);
+    res.status(500).json({ success: false });
   }
 });
 
@@ -103,5 +90,5 @@ app.get("/api/panchang", async (req, res) => {
    START SERVER
 ================================ */
 app.listen(PORT, () => {
-  console.log("Bhakti Panchang backend running on port", PORT);
+  console.log("Server running on", PORT);
 });
