@@ -1,7 +1,13 @@
+import express from "express";
 import * as cheerio from "cheerio";
 
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// --- Raw fetcher: Srimandir से पूरा HTML लेकर values निकालना ---
 async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
   try {
+    // Root URL से ही पूरा payload आता है
     const url = `https://www.srimandir.com/hi/panchang`;
     const res = await fetch(url);
     if (!res.ok) {
@@ -11,6 +17,7 @@ async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
     const html = await res.text();
     const $ = cheerio.load(html);
 
+    // Helper: किसी label से value निकालना
     function extractField(label) {
       let value = "";
       $("p").each((i, el) => {
@@ -41,49 +48,21 @@ async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
     return { error: "exception" };
   }
 }
-function formatForPage(raw) {
-  return {
-    date: raw.date || "",
-    sunrise: raw.sunrise || "",
-    sunset: raw.sunset || "",
-    moonrise: raw.moonrise || "",
-    moonset: raw.moonset || "",
-    tithi: raw.tithi || "",
-    paksha: raw.tithi?.includes("कृष्ण") ? "कृष्ण पक्ष" :
-            raw.tithi?.includes("शुक्ल") ? "शुक्ल पक्ष" : "",
-    nakshatra: raw.nakshatra || "",
-    yoga: raw.yoga || "",
-    karana: raw.karana || "",
-    rahukaal: raw.rahukaal || "",
-    shubh_muhurat: raw.shubh_muhurat || "",
-    // Maas, Samvat, Festivals बाद में raw से निकाल सकते हैं
-    maas: raw.maas || "",
-    maas_variants: {
-      purnimant: raw.maas_purnimant || "",
-      amanat: raw.maas_amanat || ""
-    },
-    vikram_samvat: raw.vikram_samvat || "",
-    shak_samvat: raw.shak_samvat || "",
-    festivals: raw.festivals || [],
-    religious_message: raw.religious_message || "",
-    source: raw.source
-  };
-}
-import express from "express";
-const app = express();
-const PORT = process.env.PORT || 3000;
 
-app.get("/api/raw", async (req,res) => {
-  const raw = await fetchSriMandir(req.query.city || "jaipur", req.query.date || "2026-01-13");
-  res.json(raw); // पूरा payload
+// --- Endpoint: Raw data ---
+app.get("/api/raw", async (req, res) => {
+  const raw = await fetchSriMandir();
+  res.json(raw);
 });
 
-app.get("/api/panchang", async (req,res) => {
-  const raw = await fetchSriMandir(req.query.city || "jaipur", req.query.date || "2026-01-13");
-  const clean = formatForPage(raw);
-  res.json(clean); // फ्रंटएंड‑friendly JSON
+// --- Endpoint: Clean Panchang (frontend‑friendly) ---
+app.get("/api/panchang", async (req, res) => {
+  const raw = await fetchSriMandir();
+  // अभी raw ही भेज रहे हैं; बाद में formatter जोड़ सकते हैं
+  res.json(raw);
 });
 
+// --- Start server ---
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
