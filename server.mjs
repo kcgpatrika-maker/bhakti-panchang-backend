@@ -1,83 +1,107 @@
-// server.mjs
 import express from "express";
+import cors from "cors";
 import * as cheerio from "cheerio";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const URL = "https://www.srimandir.com/hi/panchang";
+app.use(cors());
 
-// 1) Raw fetcher: __NEXT_DATA__ JSON निकालना (defensive, stable)
-async function fetchRaw() {
-  const res = await fetch(URL);
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-  const html = await res.text();
-  const $ = cheerio.load(html);
-  const nextData = $("#__NEXT_DATA__").html();
-  if (!nextData) throw new Error("NEXT_DATA not found");
-  const parsed = JSON.parse(nextData);
-  return parsed?.props?.pageProps || {};
-}
+const PORT = process.env.PORT || 10000;
+const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
 
-// 2) Helper: किसी सेक्शन में title से row ढूँढना (object/array दोनों cases)
-function findRowByTitle(section, title) {
-  if (!section) return null;
-
-  // section हो सकता है:
-  // - object: { panchangOne: [...] }
-  // - array: [ { panchangOne: [...] }, ... ]
-  // - सीधे array: [...]
-  const arr =
-    Array.isArray(section?.panchangOne)
-      ? section.panchangOne
-      : Array.isArray(section)
-        ? section
-        : section?.panchangOne;
-
-  if (!Array.isArray(arr)) return null;
-  return arr.find(r => (r?.title || "").trim() === title);
-}
-
-// 3) Endpoint: सिर्फ़ तिथि (description + time) — multi-section fallback
-app.get("/api/panchang", async (req, res) => {
+/* ===============================
+   FETCH RAW SRIMANDIR DATA
+================================ */
+async function fetchSrimandirData() {
   try {
-    const raw = await fetchRaw();
+    const response = await fetch(SOURCE_URL);
+    const html = await response.text();
 
-    // तिथि अक्सर panchangOne में होती है; fallback panchangTwo/panchangRows
-    const tithiRow =
-      findRowByTitle(raw?.panchangOne, "तिथि") ||
-      findRowByTitle(raw?.panchangTwo, "तिथि") ||
-      findRowByTitle(raw?.panchangRows, "तिथि");
+    const $ = cheerio.load(html);
+    const nextData = $("#__NEXT_DATA__").html();
 
-    const date =
-      raw?.dateDisplay ||
-      raw?.date ||
-      raw?.headerTitle ||
-      ""; // कुछ builds में dateDisplay missing होता है
-
-    const tithi = tithiRow?.description || "";
-    const tithi_time = tithiRow?.time || "";
-
-    if (!tithi) {
-      console.warn("Tithi not found — check /api/raw structure for panchangOne/panchangTwo/panchangRows.");
+    if (!nextData) {
+      return null;
     }
 
-    res.json({ date, tithi, tithi_time });
-  } catch (e) {
-    console.error("Error in /api/panchang:", e.message);
-    res.status(500).json({ error: "fetch/parse failed" });
+    const parsed = JSON.parse(nextData);
+    return parsed?.props?.pageProps || null;
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return null;
   }
+}
+
+/* ===============================
+   HEALTH CHECK
+================================ */
+app.get("/", (req, res) => {
+  res.send("Bhakti Panchang backend running");
 });
 
-// 4) Debug endpoint: पूरा raw दिखाओ (structure verify करने के लिए)
-app.get("/api/raw", async (req, res) => {
+/* ===============================
+   PANCHANG API
+================================ */
+app.get("/api/panchang", async (req, res) => {
+  const raw = await fetchSrimandirData();
+
+  if (!raw) {
+    return res.json({ success: false });
+  }
+
   try {
-    const raw = await fetchRaw();
-    res.json(raw);
+    // ---- TITHI ----
+    const tithiObj = raw?.panchangOne?.panchangOne
+      ?.find(i => i.title === "तिथि");
+
+    const tithi = tithiObj
+      ? `${tithiObj.description} (${tithiObj.time})`
+      : "—";
+
+    // ---- MASA ----
+    const amant = raw?.panchangTwo?.[0]
+      ?.find(i => i.title.includes("अमान्त"))?.description || "—";
+
+    const purnimant = raw?.panchangTwo?.[0]
+      ?.find(i => i.title.includes("पूर्णिमांत"))?.description || "—";
+
+    // ---- SAMVAT ----
+    const vikram = raw?.panchangTwo?.[1]
+      ?.find(i => i.title.includes("विक्रम"))?.description || "—";
+
+    const shak = raw?.panchangTwo?.[1]
+      ?.find(i => i.title.includes("शक"))?.description || "—";
+
+    res.json({
+      success: true,
+      tithi,
+      masa_amant: amant,
+      masa_purnimant: purnimant,
+      vikram_samvat: vikram,
+      shak_samvat: shak,
+      source: "Srimandir Panchang (Parsed)"
+    });
+
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error(e);
+    res.json({ success: false });
   }
 });
 
+    res.json(result);
+
+  } catch (err) {
+    console.error("Parse error:", err);
+    res.json({
+      success: false,
+      message: "Error parsing Panchang data"
+    });
+  }
+});
+
+/* ===============================
+   START SERVER
+================================ */
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Bhakti Panchang backend running on port", PORT);
 });
