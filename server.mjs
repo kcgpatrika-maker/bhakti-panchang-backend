@@ -1,41 +1,103 @@
 import express from "express";
+import cors from "cors";
 import * as cheerio from "cheerio";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const URL = "https://www.srimandir.com/hi/panchang";
+app.use(cors());
 
-// Raw fetcher: Srimandir से __NEXT_DATA__ JSON निकालना
-async function fetchRaw() {
-  const res = await fetch(URL);
-  const html = await res.text();
-  const $ = cheerio.load(html);
-  const nextData = $("#__NEXT_DATA__").html();
-  if (!nextData) return {};
-  const parsed = JSON.parse(nextData);
-  return parsed?.props?.pageProps || {};
+const PORT = process.env.PORT || 10000;
+const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
+
+/* ===============================
+   FETCH RAW SRIMANDIR DATA
+================================ */
+async function fetchSrimandirData() {
+  try {
+    const response = await fetch(SOURCE_URL);
+    const html = await response.text();
+
+    const $ = cheerio.load(html);
+    const nextData = $("#__NEXT_DATA__").html();
+
+    if (!nextData) {
+      return null;
+    }
+
+    const parsed = JSON.parse(nextData);
+    return parsed?.props?.pageProps || null;
+
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return null;
+  }
 }
 
-// Endpoint: सिर्फ़ तिथि और उसका समय
+/* ===============================
+   HEALTH CHECK
+================================ */
+app.get("/", (req, res) => {
+  res.send("Bhakti Panchang backend running");
+});
+
+/* ===============================
+   PANCHANG API
+================================ */
 app.get("/api/panchang", async (req, res) => {
-  try {
-    const raw = await fetchRaw();
+  const raw = await fetchSrimandirData();
 
-    // Srimandir payload में panchangOne object है जिसमें फिर से panchangOne array है
-    const section = raw?.panchangOne;
-    const tithiRow = section?.panchangOne?.find(r => r.title === "तिथि");
-
-    res.json({
-      date: raw.dateDisplay || "",
-      tithi: tithiRow?.description || "",
-      tithi_time: tithiRow?.time || ""
+  if (!raw) {
+    return res.json({
+      success: false,
+      message: "Panchang data not available"
     });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+  }
+
+  try {
+    // 🔹 Safe optional chaining (page changes tolerant)
+    const info = raw?.panchangOne || {};
+    const rows = raw?.panchangRows || [];
+
+    const getRow = (label) =>
+      rows.find(r => r?.label?.includes(label))?.value || "—";
+
+    const result = {
+      success: true,
+
+      date: info?.date || "—",
+      location: info?.place || "India",
+
+      sunrise: getRow("सूर्योदय"),
+      sunset: getRow("सूर्यास्त"),
+
+      moonrise: getRow("चन्द्रोदय"),
+      moonset: getRow("चन्द्रास्त"),
+
+      vikram_samvat: getRow("विक्रम संवत"),
+      shak_samvat: getRow("शक संवत"),
+
+      masa_purnimant: getRow("पूर्णिमांत"),
+      masa_amant: getRow("अमांत"),
+
+      tithi: getRow("तिथि"),
+
+      source: "Srimandir Panchang (Server-fetched)",
+      cached: false
+    };
+
+    res.json(result);
+
+  } catch (err) {
+    console.error("Parse error:", err);
+    res.json({
+      success: false,
+      message: "Error parsing Panchang data"
+    });
   }
 });
 
-// Server start
+/* ===============================
+   START SERVER
+================================ */
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Bhakti Panchang backend running on port", PORT);
 });
