@@ -5,6 +5,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const URL = "https://www.srimandir.com/hi/panchang";
 
+// Raw fetcher: Srimandir से __NEXT_DATA__ JSON निकालना
 async function fetchRaw() {
   const res = await fetch(URL);
   const html = await res.text();
@@ -16,9 +17,9 @@ async function fetchRaw() {
 }
 
 // सिर्फ़ तिथि निकालने वाला endpoint
-app.get("/api/tithi", async (req, res) => {
+app.get("/api/panchang", async (req, res) => {
   try {
-    const raw = await fetchRaw(); // वही __NEXT_DATA__ वाला fetchRaw
+    const raw = await fetchRaw();
     const tithiRow = raw?.panchangOne?.panchangOne?.find(r => r.title === "तिथि");
     const tithi = tithiRow ? tithiRow.description : "";
     const tithiTime = tithiRow ? tithiRow.time : "";
@@ -33,4 +34,7 @@ app.get("/api/tithi", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Server start
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
