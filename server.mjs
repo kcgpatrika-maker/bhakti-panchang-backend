@@ -21,11 +21,8 @@ app.get("/api/panchang", async (req, res) => {
   try {
     const raw = await fetchRaw();
 
-    // Srimandir payload में panchangOne के अंदर array है
-    const section = Array.isArray(raw?.panchangOne)
-      ? raw.panchangOne[0]
-      : raw.panchangOne;
-
+    // Srimandir payload में panchangOne object है जिसमें फिर से panchangOne array है
+    const section = raw?.panchangOne;
     const tithiRow = section?.panchangOne?.find(r => r.title === "तिथि");
 
     res.json({
