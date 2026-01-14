@@ -15,10 +15,22 @@ async function fetchRaw() {
   return parsed?.props?.pageProps || {};
 }
 
-app.get("/api/panchang", async (req, res) => {
-  const raw = await fetchRaw();
-  // raw.panchangRows, raw.panchangOne, raw.sunrise आदि से values निकालें
-  res.json(raw);
+// सिर्फ़ तिथि निकालने वाला endpoint
+app.get("/api/tithi", async (req, res) => {
+  try {
+    const raw = await fetchRaw(); // वही __NEXT_DATA__ वाला fetchRaw
+    const tithiRow = raw?.panchangOne?.panchangOne?.find(r => r.title === "तिथि");
+    const tithi = tithiRow ? tithiRow.description : "";
+    const tithiTime = tithiRow ? tithiRow.time : "";
+
+    res.json({
+      date: raw.dateDisplay || "",
+      tithi,
+      tithi_time: tithiTime
+    });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
