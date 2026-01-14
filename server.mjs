@@ -1,45 +1,43 @@
-import express from "express";
-import * as cheerio from "cheerio";
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const SRIMANDIR_URL = "https://www.srimandir.com/hi/panchang";
-
-// वही पुराना पैटर्न: <p> टैग्स से label-based extraction
-async function fetchSunTimes() {
-  const res = await fetch(SRIMANDIR_URL);
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-  const html = await res.text();
-  const $ = cheerio.load(html);
-
-  function extractField(label) {
-    let value = "";
-    $("p").each((i, el) => {
-      const text = $(el).text().trim();
-      if (text.startsWith(label)) {
-        // "लेबल : मान" से मान निकालना
-        value = text.replace(label + " :", "").trim();
-      }
-    });
-    return value;
-  }
-
-  const sunrise = extractField("सूर्योदय");
-  const sunset  = extractField("सूर्यास्त");
-
-  return { sunrise, sunset, source: SRIMANDIR_URL };
-}
-
-// छोटा endpoint—सिर्फ़ सूर्योदय/सूर्यास्त
-app.get("/api/sun", async (req, res) => {
+async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
   try {
-    const data = await fetchSunTimes();
-    res.json(data);
-  } catch (e) {
-    res.status(500).json({ error: "fetch failed" });
-  }
-});
+    const url = `https://www.srimandir.com/hi/panchang`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("Fetch failed:", res.status);
+      return { error: "fetch failed" };
+    }
+    const html = await res.text();
+    console.log("HTML snippet:", html.substring(0, 500)); // Debug: पहले 500 chars
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+    const $ = cheerio.load(html);
+
+    function extractField(label) {
+      let value = "—";
+      $("p").each((i, el) => {
+        const text = $(el).text().trim();
+        if (text.startsWith(label)) {
+          value = text.replace(label + " :", "").trim();
+        }
+      });
+      return value;
+    }
+
+    return {
+      date,
+      tithi: extractField("तिथि"),
+      nakshatra: extractField("नक्षत्र"),
+      yoga: extractField("योग"),
+      karana: extractField("करण"),
+      sunrise: extractField("सूर्योदय"),
+      sunset: extractField("सूर्यास्त"),
+      moonrise: extractField("चन्द्रोदय"),
+      moonset: extractField("चंद्रास्त"),
+      rahukaal: extractField("राहुकाल"),
+      shubh_muhurat: extractField("शुभ मुहूर्त"),
+      source: url
+    };
+  } catch (err) {
+    console.error("SriMandir fetch error:", err);
+    return { error: "exception" };
+  }
+}
