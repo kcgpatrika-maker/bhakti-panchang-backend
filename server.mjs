@@ -6,17 +6,13 @@ const PORT = process.env.PORT || 3000;
 
 let cachedPanchang = null;
 
-// Helper: refined extractor
-function getValueByLabel($, label) {
+// Helper: extract <p> blocks with "label : value"
+function extractField($, label) {
   let value = "—";
-  $("div").each((i, el) => {
+  $("p").each((i, el) => {
     const text = $(el).text().trim();
-    if (text.includes(label)) {
-      const parent = $(el).parent();
-      const possible = parent.find("div").last().text().trim();
-      if (possible && !possible.includes("px") && !possible.includes("transparent")) {
-        value = possible;
-      }
+    if (text.startsWith(label)) {
+      value = text.replace(label + " :", "").trim();
     }
   });
   return value;
@@ -33,16 +29,16 @@ async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
 
     return {
       date,
-      tithi: getValueByLabel($, "तिथि"),
-      nakshatra: getValueByLabel($, "नक्षत्र"),
-      yoga: getValueByLabel($, "योग"),
-      karana: getValueByLabel($, "करण"),
-      sunrise: getValueByLabel($, "सूर्योदय"),
-      sunset: getValueByLabel($, "सूर्यास्त"),
-      moonrise: getValueByLabel($, "चन्द्रोदय"),
-      moonset: getValueByLabel($, "चंद्रास्त"),
-      rahukaal: getValueByLabel($, "राहुकाल"),
-      shubh_muhurat: getValueByLabel($, "शुभ मुहूर्त"),
+      tithi: extractField($, "तिथि"),
+      nakshatra: extractField($, "नक्षत्र"),
+      yoga: extractField($, "योग"),
+      karana: extractField($, "करण"),
+      sunrise: extractField($, "सूर्योदय"),
+      sunset: extractField($, "सूर्यास्त"),
+      moonrise: extractField($, "चन्द्रोदय"),
+      moonset: extractField($, "चंद्रास्त"),
+      rahukaal: extractField($, "राहुकाल"),
+      shubh_muhurat: extractField($, "शुभ मुहूर्त"),
       source: url
     };
   } catch (err) {
