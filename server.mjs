@@ -19,18 +19,19 @@ async function fetchRaw() {
 // सिर्फ़ तिथि निकालने वाला endpoint
 app.get("/api/panchang", async (req, res) => {
   try {
-    const raw = await fetchRaw(); // __NEXT_DATA__ वाला fetchRaw
+    const raw = await fetchRaw();
 
-    // ध्यान दो: raw.panchangOne के अंदर फिर से panchangOne array है
-    const tithiRow = raw?.panchangOne?.panchangOne?.find(r => r.title === "तिथि");
+    // अगर panchangOne एक array है
+    const section = Array.isArray(raw?.panchangOne)
+      ? raw.panchangOne[0]
+      : raw.panchangOne;
 
-    const tithi = tithiRow ? tithiRow.description : "";
-    const tithiTime = tithiRow ? tithiRow.time : "";
+    const tithiRow = section?.panchangOne?.find(r => r.title === "तिथि");
 
     res.json({
       date: raw.dateDisplay || "",
-      tithi,
-      tithi_time: tithiTime
+      tithi: tithiRow?.description || "",
+      tithi_time: tithiRow?.time || ""
     });
   } catch (e) {
     res.status(500).json({ error: e.message });
