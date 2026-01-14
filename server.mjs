@@ -3,33 +3,49 @@ import * as cheerio from "cheerio";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SRIMANDIR_URL = "https://www.srimandir.com/hi/panchang";
 
-const safeText = (v) => (typeof v === "string" ? v.trim() : "");
+// ---------- Helpers ----------
+const safe = (v) => (typeof v === "string" ? v.trim() : "");
+const isTime = (t) => !!t && t !== "\\" && t !== "—" && t !== "-" && t !== null;
 
-// Raw extractor: Srimandir HTML से पूरा JSON blob निकालना
-function extractJsonFromHtml(html) {
+// ---------- Part 1: Raw extractor (Next.js __NEXT_DATA__) ----------
+async function fetchRawPanchang() {
+  const res = await fetch(SRIMANDIR_URL);
+  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+  const html = await res.text();
   const $ = cheerio.load(html);
-  let rawJson = null;
 
-  $("script").each((i, el) => {
-    const txt = $(el).html() || "";
-    if (txt.includes("panchangRows") || txt.includes("headerTitle")) {
-      const match = txt.match(/\{[\s\S]*?"panchangRows"[\s\S]*?\}/);
-      if (match) {
-        try { rawJson = JSON.parse(match[0]); } catch {}
-      }
-    }
-  });
-
-  if (!rawJson) {
-    const blobMatch = html.match(/\{[\s\S]*?"panchangRows"[\s\S]*?\}/);
-    if (blobMatch) {
-      try { rawJson = JSON.parse(blobMatch[0]); } catch {}
+  // Prefer Next.js payload
+  const nextData = $("#__NEXT_DATA__").html();
+  if (nextData) {
+    try {
+      const parsed = JSON.parse(nextData);
+      const raw = parsed?.props?.pageProps || {};
+      raw.source = SRIMANDIR_URL;
+      return raw;
+    } catch (e) {
+      console.error("NEXT_DATA parse error:", e);
     }
   }
 
-  return rawJson || {};
+  // Fallback: try to find a blob with panchangRows
+  const blobMatch = html.match(/\{[\s\S]*?"panchangRows"[\s\S]*?\}/);
+  if (blobMatch) {
+    try {
+      const raw = JSON.parse(blobMatch[0]);
+      raw.source = SRIMANDIR_URL;
+      return raw;
+    } catch (e) {
+      console.error("Blob parse error:", e);
+    }
+  }
+
+  // Last resort: minimal structure
+  return { source: SRIMANDIR_URL };
 }
+
+// ---------- Part 2: Formatter (collect rows, extract clean fields) ----------
 function collectRows(raw) {
   const rows = [];
   const pushRows = (arr) => {
@@ -37,10 +53,20 @@ function collectRows(raw) {
       for (const block of arr) {
         if (Array.isArray(block)) {
           for (const item of block) {
-            if (item && item.title) rows.push({ title: safeText(item.title), description: safeText(item.description), time: safeText(item.time) });
+            if (item && item.title) {
+              rows.push({
+                title: safe(item.title),
+                description: safe(item.description),
+                time: safe(item.time),
+              });
+            }
           }
         } else if (block && block.title) {
-          rows.push({ title: safeText(block.title), description: safeText(block.description), time: safeText(block.time) });
+          rows.push({
+            title: safe(block.title),
+            description: safe(block.description),
+            time: safe(block.time),
+          });
         }
       }
     }
@@ -53,14 +79,45 @@ function collectRows(raw) {
 }
 
 function getByTitle(rows, title) {
-  return rows.find((x) => safeText(x.title) === title) || null;
+  return rows.find((x) => safe(x.title) === title) || {};
+}
+
+function extractSunTimes(raw) {
+  // Srimandir often gives combined Hindi sentence: "6:46 AM और सूर्यास्त 5:30 PM का है।"
+  const combined = safe(raw?.suryodaya);
+  let sunrise = "", sunset = "";
+
+  if (combined) {
+    const srMatch = combined.match(/(\d{1,2}:\d{2}\s?(AM|PM))/i);
+    const ssMatch = combined.match(/सूर्यास्त\s?(\d{1,2}:\d{2}\s?(AM|PM))/i);
+    if (srMatch) sunrise = srMatch[1];
+    if (ssMatch) sunset = ssMatch[1];
+  }
+
+  // Fallbacks if separate keys exist
+  const sr = safe(raw?.sunrise);
+  const ss = safe(raw?.sunset);
+  if (!sunrise && sr) sunrise = sr;
+  if (!sunset && ss) sunset = ss;
+
+  const moonrise = safe(raw?.moonrise || raw?.chandrodaya);
+  const moonset = safe(raw?.moonset || raw?.chandrasta);
+
+  return {
+    sunrise,
+    sunset,
+    moonrise: isTime(moonrise) ? moonrise : "",
+    moonset: isTime(moonset) ? moonset : "",
+  };
 }
 
 function formatForPage(raw) {
   const rows = collectRows(raw);
+  const times = extractSunTimes(raw);
 
-  const tithiDesc = safeText(getByTitle(rows, "तिथि")?.description);
-  let paksha = "";
+  // Tithi + Paksha split
+  const tithiDesc = safe(getByTitle(rows, "तिथि").description);
+  let paksha = safe(getByTitle(rows, "पक्ष").description);
   let tithi = tithiDesc;
   const pkMatch = tithiDesc.match(/(कृष्ण|शुक्ल)\sपक्ष/);
   if (pkMatch) {
@@ -68,50 +125,69 @@ function formatForPage(raw) {
     tithi = tithiDesc.replace(pkMatch[0], "").trim();
   }
 
-  const vikramRaw = safeText(getByTitle(rows, "विक्रम संवत")?.description);
-  const shakRaw = safeText(getByTitle(rows, "शक")?.description);
+  // Samvat numbers only (strip names in parentheses)
+  const vikramRaw = safe(getByTitle(rows, "विक्रम संवत").description);
+  const shakRaw = safe(getByTitle(rows, "शक").description);
+  const vikram_samvat = vikramRaw.replace(/\s*\([^)]*\)\s*/g, "").trim();
+  const shak_samvat = shakRaw.replace(/\s*\([^)]*\)\s*/g, "").trim();
+
+  // Maas: Purnimant first, Amanat optional
+  const maasPurnimant = safe(getByTitle(rows, "महीना पूर्णिमांत").description);
+  const maasAmanat = safe(getByTitle(rows, "महीना अमान्त").description);
+
+  // Festivals
+  const festivals = (raw?.festivals || [])
+    .flatMap((f) => f.festivals?.map((x) => safe(x.festival)) || [])
+    .filter(Boolean);
+  const dedupFestivals = [...new Set(festivals)];
 
   return {
-    date: safeText(raw?.dateDisplay) || "14 जनवरी 2026, बुधवार",
-    sunrise: safeText(raw?.sunrise) || "",
-    sunset: safeText(raw?.sunset) || "",
-    moonrise: safeText(raw?.moonrise) || "",
-    moonset: safeText(raw?.moonset) || "",
-    vikram_samvat: vikramRaw.replace(/\s*\([^)]*\)\s*/g, ""),
-    shak_samvat: shakRaw.replace(/\s*\([^)]*\)\s*/g, ""),
-    maas: safeText(getByTitle(rows, "महीना पूर्णिमांत")?.description), // प्राथमिकता पूर्णिमांत
+    date: safe(raw?.dateDisplay) || "14 जनवरी 2026, बुधवार",
+    sunrise: times.sunrise,
+    sunset: times.sunset,
+    moonrise: times.moonrise,
+    moonset: times.moonset,
+    vikram_samvat,
+    shak_samvat,
+    maas: maasPurnimant, // प्राथमिकता पूर्णिमांत (जैसे "माघ")
     maas_variants: {
-      purnimant: safeText(getByTitle(rows, "महीना पूर्णिमांत")?.description),
-      amanat: safeText(getByTitle(rows, "महीना अमान्त")?.description)
+      purnimant: maasPurnimant,
+      amanat: maasAmanat,
     },
     paksha,
     tithi,
-    nakshatra: safeText(getByTitle(rows, "नक्षत्र")?.description),
-    yoga: safeText(getByTitle(rows, "योग")?.description),
-    karana: safeText(getByTitle(rows, "करण")?.description),
-    festivals: (raw?.festivals || []).flatMap(f => f.festivals?.map(x => safeText(x.festival)) || []),
-    religious_message: safeText(raw?.religious_message) || ""
+    nakshatra: safe(getByTitle(rows, "नक्षत्र").description),
+    yoga: safe(getByTitle(rows, "योग").description),
+    karana: safe(getByTitle(rows, "करण").description),
+    festivals: dedupFestivals,
+    religious_message: safe(raw?.religious_message) || "",
+    source: safe(raw?.source) || SRIMANDIR_URL,
   };
 }
-// Raw endpoint: पूरा payload देखने के लिए
-app.get("/api/raw", async (req,res) => {
-  const url = "https://www.srimandir.com/hi/panchang";
-  const resHtml = await fetch(url);
-  const html = await resHtml.text();
-  const raw = extractJsonFromHtml(html);
-  res.json(raw);
+
+// ---------- Part 3: Endpoints ----------
+app.get("/api/raw", async (req, res) => {
+  try {
+    const raw = await fetchRawPanchang();
+    res.json(raw); // पूरा payload (debug)
+  } catch (e) {
+    console.error("RAW error:", e);
+    res.status(500).json({ error: "raw fetch failed" });
+  }
 });
 
-// Clean endpoint: फ्रंटएंड के लिए साफ़ JSON
-app.get("/api/panchang", async (req,res) => {
-  const url = "https://www.srimandir.com/hi/panchang";
-  const resHtml = await fetch(url);
-  const html = await resHtml.text();
-  const raw = extractJsonFromHtml(html);
-  const clean = formatForPage(raw);
-  res.json(clean);
+app.get("/api/panchang", async (req, res) => {
+  try {
+    const raw = await fetchRawPanchang();
+    const clean = formatForPage(raw);
+    res.json(clean); // फ्रंटएंड‑friendly JSON
+  } catch (e) {
+    console.error("Panchang error:", e);
+    res.status(500).json({ error: "panchang format failed" });
+  }
 });
 
+// ---------- Final: start server ----------
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
