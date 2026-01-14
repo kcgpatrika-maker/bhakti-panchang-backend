@@ -1,9 +1,14 @@
 {
+  "name": "bhakti-panchang-backend",
+  "version": "1.0.0",
   "type": "module",
-  "engines": {
-    "node": ">=18"
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
   },
   "dependencies": {
-    "express": "^4.19.0"
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "cheerio": "^1.0.0-rc.12"
   }
 }
