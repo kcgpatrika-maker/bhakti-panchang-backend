@@ -1,49 +1,26 @@
-import express from "express";
-import * as cheerio from "cheerio";
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-const SRIMANDIR_URL = "https://www.srimandir.com/hi/panchang";
-
-// ---------- Helpers ----------
-const safe = (v) => (typeof v === "string" ? v.trim() : "");
-const isTime = (t) => !!t && t !== "\\" && t !== "—" && t !== "-" && t !== null;
-
-// ---------- Part 1: Raw extractor (Next.js __NEXT_DATA__) ----------
-async function fetchRawPanchang() {
-  const res = await fetch(SRIMANDIR_URL);
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-  const html = await res.text();
-  const $ = cheerio.load(html);
-
-  // Prefer Next.js payload
-  const nextData = $("#__NEXT_DATA__").html();
-  if (nextData) {
-    try {
-      const parsed = JSON.parse(nextData);
-      const raw = parsed?.props?.pageProps || {};
-      raw.source = SRIMANDIR_URL;
-      return raw;
-    } catch (e) {
-      console.error("NEXT_DATA parse error:", e);
+async function fetchSriMandir(city = "jaipur", date = "2026-01-14") {
+  try {
+    const url = "https://www.srimandir.com/hi/panchang";
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.error("Fetch failed:", res.status);
+      return { error: "fetch failed" };
     }
-  }
+    const html = await res.text();
+    console.log("HTML snippet:", html.substring(0, 500)); // Debug: पहले 500 chars
 
-  // Fallback: try to find a blob with panchangRows
-  const blobMatch = html.match(/\{[\s\S]*?"panchangRows"[\s\S]*?\}/);
-  if (blobMatch) {
-    try {
-      const raw = JSON.parse(blobMatch[0]);
-      raw.source = SRIMANDIR_URL;
-      return raw;
-    } catch (e) {
-      console.error("Blob parse error:", e);
+    const $ = cheerio.load(html);
+
+    function extractField(label) {
+      let value = "—";
+      $("p").each((i, el) => {
+        const text = $(el).text().trim();
+        if (text.startsWith(label)) {
+          value = text.replace(label + " :", "").trim();
+        }
+      });
+      return value;
     }
-  }
-
-  // Last resort: minimal structure
-  return { source: SRIMANDIR_URL };
-}
 
 // ---------- Part 2: Formatter (collect rows, extract clean fields) ----------
 function collectRows(raw) {
