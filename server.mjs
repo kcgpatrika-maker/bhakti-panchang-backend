@@ -121,8 +121,8 @@ function parseSunTimes(raw) {
   return {
     sunrise: sunrise || "",
     sunset: sunset || "",
-    moonrise: isValidTime(moonrise) ? moonrise : "",
-    moonset: isValidTime(moonset) ? moonset : "",
+    moonrise: moonrise || "",
+    moonset: moonset || "",
   };
 }
 
