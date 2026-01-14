@@ -12,7 +12,7 @@ const isValidTime = (t) => t && t !== "\\" && t !== "—" && t !== "-" && t !== 
 
 // --- Fetch Srimandir and extract embedded JSON ---
 async function fetchSriMandir(city = "jaipur", date = "2026-01-14") {
-  const url = `https://www.srimandir.com/hi/panchang?city=${city}&date=${date}`;
+  const url = `https://www.srimandir.com/hi/panchang`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
   const html = await res.text();
