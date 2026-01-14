@@ -1,103 +1,83 @@
+// server.mjs
 import express from "express";
-import cors from "cors";
 import * as cheerio from "cheerio";
 
 const app = express();
-app.use(cors());
+const PORT = process.env.PORT || 3000;
+const URL = "https://www.srimandir.com/hi/panchang";
 
-const PORT = process.env.PORT || 10000;
-const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
-
-/* ===============================
-   FETCH RAW SRIMANDIR DATA
-================================ */
-async function fetchSrimandirData() {
-  try {
-    const response = await fetch(SOURCE_URL);
-    const html = await response.text();
-
-    const $ = cheerio.load(html);
-    const nextData = $("#__NEXT_DATA__").html();
-
-    if (!nextData) {
-      return null;
-    }
-
-    const parsed = JSON.parse(nextData);
-    return parsed?.props?.pageProps || null;
-
-  } catch (err) {
-    console.error("Fetch error:", err);
-    return null;
-  }
+// 1) Raw fetcher: __NEXT_DATA__ JSON निकालना (defensive, stable)
+async function fetchRaw() {
+  const res = await fetch(URL);
+  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+  const html = await res.text();
+  const $ = cheerio.load(html);
+  const nextData = $("#__NEXT_DATA__").html();
+  if (!nextData) throw new Error("NEXT_DATA not found");
+  const parsed = JSON.parse(nextData);
+  return parsed?.props?.pageProps || {};
 }
 
-/* ===============================
-   HEALTH CHECK
-================================ */
-app.get("/", (req, res) => {
-  res.send("Bhakti Panchang backend running");
-});
+// 2) Helper: किसी सेक्शन में title से row ढूँढना (object/array दोनों cases)
+function findRowByTitle(section, title) {
+  if (!section) return null;
 
-/* ===============================
-   PANCHANG API
-================================ */
+  // section हो सकता है:
+  // - object: { panchangOne: [...] }
+  // - array: [ { panchangOne: [...] }, ... ]
+  // - सीधे array: [...]
+  const arr =
+    Array.isArray(section?.panchangOne)
+      ? section.panchangOne
+      : Array.isArray(section)
+        ? section
+        : section?.panchangOne;
+
+  if (!Array.isArray(arr)) return null;
+  return arr.find(r => (r?.title || "").trim() === title);
+}
+
+// 3) Endpoint: सिर्फ़ तिथि (description + time) — multi-section fallback
 app.get("/api/panchang", async (req, res) => {
-  const raw = await fetchSrimandirData();
-
-  if (!raw) {
-    return res.json({
-      success: false,
-      message: "Panchang data not available"
-    });
-  }
-
   try {
-    // 🔹 Safe optional chaining (page changes tolerant)
-    const info = raw?.panchangOne || {};
-    const rows = raw?.panchangRows || [];
+    const raw = await fetchRaw();
 
-    const getRow = (label) =>
-      rows.find(r => r?.label?.includes(label))?.value || "—";
+    // तिथि अक्सर panchangOne में होती है; fallback panchangTwo/panchangRows
+    const tithiRow =
+      findRowByTitle(raw?.panchangOne, "तिथि") ||
+      findRowByTitle(raw?.panchangTwo, "तिथि") ||
+      findRowByTitle(raw?.panchangRows, "तिथि");
 
-    const result = {
-      success: true,
+    const date =
+      raw?.dateDisplay ||
+      raw?.date ||
+      raw?.headerTitle ||
+      ""; // कुछ builds में dateDisplay missing होता है
 
-      date: info?.date || "—",
-      location: info?.place || "India",
+    const tithi = tithiRow?.description || "";
+    const tithi_time = tithiRow?.time || "";
 
-      sunrise: getRow("सूर्योदय"),
-      sunset: getRow("सूर्यास्त"),
+    if (!tithi) {
+      console.warn("Tithi not found — check /api/raw structure for panchangOne/panchangTwo/panchangRows.");
+    }
 
-      moonrise: getRow("चन्द्रोदय"),
-      moonset: getRow("चन्द्रास्त"),
-
-      vikram_samvat: getRow("विक्रम संवत"),
-      shak_samvat: getRow("शक संवत"),
-
-      masa_purnimant: getRow("पूर्णिमांत"),
-      masa_amant: getRow("अमांत"),
-
-      tithi: getRow("तिथि"),
-
-      source: "Srimandir Panchang (Server-fetched)",
-      cached: false
-    };
-
-    res.json(result);
-
-  } catch (err) {
-    console.error("Parse error:", err);
-    res.json({
-      success: false,
-      message: "Error parsing Panchang data"
-    });
+    res.json({ date, tithi, tithi_time });
+  } catch (e) {
+    console.error("Error in /api/panchang:", e.message);
+    res.status(500).json({ error: "fetch/parse failed" });
   }
 });
 
-/* ===============================
-   START SERVER
-================================ */
+// 4) Debug endpoint: पूरा raw दिखाओ (structure verify करने के लिए)
+app.get("/api/raw", async (req, res) => {
+  try {
+    const raw = await fetchRaw();
+    res.json(raw);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log("Bhakti Panchang backend running on port", PORT);
+  console.log(`Server running on port ${PORT}`);
 });
