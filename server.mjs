@@ -41,13 +41,18 @@ function refineData(raw) {
 app.get("/api/panchang", async (req, res) => {
   const raw = await fetchRaw();
 
-  // तारीख और वार निकालना
+  // तारीख और वार
   const date = raw?.panchangState?.lunarData?.headerTitle || "";
   const line1 = raw?.panchangState?.lunarData?.line1 || "";
   const day = line1.split(",").pop()?.trim() || "";
 
-  // फ्रंटएंड को सिर्फ़ यही भेजना
-  res.json({ date, day });
+  // सूर्योदय और सूर्यास्त
+  const sunMoonList = raw?.panchangState?.sunMoonInfo?.sunMoonList || [];
+  const sunrise = sunMoonList.find(item => item.header === "सूर्योदय")?.time || "";
+  const sunset = sunMoonList.find(item => item.header === "सूर्यास्त")?.time || "";
+
+  // फ्रंटएंड को भेजना
+  res.json({ date, day, sunrise, sunset });
 });
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
