@@ -39,14 +39,15 @@ function refineData(raw) {
 }
 
 app.get("/api/panchang", async (req, res) => {
-  try {
-    const raw = await fetchRaw();
-    const refined = refineData(raw);
-    res.json(refined);
-  } catch (err) {
-    console.error("Error fetching Panchang:", err);
-    res.status(500).json({ error: "Failed to fetch Panchang data" });
-  }
+  const raw = await fetchRaw();
+
+  // तारीख और वार निकालना
+  const date = raw?.panchangState?.lunarData?.headerTitle || "";
+  const line1 = raw?.panchangState?.lunarData?.line1 || "";
+  const day = line1.split(",").pop()?.trim() || "";
+
+  // फ्रंटएंड को सिर्फ़ यही भेजना
+  res.json({ date, day });
 });
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
