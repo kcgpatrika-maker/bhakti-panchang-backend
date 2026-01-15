@@ -18,4 +18,6 @@ app.get("/api/panchang", async (req, res) => {
   // raw.panchangRows, raw.panchangOne, raw.sunrise आदि से values निकालें 
   res.json(raw);
 }); 
-  app.listen(PORT, () => console.log(Server running on ${PORT}));
+ app.listen(PORT, () => {
+  console.log("Bhakti Panchang backend running on port", PORT);
+});
