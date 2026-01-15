@@ -30,43 +30,36 @@ async function fetchWithTimeout(url, ms = 20000) {
 
 // Helper: scrape and shape JSON
 async function scrapePanchang() {
-  const res = await fetchWithTimeout(SOURCE_URL, 20000);
-  if (!res.ok) throw new Error(`Source fetch failed: ${res.status}`);
+  const res = await fetch("https://www.srimandir.com/hi/panchang");
   const html = await res.text();
   const $ = cheerio.load(html);
 
-  // Resilient selectors—adjust if needed to match real DOM
-  const date = $("meta[property='og:title']").attr("content")?.trim()
-    || $(".panchang-date").text().trim()
+  // Date & Day
+  const date = $(".panchang-date").text().trim() 
     || new Date().toLocaleDateString("hi-IN");
+  const day = $(".panchang-day").text().trim() 
+    || new Date().toLocaleDateString("hi-IN", { weekday: "long" });
 
-  const day = new Date().toLocaleDateString("hi-IN", { weekday: "long" });
+  // Sunrise / Sunset
+  const sunrise = $("div:contains('सूर्योदय')").next().text().trim() || "—";
+  const sunset  = $("div:contains('सूर्यास्त')").next().text().trim() || "—";
 
-  const sunrise = $(".sunrise").text().trim()
-    || $("div:contains('सूर्योदय')").next().text().trim()
-    || "—";
+  // Moonrise / Moonset
+  const moonrise = $("div:contains('चंद्रोदय')").next().text().trim() || "—";
+  const moonset  = $("div:contains('चंद्रास्त')").next().text().trim() || "—";
 
-  const sunset = $(".sunset").text().trim()
-    || $("div:contains('सूर्यास्त')").next().text().trim()
-    || "—";
-
-  const moonrise = $(".moonrise").text().trim()
-    || $("div:contains('चंद्रोदय')").next().text().trim()
-    || "—";
-
-  const moonset = $(".moonset").text().trim()
-    || $("div:contains('चंद्रास्त')").next().text().trim()
-    || "—";
-
+  // Vikram & Shak Samvat
   const vikramSamvat = $("div:contains('विक्रम संवत')").next().text().trim() || "—";
   const shakaSamvat  = $("div:contains('शक संवत')").next().text().trim() || "—";
 
+  // Masa, Paksha, Tithi
   const month  = $("div:contains('मास')").next().text().trim() || "—";
   const paksha = $("div:contains('पक्ष')").next().text().trim() || "—";
   const tithi  = $("div:contains('तिथि')").next().text().trim() || "—";
 
+  // Festivals
   const festivalList = [];
-  $(".festival-item, li:contains('व्रत'), li:contains('त्योहार')").each((_, el) => {
+  $("li.festival, .festival-item").each((_, el) => {
     const txt = $(el).text().trim();
     if (txt) festivalList.push(txt);
   });
