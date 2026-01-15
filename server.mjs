@@ -52,18 +52,26 @@ app.get("/api/panchang", async (req, res) => {
   const sunset = sunMoonList.find(item => item.header === "सूर्यास्त")?.time || "";
   const moonrise = sunMoonList.find(item => item.header === "चंद्रोदय")?.time || "";
   const moonset = sunMoonList.find(item => item.header === "चन्द्रास्त")?.time || "";
-  // विक्रम संवत और शक संवत
+    // विक्रम संवत और शक संवत
   const panchangTwo = raw?.panchangState?.panchangTwo || [];
   const vikramSamvat = panchangTwo.flat().find(item => item.title === "विक्रम संवत")?.description || "";
   const shakaSamvat = panchangTwo.flat().find(item => item.title === "शक संवत")?.description || "";
 
   // मास, पक्ष और तिथि
   const month = raw?.panchangState?.lunarData?.line2 || "";
-  const tithiObj = raw?.panchangState?.panchangOne?.find(item => item.title === "तिथि");
+  const tithiArr = raw?.panchangState?.panchangOne?.panchangOne || [];
+  const tithiObj = tithiArr.find(item => item.title === "तिथि");
   const tithiFull = tithiObj?.description || "";
-  const [paksha, tithi] = tithiFull.split(" ")?.length > 1 
-    ? [tithiFull.split(" ")[0] + " " + tithiFull.split(" ")[1], tithiFull.split(" ").slice(2).join(" ")] 
-    : ["", tithiFull];
+
+  let paksha = "";
+  let tithi = "";
+  if (tithiFull.includes(" ")) {
+    const parts = tithiFull.split(" ");
+    paksha = parts[0] + " " + parts[1];   // "कृष्ण पक्ष"
+    tithi = parts.slice(2).join(" ");     // "द्वादशी"
+  } else {
+    tithi = tithiFull;
+  }
 
   // फ्रंटएंड को भेजना
   res.json({ date, day, sunrise, sunset, moonrise, moonset, vikramSamvat, shakaSamvat, month, paksha, tithi });
