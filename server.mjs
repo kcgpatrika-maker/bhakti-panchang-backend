@@ -6,26 +6,30 @@ const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 10000;
-const SRIMANDIR_URL = "https://www.srimandir.com/hi/panchang";
+const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
 
 /* ===============================
-   FETCH SRIMANDIR RAW DATA
+   FETCH RAW SRIMANDIR DATA
 ================================ */
 async function fetchSrimandirData() {
-  const res = await fetch(SRIMANDIR_URL, {
-    headers: {
-      "User-Agent": "Mozilla/5.0"
+  try {
+    const response = await fetch(SOURCE_URL);
+    const html = await response.text();
+
+    const $ = cheerio.load(html);
+    const nextData = $("#__NEXT_DATA__").html();
+
+    if (!nextData) {
+      return null;
     }
-  });
 
-  const html = await res.text();
-  const $ = cheerio.load(html);
+    const parsed = JSON.parse(nextData);
+    return parsed?.props?.pageProps || null;
 
-  const nextData = $("#__NEXT_DATA__").html();
-  if (!nextData) return null;
-
-  const json = JSON.parse(nextData);
-  return json?.props?.pageProps || null;
+  } catch (err) {
+    console.error("Fetch error:", err);
+    return null;
+  }
 }
 
 /* ===============================
@@ -36,53 +40,58 @@ app.get("/", (req, res) => {
 });
 
 /* ===============================
-   PANCHANG API (STEP-1)
-   ✔ Tithi
-   ✔ Masa (Amant + Purnimant)
-   ✔ Samvat
+   PANCHANG API
 ================================ */
 app.get("/api/panchang", async (req, res) => {
-  try {
-    const raw = await fetchSrimandirData();
-    if (!raw) {
-      return res.json({ success: false, error: "No data" });
-    }
+  const raw = await fetchSrimandirData();
 
-    // ---- TITHI ----
-    const tithiObj = raw?.panchangOne?.panchangOne
-      ?.find(item => item.title === "तिथि");
-
-    const tithi = tithiObj
-      ? `${tithiObj.description} (${tithiObj.time})`
-      : "—";
-
-    // ---- MASA ----
-    const masaAmant = raw?.panchangTwo?.[0]
-      ?.find(i => i.title.includes("अमान्त"))?.description || "—";
-
-    const masaPurnimant = raw?.panchangTwo?.[0]
-      ?.find(i => i.title.includes("पूर्णिमांत"))?.description || "—";
-
-    // ---- SAMVAT ----
-    const vikramSamvat = raw?.panchangTwo?.[1]
-      ?.find(i => i.title.includes("विक्रम"))?.description || "—";
-
-    const shakSamvat = raw?.panchangTwo?.[1]
-      ?.find(i => i.title.includes("शक"))?.description || "—";
-
-    res.json({
-      success: true,
-      tithi,
-      masa_amant: masaAmant,
-      masa_purnimant: masaPurnimant,
-      vikram_samvat: vikramSamvat,
-      shak_samvat: shakSamvat,
-      source: "Srimandir Panchang (Parsed)"
+  if (!raw) {
+    return res.json({
+      success: false,
+      message: "Panchang data not available"
     });
+  }
+
+  try {
+    // 🔹 Safe optional chaining (page changes tolerant)
+    const info = raw?.panchangOne || {};
+    const rows = raw?.panchangRows || [];
+
+    const getRow = (label) =>
+      rows.find(r => r?.label?.includes(label))?.value || "—";
+
+    const result = {
+      success: true,
+
+      date: info?.date || "—",
+      location: info?.place || "India",
+
+      sunrise: getRow("सूर्योदय"),
+      sunset: getRow("सूर्यास्त"),
+
+      moonrise: getRow("चन्द्रोदय"),
+      moonset: getRow("चन्द्रास्त"),
+
+      vikram_samvat: getRow("विक्रम संवत"),
+      shak_samvat: getRow("शक संवत"),
+
+      masa_purnimant: getRow("पूर्णिमांत"),
+      masa_amant: getRow("अमांत"),
+
+      tithi: getRow("तिथि"),
+
+      source: "Srimandir Panchang (Server-fetched)",
+      cached: false
+    };
+
+    res.json(result);
 
   } catch (err) {
-    console.error("Panchang API error:", err);
-    res.status(500).json({ success: false });
+    console.error("Parse error:", err);
+    res.json({
+      success: false,
+      message: "Error parsing Panchang data"
+    });
   }
 });
 
@@ -90,5 +99,5 @@ app.get("/api/panchang", async (req, res) => {
    START SERVER
 ================================ */
 app.listen(PORT, () => {
-  console.log("Server running on", PORT);
+  console.log("Bhakti Panchang backend running on port", PORT);
 });
