@@ -1,7 +1,9 @@
 import express from "express";
+import cors from "cors";
 import * as cheerio from "cheerio";
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 const URL = "https://www.srimandir.com/hi/panchang";
 
