@@ -33,6 +33,8 @@ function refineData(raw) {
     month: raw?.monthName || "",
     paksha: raw?.paksha || "",
     tithi: raw?.tithi || "",
+    festivalList, // पहले से है 
+    dharmicMessage: "आज द्वादशी है, भगवान विष्णु की पूजा का विशेष महत्व है।", // नया field
     // Keep full raw for future use
     fullData: raw
   };
@@ -74,6 +76,12 @@ app.get("/api/panchang", async (req, res) => {
   } else {
     tithi = tithiFull;
   }
+// Festivals list
+const festEl = document.getElementById("festivals");
+festEl.innerHTML = data.festivalList.map(f => `<li>${f}</li>`).join("");
+
+// Dharmic message
+document.getElementById("message").innerText = data.dharmicMessage ?? "";
 
   // फ्रंटएंड को भेजना
   res.json({ date, day, sunrise, sunset, moonrise, moonset, vikramSamvat, shakaSamvat, month, paksha, tithi });
