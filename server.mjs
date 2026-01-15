@@ -1,43 +1,19 @@
-async function fetchSriMandir(city = "jaipur", date = "2026-01-13") {
-  try {
-    const url = `https://www.srimandir.com/hi/panchang?city=${city}&date=${date}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.error("Fetch failed:", res.status);
-      return { error: "fetch failed" };
-    }
-    const html = await res.text();
-    console.log("HTML snippet:", html.substring(0, 500)); // Debug: पहले 500 chars
+import express from "express"; 
+import * as cheerio from "cheerio"; 
+const app = express(); 
+const PORT = process.env.PORT || 3000; 
+const URL = "https://www.srimandir.com/hi/panchang"; 
 
-    const $ = cheerio.load(html);
-
-    function extractField(label) {
-      let value = "—";
-      $("p").each((i, el) => {
-        const text = $(el).text().trim();
-        if (text.startsWith(label)) {
-          value = text.replace(label + " :", "").trim();
-        }
-      });
-      return value;
-    }
-
-    return {
-      date,
-      tithi: extractField("तिथि"),
-      nakshatra: extractField("नक्षत्र"),
-      yoga: extractField("योग"),
-      karana: extractField("करण"),
-      sunrise: extractField("सूर्योदय"),
-      sunset: extractField("सूर्यास्त"),
-      moonrise: extractField("चन्द्रोदय"),
-      moonset: extractField("चंद्रास्त"),
-      rahukaal: extractField("राहुकाल"),
-      shubh_muhurat: extractField("शुभ मुहूर्त"),
-      source: url
-    };
-  } catch (err) {
-    console.error("SriMandir fetch error:", err);
-    return { error: "exception" };
-  }
-}
+async function fetchRaw() { 
+  const res = await fetch(URL); 
+  const html = await res.text(); 
+  const $ = cheerio.load(html); 
+  const nextData = $("#__NEXT_DATA__").html(); 
+  if (!nextData) return {}; 
+  const parsed = JSON.parse(nextData); 
+  return parsed?.props?.pageProps || {};
+} 
+app.get("/api/panchang", async (req, res) => { 
+  const raw = await fetchRaw(); 
+  // raw.panchangRows, raw.panchangOne, raw.sunrise आदि से values निकालें res.json(raw); }); 
+  app.listen(PORT, () => console.log(Server running on ${PORT}));
