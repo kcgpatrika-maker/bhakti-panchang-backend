@@ -15,5 +15,7 @@ async function fetchRaw() {
 } 
 app.get("/api/panchang", async (req, res) => { 
   const raw = await fetchRaw(); 
-  // raw.panchangRows, raw.panchangOne, raw.sunrise आदि से values निकालें res.json(raw); }); 
+  // raw.panchangRows, raw.panchangOne, raw.sunrise आदि से values निकालें 
+  res.json(raw);
+}); 
   app.listen(PORT, () => console.log(Server running on ${PORT}));
