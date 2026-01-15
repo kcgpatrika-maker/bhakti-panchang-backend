@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import * as cheerio from "cheerio";
-import cron from "node-cron";
 
 const app = express();
 app.use(cors());
@@ -10,35 +9,15 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const SOURCE_URL = "https://www.srimandir.com/hi/panchang";
 
-// In-memory cache
-let CACHE = {
-  data: null,
-  updatedAt: null
-};
-
-// Helper: fetch with timeout using AbortController
-async function fetchWithTimeout(url, ms = 20000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), ms);
-  try {
-    const res = await fetch(url, { signal: controller.signal });
-    return res;
-  } finally {
-    clearTimeout(id);
-  }
-}
-
-// Helper: scrape and shape JSON
 async function scrapePanchang() {
-  const res = await fetch("https://www.srimandir.com/hi/panchang");
+  const res = await fetch(SOURCE_URL);
   const html = await res.text();
   const $ = cheerio.load(html);
 
   // Date & Day
-  const date = $(".panchang-date").text().trim() 
+  const date = $("meta[property='og:title']").attr("content")?.trim()
     || new Date().toLocaleDateString("hi-IN");
-  const day = $(".panchang-day").text().trim() 
-    || new Date().toLocaleDateString("hi-IN", { weekday: "long" });
+  const day = new Date().toLocaleDateString("hi-IN", { weekday: "long" });
 
   // Sunrise / Sunset
   const sunrise = $("div:contains('सूर्योदय')").next().text().trim() || "—";
@@ -81,64 +60,14 @@ async function scrapePanchang() {
   };
 }
 
-// Refresh cache (used by cron and manual endpoint)
-async function refreshCache() {
-  const data = await scrapePanchang();
-  CACHE = { data, updatedAt: new Date().toISOString() };
-  return CACHE;
-}
-
-// API: serve from cache, refresh if empty
 app.get("/api/panchang", async (req, res) => {
   try {
-    if (!CACHE.data) {
-      await refreshCache();
-    }
-    res.set("Cache-Control", "public, max-age=300"); // 5 min client cache
-    res.json(CACHE.data);
+    const data = await scrapePanchang();
+    res.json(data);
   } catch (err) {
-    console.error("API /api/panchang error:", err.message);
-    if (CACHE.data) {
-      res.set("Cache-Control", "no-cache");
-      return res.json(CACHE.data); // serve stale cache
-    }
+    console.error("API error:", err.message);
     res.status(500).json({ error: "Panchang fetch failed" });
   }
-});
-
-// Admin: manual refresh (token-protected)
-app.post("/admin/refresh", async (req, res) => {
-  const token = req.headers["x-refresh-token"];
-  const EXPECTED = process.env.REFRESH_TOKEN || "bhakti-refresh";
-  if (token !== EXPECTED) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
-  try {
-    const updated = await refreshCache();
-    res.json({ ok: true, updatedAt: updated.updatedAt });
-  } catch (err) {
-    console.error("Manual refresh error:", err.message);
-    res.status(500).json({ error: "Refresh failed" });
-  }
-});
-
-// Cron: refresh daily at 00:10 IST (Asia/Kolkata)
-cron.schedule("10 0 * * *", async () => {
-  try {
-    console.log("[CRON] Refreshing Panchang cache…");
-    await refreshCache();
-    console.log("[CRON] Cache updated at", CACHE.updatedAt);
-  } catch (err) {
-    console.error("[CRON] Refresh failed:", err.message);
-  }
-}, { timezone: "Asia/Kolkata" });
-
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    cacheUpdatedAt: CACHE.updatedAt,
-    hint: "Use /api/panchang for data"
-  });
 });
 
 app.listen(PORT, () => {
