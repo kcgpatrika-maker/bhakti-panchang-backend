@@ -46,13 +46,15 @@ app.get("/api/panchang", async (req, res) => {
   const line1 = raw?.panchangState?.lunarData?.line1 || "";
   const day = line1.split(",").pop()?.trim() || "";
 
-  // सूर्योदय और सूर्यास्त
+  // सूर्योदय, सूर्यास्त, चंद्रोदय, चंद्रास्त
   const sunMoonList = raw?.panchangState?.sunMoonInfo?.sunMoonList || [];
   const sunrise = sunMoonList.find(item => item.header === "सूर्योदय")?.time || "";
   const sunset = sunMoonList.find(item => item.header === "सूर्यास्त")?.time || "";
+  const moonrise = sunMoonList.find(item => item.header === "चंद्रोदय")?.time || "";
+  const moonset = sunMoonList.find(item => item.header === "चन्द्रास्त")?.time || "";
 
   // फ्रंटएंड को भेजना
-  res.json({ date, day, sunrise, sunset });
+  res.json({ date, day, sunrise, sunset, moonrise, moonset });
 });
 
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));
