@@ -77,7 +77,22 @@ app.get("/api/panchang", async (req, res) => {
   }
 
   // फ्रंटएंड को भेजना
-  res.json({ date, day, sunrise, sunset, moonrise, moonset, vikramSamvat, shakaSamvat, month, paksha, tithi });
+ res.json({ 
+  date, 
+  day, 
+  sunrise, 
+  sunset, 
+  moonrise, 
+  moonset, 
+  vikramSamvat, 
+  shakaSamvat, 
+  month, 
+  paksha, 
+  tithi,
+  festivalList: raw?.panchangState?.festivalList || [],
+  dharmicMessage: dharmikSandeshMap[day]?.text || "धर्म का मूल उद्देश्य मन की शुद्धि और कर्म की पवित्रता है।",
+  dharmicSource: dharmikSandeshMap[day]?.source || "भक्ति पंचांग"
+});
   });
 
 app.listen(PORT, () => { 
