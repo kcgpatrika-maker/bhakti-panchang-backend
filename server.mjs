@@ -44,6 +44,10 @@ function refineData(raw) {
 app.get("/api/panchang", async (req, res) => {
   const raw = await fetchRaw();
 
+  // Debug: Srimandir से आने वाला पूरा panchangState देखें
+  console.log("=== PanchangState Debug ===");
+  console.log(JSON.stringify(raw?.panchangState, null, 2));
+
   // तारीख और वार निकालना
   const date = raw?.panchangState?.lunarData?.headerTitle || "";
   const line1 = raw?.panchangState?.lunarData?.line1 || "";
@@ -55,7 +59,8 @@ app.get("/api/panchang", async (req, res) => {
   const sunset = sunMoonList.find(item => item.header === "सूर्यास्त")?.time || "";
   const moonrise = sunMoonList.find(item => item.header === "चंद्रोदय")?.time || ""; 
   const moonset = sunMoonList.find(item => item.header === "चन्द्रास्त")?.time || "";
-      // विक्रम संवत और शक संवत
+
+  // विक्रम संवत और शक संवत
   const panchangTwo = raw?.panchangState?.panchangTwo || [];
   const vikramSamvat = panchangTwo.flat().find(item => item.title === "विक्रम संवत")?.description || "";
   const shakaSamvat = panchangTwo.flat().find(item => item.title === "शक संवत")?.description || "";
@@ -77,22 +82,23 @@ app.get("/api/panchang", async (req, res) => {
   }
 
   // फ्रंटएंड को भेजना
- res.json({ 
-  date, 
-  day, 
-  sunrise, 
-  sunset, 
-  moonrise, 
-  moonset, 
-  vikramSamvat, 
-  shakaSamvat, 
-  month, 
-  paksha, 
-  tithi,
-  festivalList: Array.isArray(raw?.panchangState?.festivalList) ? raw.panchangState.festivalList : []
- });
+  res.json({ 
+    date, 
+    day, 
+    sunrise, 
+    sunset, 
+    moonrise, 
+    moonset, 
+    vikramSamvat, 
+    shakaSamvat, 
+    month, 
+    paksha, 
+    tithi,
+    festivalList: Array.isArray(raw?.panchangState?.festivalList) ? raw.panchangState.festivalList : []
+  });
 });
 
 app.listen(PORT, () => { 
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
 });
+
