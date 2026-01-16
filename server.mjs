@@ -3,7 +3,7 @@ import cors from "cors";
 import * as cheerio from "cheerio";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
-import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
+import { resolveCanonicalFestivals, getFestivalHints } from "/data/festivalResolver.js";
 
 const app = express();
 app.use(cors());
