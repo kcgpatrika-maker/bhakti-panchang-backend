@@ -87,6 +87,14 @@ app.get("/api/panchang", async (req, res) => {
       festival: f.festival
     })) 
     : []; 
+  // 🔔 प्रमुख दिवस-जयंती (लोकल bharatDiwasMap से)
+  const todayKey = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }).replace(/\//g,"-"); 
+  const jayantiList = bharatDiwasMap[todayKey] || []; 
+  // 📜 आज का धार्मिक संदेश (लोकल dharmikMessages से) 
+  const weekday = new Date().toLocaleDateString("hi-IN", { weekday: "long" }); 
+  const dharmikMessage = dharmikMessages[weekday] 
+    || dharmikMessages[tithi] 
+    || dharmikMessages.default;
   // फ्रंटएंड को भेजना 
   res.json({ 
     date, 
@@ -101,7 +109,9 @@ app.get("/api/panchang", async (req, res) => {
     paksha, 
     tithi, 
     festivalList: todayFestivals, 
-    upcomingFestivals
+    upcomingFestivals, 
+    jayantiList, 
+    dharmikMessage
   });
 });
 
