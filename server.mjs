@@ -75,9 +75,35 @@ app.get("/api/panchang", async (req, res) => {
     tithi = tithiFull;
   }
 
-  // फ्रंटएंड को भेजना
-  res.json({ date, day, sunrise, sunset, moonrise, moonset, vikramSamvat, shakaSamvat, month, paksha, tithi });
+  // आज के व्रत-त्योहार (line5 से) 
+  const todayFestivalsLine = raw?.panchangState?.lunarData?.line5 || ""; 
+  const todayFestivals = todayFestivalsLine 
+    ? todayFestivalsLine.split(",").map(f => f.trim()) 
+    : []; 
+  // पूरे माह के upcoming festivals (festivals.festivals से) 
+  const upcomingFestivals = Array.isArray(raw?.panchangState?.festivals?.festivals) 
+    ? raw.panchangState.festivals.festivals.map(f => ({ 
+      date: f.date, 
+      festival: f.festival
+    })) 
+    : []; 
+  // फ्रंटएंड को भेजना 
+  res.json({ 
+    date, 
+    day, 
+    sunrise, 
+    sunset, 
+    moonrise, 
+    moonset, 
+    vikramSamvat, 
+    shakaSamvat, 
+    month, 
+    paksha, 
+    tithi, 
+    festivalList: todayFestivals, 
+    upcomingFestivals
   });
+});
 
 app.listen(PORT, () => { 
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
