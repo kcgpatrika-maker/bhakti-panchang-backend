@@ -89,11 +89,9 @@ app.get("/api/panchang", async (req, res) => {
   month, 
   paksha, 
   tithi,
-  festivalList: raw?.panchangState?.festivalList || [],
-  dharmicMessage: dharmikSandeshMap[day]?.text || "धर्म का मूल उद्देश्य मन की शुद्धि और कर्म की पवित्रता है।",
-  dharmicSource: dharmikSandeshMap[day]?.source || "भक्ति पंचांग"
+  festivalList: Array.isArray(raw?.panchangState?.festivalList) ? raw.panchangState.festivalList : []
+ });
 });
-  });
 
 app.listen(PORT, () => { 
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
