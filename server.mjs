@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import * as cheerio from "cheerio";
+import { bharatDiwasMap } from "./data/bharatDiwas.js";
+import { composeDharmikMessage } from "./helpers/messageComposer.js";
+import { resolveCanonicalFestivals, getFestivalHints } from "./helpers/festivalResolver.js";
 
 const app = express();
 app.use(cors());
@@ -77,9 +80,13 @@ app.get("/api/panchang", async (req, res) => {
 
   // आज के व्रत-त्योहार (line5 से) 
   const todayFestivalsLine = raw?.panchangState?.lunarData?.line5 || ""; 
-  const todayFestivals = todayFestivalsLine 
+  const todayFestivalsSrimandir = todayFestivalsLine 
     ? todayFestivalsLine.split(",").map(f => f.trim()) 
-    : []; 
+    : [];
+  // Canonical festivals (rule-based) + merge with Srimandir 
+  const todayFestivals = resolveCanonicalFestivals({ 
+    tithi, paksha, month, todayFestivals: todayFestivalsSrimandir
+  });
   // पूरे माह के upcoming festivals (festivals.festivals से) 
   const upcomingFestivals = Array.isArray(raw?.panchangState?.festivals?.festivals) 
     ? raw.panchangState.festivals.festivals.map(f => ({ 
@@ -91,10 +98,13 @@ app.get("/api/panchang", async (req, res) => {
   const todayKey = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }).replace(/\//g,"-"); 
   const jayantiList = bharatDiwasMap[todayKey] || []; 
   // 📜 आज का धार्मिक संदेश (लोकल dharmikMessages से) 
-  const weekday = new Date().toLocaleDateString("hi-IN", { weekday: "long" }); 
-  const dharmikMessage = dharmikMessages[weekday] 
-    || dharmikMessages[tithi] 
-    || dharmikMessages.default;
+  const weekday = new Date().toLocaleDateString("hi-IN", { weekday: "long" });
+  const festivalHints = getFestivalHints(todayFestivals);
+ const dharmikMessage = composeDharmikMessage({ 
+   weekday, 
+   tithi, 
+   festivalHints
+     });
   // फ्रंटएंड को भेजना 
   res.json({ 
     date, 
