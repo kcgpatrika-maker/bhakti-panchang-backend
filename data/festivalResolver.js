@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 const FESTIVAL_RULES = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), "backend/data/festivals.json"), "utf-8")
+  fs.readFileSync(path.join(process.cwd(), "data/festivals.json"), "utf-8")
 ).rules;
 
 export function resolveCanonicalFestivals({ tithi, paksha, month, todayFestivals }) {
