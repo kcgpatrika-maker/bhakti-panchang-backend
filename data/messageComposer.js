@@ -1,5 +1,5 @@
 //messageComposer.js
-import { messagePools } from "data/dharmikMessages.js";
+import { messagePools } from "./dharmikMessages.js";
 
 function getWeekNumber(date = new Date()) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
