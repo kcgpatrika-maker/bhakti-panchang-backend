@@ -55,6 +55,79 @@ function writeCache(data) {
 /* =====================================================
    🔸 CACHE SETUP END
    ===================================================== */
+/* =====================================================
+   🔱 BHAKTI ASK SYSTEM – PART 1 (HELPERS + CACHE)
+   ===================================================== */
+
+// 🔸 Bhakti cache directory
+const BHAKTI_CACHE_DIR = path.join(__dirname, "cache", "bhakti");
+
+if (!fs.existsSync(BHAKTI_CACHE_DIR)) {
+  fs.mkdirSync(BHAKTI_CACHE_DIR, { recursive: true });
+}
+
+// 🔸 normalize deity name (हनुमान → hanuman)
+function normalizeDeityName(name = "") {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0900-\u097F]+/g, "")
+    .trim();
+}
+
+// 🔸 get bhakti cache file path
+function getBhaktiCacheFile(deity) {
+  const key = normalizeDeityName(deity);
+  return path.join(BHAKTI_CACHE_DIR, `${key}.json`);
+}
+
+// 🔸 read bhakti cache
+function readBhaktiCache(deity) {
+  try {
+    const file = getBhaktiCacheFile(deity);
+    if (fs.existsSync(file)) {
+      return JSON.parse(fs.readFileSync(file, "utf-8"));
+    }
+  } catch (e) {
+    console.error("Bhakti cache read error:", e.message);
+  }
+  return null;
+}
+
+// 🔸 write bhakti cache
+function writeBhaktiCache(deity, data) {
+  try {
+    const file = getBhaktiCacheFile(deity);
+    fs.writeFileSync(file, JSON.stringify(data, null, 2), "utf-8");
+  } catch (e) {
+    console.error("Bhakti cache write error:", e.message);
+  }
+}
+
+// 🔸 fallback static structure (अगर AI fail हो)
+function getEmptyBhaktiResponse(deity) {
+  return {
+    deity,
+    available: {
+      mantra: false,
+      aarti: false,
+      poojaVidhi: false,
+      chalisa: false,
+      stotra: false
+    },
+    content: {
+      mantra: [],
+      aarti: "",
+      poojaVidhi: null,
+      chalisa: "",
+      stotra: []
+    },
+    sourceNote: "डेटा उपलब्ध नहीं है"
+  };
+}
+
+/* =====================================================
+   🔱 BHAKTI ASK SYSTEM – PART 1 END
+   ===================================================== */
 
 async function fetchRaw() {
   const res = await fetch(URL);
@@ -180,6 +253,54 @@ app.get("/api/panchang", async (req, res) => {
 
   res.json(responseData);
 });
+/* =====================================================
+   🔱 BHAKTI ASK SYSTEM – PART 2 (API ROUTE)
+   ===================================================== */
+
+app.use(express.json());
+
+app.post("/api/ask-bhakti", async (req, res) => {
+  try {
+    const deityRaw = req.body?.deity || "";
+    const deity = deityRaw.trim();
+
+    if (!deity) {
+      return res.status(400).json({
+        error: "देवता का नाम आवश्यक है"
+      });
+    }
+
+    // 🔸 1. Cache check
+    const cachedBhakti = readBhaktiCache(deity);
+    if (cachedBhakti) {
+      return res.json({
+        fromCache: true,
+        ...cachedBhakti
+      });
+    }
+
+    // 🔸 2. अभी AI नहीं — safe empty structure
+    const emptyResponse = getEmptyBhaktiResponse(deity);
+
+    // 🔸 3. Empty response भी cache कर दें (repeat hit से बचने के लिए)
+    writeBhaktiCache(deity, emptyResponse);
+
+    return res.json({
+      fromCache: false,
+      ...emptyResponse
+    });
+
+  } catch (e) {
+    console.error("Ask Bhakti API error:", e.message);
+    return res.status(500).json({
+      error: "Bhakti Ask System error"
+    });
+  }
+});
+
+/* =====================================================
+   🔱 BHAKTI ASK SYSTEM – PART 2 END
+   ===================================================== */
 
 app.listen(PORT, () => {
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
