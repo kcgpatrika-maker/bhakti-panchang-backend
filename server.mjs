@@ -276,17 +276,17 @@ app.get("/api/panchang", async (req, res) => {
 
 app.use(express.json());
 
-app.get("/api/ask-bhakti", (req, res) => {
-  const deity = req.query.deity || "";
-  const key = ALIAS_MAP[normalizeDeityName(deity)];
-  if (key && mantrasData[key]) {
-    return res.json({
-      deity: key,
-      mantras: mantrasData[key].mantras
-    });
-  }
-  return res.status(404).json({ error: "देवता नहीं मिला" });
-});
+app.post("/api/ask-bhakti", async (req, res) => { 
+   try { 
+      const deityRaw = req.body?.deity || ""; 
+      const deity = deityRaw.trim(); 
+      
+      if (!deity) { 
+         return res.status(400).json({ 
+            error: "देवता का नाम आवश्यक है"
+         });
+      }
+  });
 
     // 🔸 1. Cache check
     const cachedBhakti = readBhaktiCache(deity);
