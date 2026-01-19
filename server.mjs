@@ -8,7 +8,6 @@ import { fileURLToPath } from "url";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
-import mantrasData from "./data/mantras.json" assert { type: "json" };
 
 const app = express();
 app.use(cors());
@@ -56,6 +55,14 @@ function writeCache(data) {
 /* =====================================================
    🔸 CACHE SETUP END
    ===================================================== */
+const mantrasPath = path.join(__dirname, "data", "mantras.json");
+let mantrasData = {};
+try {
+  mantrasData = JSON.parse(fs.readFileSync(mantrasPath, "utf-8"));
+} catch (e) {
+  console.error("Failed to load mantras.json:", e.message);
+}
+
 /* =====================================================
    🔱 BHAKTI ASK SYSTEM – PART 1 (HELPERS + CACHE)
    ===================================================== */
