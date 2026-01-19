@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
+import mantrasData from "./data/mantras.json" assert { type: "json" };
 
 const app = express();
 app.use(cors());
@@ -128,6 +129,15 @@ function getEmptyBhaktiResponse(deity) {
 /* =====================================================
    🔱 BHAKTI ASK SYSTEM – PART 1 END
    ===================================================== */
+// 🔸 build alias map from mantras.json
+const ALIAS_MAP = {};
+Object.keys(mantrasData).forEach((key) => {
+  const entry = mantrasData[key];
+  ALIAS_MAP[normalizeDeityName(key)] = key;
+  (entry.aliases || []).forEach((a) => {
+    ALIAS_MAP[normalizeDeityName(a)] = key;
+  });
+});
 
 async function fetchRaw() {
   const res = await fetch(URL);
@@ -278,6 +288,34 @@ app.post("/api/ask-bhakti", async (req, res) => {
         ...cachedBhakti
       });
     }
+// 🔸 2. Check in mantras.json
+const key = ALIAS_MAP[normalizeDeityName(deity)];
+if (key && mantrasData[key]) {
+  const entry = mantrasData[key];
+  const response = {
+    deity: key,
+    available: {
+      mantra: true,
+      aarti: false,
+      poojaVidhi: false,
+      chalisa: false,
+      stotra: false
+    },
+    content: {
+      mantra: entry.mantras,
+      aarti: "",
+      poojaVidhi: null,
+      chalisa: "",
+      stotra: []
+    },
+    sourceNote: "लोकप्रिय मंत्र (static JSON)"
+  };
+  writeBhaktiCache(deity, response);
+  return res.json({
+    fromCache: false,
+    ...response
+  });
+}
 
     // 🔸 2. अभी AI नहीं — safe empty structure
     const emptyResponse = getEmptyBhaktiResponse(deity);
