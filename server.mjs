@@ -107,23 +107,32 @@ function getEmptyBhaktiResponse(deity) {
   };
 }
 
-// 🔸 Load mantras.json
+// 🔸 Load mantras.json (safe + utf-8)
 const mantrasPath = path.join(__dirname, "data", "mantras.json");
-let mantrasData = {};
+let mantrasData = Object.create(null);
+
 try {
-  mantrasData = JSON.parse(fs.readFileSync(mantrasPath, "utf-8"));
+  const raw = fs.readFileSync(mantrasPath, { encoding: "utf-8" });
+  mantrasData = JSON.parse(raw);
 } catch (e) {
-  console.error("Failed to load mantras.json:", e.message);
+  console.error("❌ mantras.json load error:", e.message);
+  mantrasData = Object.create(null);
 }
 
-// 🔸 Build alias map
-const ALIAS_MAP = {};
-Object.keys(mantrasData).forEach((key) => {
-  const entry = mantrasData[key];
+// 🔸 Build alias map (safe)
+const ALIAS_MAP = Object.create(null);
+
+Object.keys(mantrasData || {}).forEach((key) => {
+  if (!key) return;
+
+  const entry = mantrasData[key] || {};
   ALIAS_MAP[normalizeDeityName(key)] = key;
-  (entry.aliases || []).forEach((a) => {
-    ALIAS_MAP[normalizeDeityName(a)] = key;
-  });
+
+  if (Array.isArray(entry.aliases)) {
+    entry.aliases.forEach((a) => {
+      if (a) ALIAS_MAP[normalizeDeityName(a)] = key;
+    });
+  }
 });
 
 async function fetchRaw() {
@@ -284,19 +293,34 @@ app.post("/api/ask-bhakti", async (req, res) => {
       return res.json({ fromCache: true, ...cachedBhakti });
     }
 
-    // 2. JSON lookup
-    const key = ALIAS_MAP[normalizeDeityName(deity)];
-    if (key && mantrasData[key]) {
-      const entry = mantrasData[key];
-      const response = {
-        deity: key,
-        available: { mantra: true, aarti: false, poojaVidhi: false, chalisa: false, stotra: false },
-        content: { mantra: entry.mantras, aarti: "", poojaVidhi: null, chalisa: "", stotra: [] },
-        sourceNote: "लोकप्रिय मंत्र (static JSON)"
-      };
-      writeBhaktiCache(deity, response);
-      return res.json({ fromCache: false, ...response });
-    }
+    // 2. JSON lookup (mantra only, normalized)
+const key = ALIAS_MAP[normalizeDeityName(deity)];
+
+if (key && mantrasData[key] && Array.isArray(mantrasData[key].mantras)) {
+  const mantras = mantrasData[key].mantras.filter(m => m && m.text);
+
+  const response = {
+    deity: key,
+    available: {
+      mantra: mantras.length > 0,
+      aarti: false,
+      poojaVidhi: false,
+      chalisa: false,
+      stotra: false
+    },
+    content: {
+      mantra: mantras,
+      aarti: "",
+      poojaVidhi: null,
+      chalisa: "",
+      stotra: []
+    },
+    sourceNote: "पारंपरिक मंत्र (स्थिर डेटा)"
+  };
+
+  writeBhaktiCache(deity, response);
+  return res.json({ fromCache: false, ...response });
+}
 
     // 3. Fallback empty response
     const emptyResponse = getEmptyBhaktiResponse(deity);
