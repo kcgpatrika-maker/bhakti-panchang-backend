@@ -266,15 +266,23 @@ app.use(express.json());
 
 // ✅ GET route (for browser testing)
 app.get("/api/ask-bhakti", (req, res) => {
-  const deity = req.query.deity || "";
-  const key = ALIAS_MAP[normalizeDeityName(deity)];
-  if (key && mantrasData[key]) {
+  const deityRaw = req.query.deity || "";
+  const norm = normalizeDeityName(deityRaw);
+
+  const key = ALIAS_MAP[norm];
+
+  if (key && mantrasData[key] && Array.isArray(mantrasData[key].mantras)) {
     return res.json({
       deity: key,
-      mantras: mantrasData[key].mantras
+      available: { mantra: true },
+      content: { mantra: mantrasData[key].mantras }
     });
   }
-  return res.status(404).json({ error: "देवता नहीं मिला" });
+
+  return res.status(404).json({
+    error: "देवता नहीं मिला",
+    debug: { input: deityRaw, normalized: norm }
+  });
 });
 
 // ✅ POST route (for frontend integration)
