@@ -55,14 +55,6 @@ function writeCache(data) {
 /* =====================================================
    🔸 CACHE SETUP END
    ===================================================== */
-const mantrasPath = path.join(__dirname, "data", "mantras.json");
-let mantrasData = {};
-try {
-  mantrasData = JSON.parse(fs.readFileSync(mantrasPath, "utf-8"));
-} catch (e) {
-  console.error("Failed to load mantras.json:", e.message);
-}
-
 /* =====================================================
    🔱 BHAKTI ASK SYSTEM – PART 1 (HELPERS + CACHE)
    ===================================================== */
