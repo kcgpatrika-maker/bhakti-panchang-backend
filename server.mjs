@@ -74,7 +74,18 @@ function normalizeDeityName(name = "") {
 
 // 🔸 cache helpers
 function getBhaktiCacheFile(deity) {
-  const key = normalizeDeityName(deity);
+  const norm = normalizeDeityName(deity);
+
+// 1️⃣ direct alias map
+let key = ALIAS_MAP[norm];
+
+// 2️⃣ fallback: scan mantrasData keys
+if (!key) {
+  key = Object.keys(mantrasData).find(
+    k => normalizeDeityName(k) === norm
+  );
+}
+
   return path.join(BHAKTI_CACHE_DIR, `${key}.json`);
 }
 function readBhaktiCache(deity) {
