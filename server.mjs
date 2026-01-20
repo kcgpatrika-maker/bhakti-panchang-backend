@@ -133,10 +133,14 @@ function getEmptyBhaktiResponse(deity) {
   };
 }
 
-/* =====================================================
-   🔱 BHAKTI ASK SYSTEM – PART 1 END
-   ===================================================== */
-// 🔸 build alias map from mantras.json
+/* ===== 🔱 Load mantras.json + Alias Map ======= */ 
+const mantrasPath = path.join(__dirname, "data", "mantras.json"); 
+let mantrasData = {}; 
+try { 
+   mantrasData = JSON.parse(fs.readFileSync(mantrasPath, "utf-8"));
+} catch (e) { 
+   console.error("Failed to load mantras.json:", e.message);
+}
 const ALIAS_MAP = {};
 Object.keys(mantrasData).forEach((key) => {
   const entry = mantrasData[key];
@@ -275,7 +279,17 @@ app.get("/api/panchang", async (req, res) => {
    ===================================================== */
 
 app.use(express.json());
-
+// ✅ GET route (for browser testing) 
+app.get("/api/ask-bhakti", (req, res) => { 
+   const deity = req.query.deity || ""; 
+   const key = ALIAS_MAP[normalizeDeityName(deity)]; 
+   if (key && mantrasData[key]) { 
+      return res.json({ 
+         deity: key, 
+         mantras: mantrasData[key].mantras });
+   } 
+   return res.status(404).json({ error: "देवता नहीं मिला" });
+});
 app.post("/api/ask-bhakti", async (req, res) => { 
    try { 
       const deityRaw = req.body?.deity || ""; 
@@ -285,6 +299,7 @@ app.post("/api/ask-bhakti", async (req, res) => {
          return res.status(400).json({ 
             error: "देवता का नाम आवश्यक है"
          });
+      }
       }
   });
 
@@ -325,16 +340,13 @@ if (key && mantrasData[key]) {
   });
 }
 
-    // 🔸 2. अभी AI नहीं — safe empty structure
-    const emptyResponse = getEmptyBhaktiResponse(deity);
-
-    // 🔸 3. Empty response भी cache कर दें (repeat hit से बचने के लिए)
-    writeBhaktiCache(deity, emptyResponse);
-
-    return res.json({
-      fromCache: false,
-      ...emptyResponse
-    });
+   // 3. Fallback empty response 
+const emptyResponse = getEmptyBhaktiResponse(deity); 
+writeBhaktiCache(deity, emptyResponse); 
+return res.json({ 
+   fromCache: false, 
+   ...emptyResponse
+});
 
   } catch (e) {
     console.error("Ask Bhakti API error:", e.message);
