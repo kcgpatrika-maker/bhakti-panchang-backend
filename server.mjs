@@ -134,13 +134,6 @@ function getEmptyBhaktiResponse(deity) {
 }
 
 /* ===== 🔱 Load mantras.json + Alias Map ======= */ 
-const mantrasPath = path.join(__dirname, "data", "mantras.json"); 
-let mantrasData = {}; 
-try { 
-   mantrasData = JSON.parse(fs.readFileSync(mantrasPath, "utf-8"));
-} catch (e) { 
-   console.error("Failed to load mantras.json:", e.message);
-}
 const ALIAS_MAP = {};
 Object.keys(mantrasData).forEach((key) => {
   const entry = mantrasData[key];
