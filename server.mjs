@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
+import aartiData from "./data/aarti.json" assert { type: "json" };
 
 const app = express();
 app.use(cors());
