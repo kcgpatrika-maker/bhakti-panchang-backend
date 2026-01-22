@@ -204,23 +204,34 @@ try {
   aartisData = Object.create(null);
 }
 
-// Build alias map (ONLY from mantras.json)
+// Build alias map from both mantras.json and aartis.json
 const ALIAS_MAP = Object.create(null);
+
 function normalizeDeityName(name = "") {
   return name.toLowerCase().replace(/[^a-z0-9\u0900-\u097F]+/g, "").trim();
 }
+
+// mantras.json keys + aliases
 Object.keys(mantrasData || {}).forEach(key => {
   if (!key) return;
   const entry = mantrasData[key] || {};
   ALIAS_MAP[normalizeDeityName(key)] = key;
   if (Array.isArray(entry.aliases)) {
     entry.aliases.forEach(a => {
-      if (a) ALIAS_MAP[normalizeDeityName(a)] = key;
+      if(a) ALIAS_MAP[normalizeDeityName(a)] = key;
     });
   }
 });
 
-// Cache helpers
+// aartis.json keys
+Object.keys(aartisData || {}).forEach(key => {
+  if (!key) return;
+  if (!ALIAS_MAP[normalizeDeityName(key)]) {
+    ALIAS_MAP[normalizeDeityName(key)] = key;
+  }
+});
+
+// Bhakti cache helpers
 function getBhaktiCacheFile(deity) {
   const key = ALIAS_MAP[normalizeDeityName(deity)] || "unknown";
   return path.join(BHAKTI_CACHE_DIR, `${key}.json`);
@@ -229,13 +240,13 @@ function readBhaktiCache(deity) {
   try {
     const file = getBhaktiCacheFile(deity);
     if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, "utf-8"));
-  } catch {}
+  } catch(e) { console.error("Bhakti cache read error:", e.message); }
   return null;
 }
 function writeBhaktiCache(deity, data) {
   try {
-    fs.writeFileSync(getBhaktiCacheFile(deity), JSON.stringify(data, null, 2), "utf-8");
-  } catch {}
+    fs.writeFileSync(getBhaktiCacheFile(deity), JSON.stringify(data,null,2),"utf-8");
+  } catch(e) { console.error("Bhakti cache write error:", e.message); }
 }
 function getEmptyBhaktiResponse(deity) {
   return {
@@ -245,6 +256,7 @@ function getEmptyBhaktiResponse(deity) {
     sourceNote: "डेटा उपलब्ध नहीं है"
   };
 }
+
 /* =====================================================
    🔱 BHAKTI ASK SYSTEM – API
    ===================================================== */
@@ -252,11 +264,11 @@ function getEmptyBhaktiResponse(deity) {
 // GET route (browser testing)
 app.get("/api/ask-bhakti", (req, res) => {
   const deityRaw = req.query.deity || "";
-  const key = ALIAS_MAP[normalizeDeityName(deityRaw)];
+  const key = ALIAS_MAP[normalizeDeityName(deityRaw)] 
+            || Object.keys(mantrasData).find(k => normalizeDeityName(k) === normalizeDeityName(deityRaw))
+            || Object.keys(aartisData).find(k => normalizeDeityName(k) === normalizeDeityName(deityRaw));
 
-  if (!key) {
-    return res.status(404).json({ error: "देवता नहीं मिला" });
-  }
+  if (!key) return res.status(404).json({ error: "देवता नहीं मिला" });
 
   return res.json({
     deity: key,
@@ -277,11 +289,17 @@ app.post("/api/ask-bhakti", (req, res) => {
     const deity = (req.body?.deity || "").trim();
     if (!deity) return res.status(400).json({ error: "देवता का नाम आवश्यक है" });
 
-    const key = ALIAS_MAP[normalizeDeityName(deity)];
-    if (!key) {
+    const cached = readBhaktiCache(deity);
+    if(cached) return res.json({ fromCache:true, ...cached });
+
+    const key = ALIAS_MAP[normalizeDeityName(deity)] 
+              || Object.keys(mantrasData).find(k => normalizeDeityName(k) === normalizeDeityName(deity))
+              || Object.keys(aartisData).find(k => normalizeDeityName(k) === normalizeDeityName(deity));
+
+    if(!key) {
       const empty = getEmptyBhaktiResponse(deity);
       writeBhaktiCache(deity, empty);
-      return res.json(empty);
+      return res.json({ fromCache:false, ...empty });
     }
 
     const mantras = mantrasData[key]?.mantras || [];
@@ -290,26 +308,26 @@ app.post("/api/ask-bhakti", (req, res) => {
     const response = {
       deity: key,
       available: {
-        mantra: mantras.length > 0,
-        aarti: aartis.length > 0,
-        poojaVidhi: false,
-        chalisa: false,
-        stotra: false
+        mantra: mantras.length>0,
+        aarti: aartis.length>0,
+        poojaVidhi:false,
+        chalisa:false,
+        stotra:false
       },
       content: {
         mantra: mantras,
         aarti: aartis,
-        poojaVidhi: null,
-        chalisa: "",
-        stotra: []
+        poojaVidhi:null,
+        chalisa:"",
+        stotra:[]
       },
-      sourceNote: "पारंपरिक स्थिर भक्ति डेटा"
+      sourceNote:"पारंपरिक स्थिर भक्ति डेटा"
     };
 
-    writeBhaktiCache(deity, response);
-    return res.json(response);
+    writeBhaktiCache(deity,response);
+    return res.json({ fromCache:false, ...response });
 
-  } catch (e) {
+  } catch(e) {
     console.error("Ask Bhakti API error:", e.message);
     return res.status(500).json({ error: "Bhakti Ask System error" });
   }
