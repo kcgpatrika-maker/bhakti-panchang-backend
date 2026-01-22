@@ -223,11 +223,14 @@ Object.keys(mantrasData || {}).forEach(key => {
   }
 });
 
-// aartis.json keys
+// aartis.json keys + aliases
 Object.keys(aartisData || {}).forEach(key => {
   if (!key) return;
-  if (!ALIAS_MAP[normalizeDeityName(key)]) {
-    ALIAS_MAP[normalizeDeityName(key)] = key;
+  ALIAS_MAP[normalizeDeityName(key)] = key;
+  if (Array.isArray(aartisData[key].aliases)) {
+    aartisData[key].aliases.forEach(a => {
+      if(a) ALIAS_MAP[normalizeDeityName(a)] = key;
+    });
   }
 });
 
@@ -279,7 +282,8 @@ app.get("/api/ask-bhakti", (req, res) => {
     content: {
       mantra: mantrasData[key]?.mantras || [],
       aarti: aartisData[key]?.aartis || []
-    }
+    },
+    sourceNote: "पारंपरिक स्थिर भक्ति डेटा"
   });
 });
 
