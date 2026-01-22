@@ -8,7 +8,6 @@ import { fileURLToPath } from "url";
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
-import aartiData from "./data/aarti.json" assert { type: "json" };
 
 const app = express();
 app.use(cors());
@@ -193,7 +192,16 @@ try {
   console.error("❌ mantras.json load error:", e.message);
   mantrasData = Object.create(null);
 }
-
+// Load aartis.json
+const aartisPath = path.join(__dirname, "data", "aartis.json");
+let aartisData = Object.create(null);
+try {
+  const raw = fs.readFileSync(aartisPath, { encoding: "utf-8" });
+  aartisData = JSON.parse(raw);
+} catch (e) {
+  console.error("❌ aartis.json load error:", e.message);
+  aartisData = Object.create(null);
+}
 // Build alias map
 const ALIAS_MAP = Object.create(null);
 function normalizeDeityName(name = "") {
@@ -240,6 +248,13 @@ app.get("/api/ask-bhakti", (req,res) => {
   if(key && mantrasData[key] && Array.isArray(mantrasData[key].mantras)){
     return res.json({ deity:key, available:{mantra:true}, content:{mantra:mantrasData[key].mantras} });
   }
+   if (key && aartisData[key] && Array.isArray(aartisData[key].aartis)) {
+  return res.json({
+    deity: key,
+    available: { aarti: true },
+    content: { aarti: aartisData[key].aartis }
+  });
+}
   return res.status(404).json({ error:"देवता नहीं मिला", debug:{ input:deityRaw, normalized:norm } });
 });
 
@@ -265,6 +280,29 @@ app.post("/api/ask-bhakti", (req,res)=>{
       writeBhaktiCache(deity,response);
       return res.json({ fromCache:false, ...response });
     }
+     if (key && aartisData[key] && Array.isArray(aartisData[key].aartis)) {
+  const aartis = aartisData[key].aartis.filter(a => a && a.aarti?.length);
+  const response = {
+    deity: key,
+    available: {
+      mantra: false,
+      aarti: aartis.length > 0,
+      poojaVidhi: false,
+      chalisa: false,
+      stotra: false
+    },
+    content: {
+      mantra: [],
+      aarti: aartis,
+      poojaVidhi: null,
+      chalisa: "",
+      stotra: []
+    },
+    sourceNote: "पारंपरिक आरती (स्थिर डेटा)"
+  };
+  writeBhaktiCache(deity, response);
+  return res.json({ fromCache: false, ...response });
+}
 
     const emptyResp = getEmptyBhaktiResponse(deity);
     writeBhaktiCache(deity, emptyResp);
