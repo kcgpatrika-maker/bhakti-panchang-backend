@@ -180,7 +180,7 @@ app.get("/api/panchang", async (req, res) => {
    🔱 BHAKTI ASK SYSTEM – HELPERS
    ===================================================== */
 
-// mantras.json load
+// mantras.json
 const mantrasPath = path.join(__dirname, "data", "mantras.json");
 let mantrasData = {};
 try {
@@ -190,7 +190,7 @@ try {
   mantrasData = {};
 }
 
-// aartis.json load
+// aartis.json
 const aartisPath = path.join(__dirname, "data", "aartis.json");
 let aartisData = {};
 try {
@@ -219,41 +219,77 @@ const INTERNAL_SYNONYMS = {
   shani: ["शनि", "shanidev"],
 };
 
-// alias map
-const ALIAS_MAP = {};
-function addAlias(key, alias) {
-  if (alias) ALIAS_MAP[normalizeDeityName(alias)] = key;
+// alias maps (दोनों datasets अलग‑अलग रखें)
+const ALIAS_MANTRA = {};
+const ALIAS_AARTI = {};
+function addAlias(map, key, alias) {
+  if (alias) map[normalizeDeityName(alias)] = key;
 }
 
 // mantras.json → keys + aliases
 Object.keys(mantrasData).forEach((key) => {
-  addAlias(key, key);
-  (mantrasData[key].aliases || []).forEach((a) => addAlias(key, a));
+  addAlias(ALIAS_MANTRA, key, key);
+  (mantrasData[key].aliases || []).forEach((a) => addAlias(ALIAS_MANTRA, key, a));
 });
 
 // aartis.json → keys + aliases (यदि मौजूद)
 Object.keys(aartisData).forEach((key) => {
-  addAlias(key, key);
-  (aartisData[key].aliases || []).forEach((a) => addAlias(key, a));
+  addAlias(ALIAS_AARTI, key, key);
+  (aartisData[key].aliases || []).forEach((a) => addAlias(ALIAS_AARTI, key, a));
 });
 
-// internal synonyms fallback
+// internal synonyms दोनों maps में जोड़ें
 Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
-  const target =
-    Object.keys(mantrasData).find((k) => normalizeDeityName(k) === normalizeDeityName(canonical)) ||
+  const mantraTarget =
+    Object.keys(mantrasData).find((k) => normalizeDeityName(k) === normalizeDeityName(canonical));
+  const aartiTarget =
     Object.keys(aartisData).find((k) => normalizeDeityName(k) === normalizeDeityName(canonical));
-  if (target) list.forEach((a) => addAlias(target, a));
+  list.forEach((a) => {
+    if (mantraTarget) addAlias(ALIAS_MANTRA, mantraTarget, a);
+    if (aartiTarget) addAlias(ALIAS_AARTI, aartiTarget, a);
+  });
 });
 
-// resolve key (Hindi/English/पर्यायवाची)
-function resolveKey(deityRaw = "") {
+/* -----------------------------------------------------
+   Merge‑aware resolve: दोनों datasets से key पकड़ें
+   ----------------------------------------------------- */
+function resolveKeys(deityRaw = "") {
   const norm = normalizeDeityName(deityRaw);
-  return (
-    ALIAS_MAP[norm] ||
+
+  const mantraKey =
+    ALIAS_MANTRA[norm] ||
     Object.keys(mantrasData).find((k) => normalizeDeityName(k) === norm) ||
+    null;
+
+  const aartiKey =
+    ALIAS_AARTI[norm] ||
     Object.keys(aartisData).find((k) => normalizeDeityName(k) === norm) ||
-    null
-  );
+    null;
+
+  // canonical नाम चुनें—पहली प्राथमिकता: mantraKey, वरना aartiKey
+  const canonical = mantraKey || aartiKey || null;
+
+  return { canonical, mantraKey, aartiKey };
+}
+
+/* -----------------------------------------------------
+   Aarti normalization: string → lines[], empty safety
+   ----------------------------------------------------- */
+function normalizeAartiItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items.map((it) => {
+    const title = typeof it?.title === "string" ? it.title : "";
+    let lines = [];
+    if (Array.isArray(it?.aarti)) {
+      lines = it.aarti.filter((s) => typeof s === "string" && s.trim().length > 0);
+    } else if (typeof it?.aarti === "string") {
+      lines = it.aarti
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    }
+    return { title, aarti: lines };
+  });
 }
 
 /* -----------------------------------------------------
@@ -263,7 +299,8 @@ const BHAKTI_CACHE_DIR = path.join(__dirname, "cache", "bhakti");
 if (!fs.existsSync(BHAKTI_CACHE_DIR)) fs.mkdirSync(BHAKTI_CACHE_DIR, { recursive: true });
 
 function getBhaktiCacheFile(deity) {
-  const key = resolveKey(deity) || "unknown";
+  const { canonical } = resolveKeys(deity);
+  const key = canonical || "unknown";
   return path.join(BHAKTI_CACHE_DIR, `${key}.json`);
 }
 function readBhaktiCache(deity) {
@@ -298,30 +335,37 @@ function getEmptyBhaktiResponse(deity) {
 // GET (AskNews.jsx uses this)
 app.get("/api/ask-bhakti", (req, res) => {
   const deityRaw = req.query.deity || "";
-  const key = resolveKey(deityRaw);
+  const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
 
-  if (!key) return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
+  if (!canonical) return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
 
-  const mantras = Array.isArray(mantrasData[key]?.mantras) ? mantrasData[key].mantras : [];
-  const aartis = Array.isArray(aartisData[key]?.aartis) ? aartisData[key].aartis : [];
+  // दोनों keys से content merge करें
+  const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
+    ? mantrasData[mantraKey].mantras
+    : [];
+  const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
+    ? aartisData[aartiKey].aartis
+    : [];
+
+  const aartisArr = normalizeAartiItems(aartisArrRaw);
 
   return res.json({
-    deity: key,
+    deity: canonical,
     available: {
-      mantra: mantras.length > 0,
-      aarti: aartis.length > 0,
+      mantra: mantrasArr.length > 0,
+      aarti: aartisArr.length > 0,
       poojaVidhi: false,
       chalisa: false,
       stotra: false,
     },
     content: {
-      mantra: mantras,
-      aarti: aartis, // [{ title, aarti:[...lines] }, ...]
+      mantra: mantrasArr,
+      aarti: aartisArr, // [{ title, aarti:[...lines] }]
       poojaVidhi: null,
       chalisa: "",
       stotra: [],
     },
-    sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
+    sourceNote: "पारंपरिक स्थिर भक्ति डेटा (merged)",
   });
 });
 
@@ -334,33 +378,38 @@ app.post("/api/ask-bhakti", (req, res) => {
     const cached = readBhaktiCache(deity);
     if (cached) return res.json({ fromCache: true, ...cached });
 
-    const key = resolveKey(deity);
-    if (!key) {
+    const { canonical, mantraKey, aartiKey } = resolveKeys(deity);
+    if (!canonical) {
       const empty = getEmptyBhaktiResponse(deity);
       writeBhaktiCache(deity, empty);
       return res.json({ fromCache: false, ...empty });
     }
 
-    const mantras = Array.isArray(mantrasData[key]?.mantras) ? mantrasData[key].mantras : [];
-    const aartis = Array.isArray(aartisData[key]?.aartis) ? aartisData[key].aartis : [];
+    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
+      ? mantrasData[mantraKey].mantras
+      : [];
+    const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
+      ? aartisData[aartiKey].aartis
+      : [];
+    const aartisArr = normalizeAartiItems(aartisArrRaw);
 
     const response = {
-      deity: key,
+      deity: canonical,
       available: {
-        mantra: mantras.length > 0,
-        aarti: aartis.length > 0,
+        mantra: mantrasArr.length > 0,
+        aarti: aartisArr.length > 0,
         poojaVidhi: false,
         chalisa: false,
         stotra: false,
       },
       content: {
-        mantra: mantras,
-        aarti: aartis,
+        mantra: mantrasArr,
+        aarti: aartisArr,
         poojaVidhi: null,
         chalisa: "",
         stotra: [],
       },
-      sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
+      sourceNote: "पारंपरिक स्थिर भक्ति डेटा (merged)",
     };
 
     writeBhaktiCache(deity, response);
