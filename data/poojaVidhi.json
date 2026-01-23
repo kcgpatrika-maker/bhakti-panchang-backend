@@ -1,23 +1,101 @@
 {
-  "ganesh": {
-    "title": "श्री गणेश पूजा विधि",
-    "pdf": "https://sanskritdocuments.org/doc_puja/ganeshapuja.pdf",
-    "source": "SanskritDocuments"
-  },
-  "shiv": {
-    "title": "श्री शिव पूजा विधि",
-    "pdf": "https://sanskritdocuments.org/doc_puja/shivapuja.pdf",
-    "source": "SanskritDocuments"
-  },
-  "durga": {
-    "title": "श्री दुर्गा पूजा विधि",
-    "pdf": "https://sanskritdocuments.org/doc_puja/durgapuja.pdf",
-    "source": "SanskritDocuments"
+  "ram": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/ram-navami-puja-vidhi-pdf/",
+        "source": "रामनवमी पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
   },
 
-  "_fallback": {
-    "title": "सर्व देव सामान्य पूजा विधि",
-    "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
-    "source": "Rajasthan Devasthan"
+  "krishna": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/janmashtami-puja-vidhi-pdf/",
+        "source": "जन्माष्टमी पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
+  },
+
+  "shiv": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/maha-shivaratri-puja-vidhi-pdf/",
+        "source": "महाशिवरात्रि पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/parthiva-shivling-puja-vidhi-pdf/",
+        "source": "पार्थिव शिवलिंग पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
+  },
+
+  "durga": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/navratri-puja-vidhi-pdf/",
+        "source": "नवरात्रि पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
+  },
+
+  "ganesh": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/ganesh-chaturthi-puja-vidhi-pdf/",
+        "source": "गणेश चतुर्थी पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
+  },
+
+  "hanuman": {
+    "poojaVidhi": [
+      {
+        "text": "ॐ विष्णुर्विष्णुर्विष्णुः ... (पूरा संकल्प)"
+      },
+      {
+        "pdf": "https://www.hindupad.com/hanuman-jayanti-puja-vidhi-pdf/",
+        "source": "हनुमान जयंती पूजा विधि (HinduPad)"
+      },
+      {
+        "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+        "source": "सर्वदेव पूजा विधि (सरकारी वेबसाइट)"
+      }
+    ]
   }
 }
