@@ -345,33 +345,44 @@ function getEmptyBhaktiResponse(deity) {
 // GET (AskNews.jsx uses this)
 app.get("/api/ask-bhakti", (req, res) => {
   const deityRaw = req.query.deity || "";
-  const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
+  const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deityRaw);
 
-  if (!canonical) return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
+  if (!canonical) {
+    return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
+  }
 
-  // दोनों keys से content merge करें
   const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
     ? mantrasData[mantraKey].mantras
     : [];
+
   const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
     ? aartisData[aartiKey].aartis
     : [];
-
   const aartisArr = normalizeAartiItems(aartisArrRaw);
+
+  const poojaObj =
+    poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
 
   return res.json({
     deity: canonical,
     available: {
       mantra: mantrasArr.length > 0,
       aarti: aartisArr.length > 0,
-      poojaVidhi: false,
+      poojaVidhi: !!poojaObj,
       chalisa: false,
       stotra: false,
     },
     content: {
       mantra: mantrasArr,
-      aarti: aartisArr, // [{ title, aarti:[...lines] }]
-      poojaVidhi: null,
+      aarti: aartisArr,
+      poojaVidhi: poojaObj
+        ? {
+            sankalp: SANKALP_TEXT,
+            title: poojaObj.title,
+            pdf: poojaObj.pdf,
+            source: poojaObj.source,
+          }
+        : null,
       chalisa: "",
       stotra: [],
     },
@@ -379,16 +390,19 @@ app.get("/api/ask-bhakti", (req, res) => {
   });
 });
 
-// POST (optional—cache-first; फ्रंटेंड अभी GET पर है)
+// POST (cache enabled)
 app.post("/api/ask-bhakti", (req, res) => {
   try {
     const deity = (req.body?.deity || "").trim();
-    if (!deity) return res.status(400).json({ error: "देवी/देवता/त्योहार का नाम आवश्यक है" });
+    if (!deity) {
+      return res.status(400).json({ error: "देवी/देवता/त्योहार का नाम आवश्यक है" });
+    }
 
     const cached = readBhaktiCache(deity);
     if (cached) return res.json({ fromCache: true, ...cached });
 
-    const { canonical, mantraKey, aartiKey } = resolveKeys(deity);
+    const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deity);
+
     if (!canonical) {
       const empty = getEmptyBhaktiResponse(deity);
       writeBhaktiCache(deity, empty);
@@ -398,27 +412,38 @@ app.post("/api/ask-bhakti", (req, res) => {
     const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
       ? mantrasData[mantraKey].mantras
       : [];
+
     const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
       ? aartisData[aartiKey].aartis
       : [];
     const aartisArr = normalizeAartiItems(aartisArrRaw);
+
+    const poojaObj =
+      poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
 
     const response = {
       deity: canonical,
       available: {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
-        poojaVidhi: false,
+        poojaVidhi: !!poojaObj,
         chalisa: false,
         stotra: false,
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
-        poojaVidhi: null,
+        poojaVidhi: poojaObj
+          ? {
+              sankalp: SANKALP_TEXT,
+              title: poojaObj.title,
+              pdf: poojaObj.pdf,
+              source: poojaObj.source,
+            }
+          : null,
         chalisa: "",
         stotra: [],
-      },
+        },
       sourceNote: "पारंपरिक स्थिर भक्ति डेटा (merged)",
     };
 
@@ -429,6 +454,7 @@ app.post("/api/ask-bhakti", (req, res) => {
     return res.status(500).json({ error: "Bhakti Ask System error" });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
