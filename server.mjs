@@ -200,6 +200,16 @@ try {
   aartisData = {};
 }
 
+// Load poojaVidhi.json
+const poojaVidhiPath = path.join(__dirname, "data", "poojaVidhi.json");
+let poojaVidhiData = Object.create(null);
+try {
+  poojaVidhiData = JSON.parse(fs.readFileSync(poojaVidhiPath, "utf-8"));
+} catch (e) {
+  console.error("poojaVidhi.json load error", e.message);
+  poojaVidhiData = {};
+}
+
 // normalize (Hindi + English)
 function normalizeDeityName(name = "") {
   return name.toLowerCase().replace(/[^a-z0-9\u0900-\u097F]+/g, "").trim();
