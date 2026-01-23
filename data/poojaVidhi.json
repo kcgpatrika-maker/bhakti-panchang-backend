@@ -1,0 +1,23 @@
+{
+  "ganesh": {
+    "title": "श्री गणेश पूजा विधि",
+    "pdf": "https://sanskritdocuments.org/doc_puja/ganeshapuja.pdf",
+    "source": "SanskritDocuments"
+  },
+  "shiv": {
+    "title": "श्री शिव पूजा विधि",
+    "pdf": "https://sanskritdocuments.org/doc_puja/shivapuja.pdf",
+    "source": "SanskritDocuments"
+  },
+  "durga": {
+    "title": "श्री दुर्गा पूजा विधि",
+    "pdf": "https://sanskritdocuments.org/doc_puja/durgapuja.pdf",
+    "source": "SanskritDocuments"
+  },
+
+  "_fallback": {
+    "title": "सर्व देव सामान्य पूजा विधि",
+    "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+    "source": "Rajasthan Devasthan"
+  }
+}
