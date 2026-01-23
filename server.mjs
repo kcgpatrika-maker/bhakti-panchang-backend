@@ -15,6 +15,22 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 const URL = "https://www.srimandir.com/hi/panchang";
+/* =====================================================
+   🔱 GLOBAL SANKALP (STATIC)
+   ===================================================== */
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const sankalpPath = path.join(__dirname, "data", "sankalp.txt");
+let SANKALP_TEXT = "";
+
+try {
+  SANKALP_TEXT = fs.readFileSync(sankalpPath, "utf-8").trim();
+} catch (e) {
+  console.error("❌ sankalp.txt load error:", e.message);
+  SANKALP_TEXT = "";
+}
 
 /* =====================================================
    🔸 CACHE SETUP START
