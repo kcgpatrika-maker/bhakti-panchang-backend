@@ -4,6 +4,7 @@ import * as cheerio from "cheerio";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -215,15 +216,11 @@ try {
   aartisData = {};
 }
 
-// Load poojaVidhi.json
+// poojaVidhi.json
 const poojaVidhiPath = path.join(__dirname, "data", "poojaVidhi.json");
 let poojaVidhiData = Object.create(null);
-try {
-  poojaVidhiData = JSON.parse(fs.readFileSync(poojaVidhiPath, "utf-8"));
-} catch (e) {
-  console.error("poojaVidhi.json load error", e.message);
-  poojaVidhiData = {};
-}
+try { poojaVidhiData = JSON.parse(fs.readFileSync(poojaVidhiPath, "utf-8")); }
+catch (e) { console.error("poojaVidhi.json load error", e.message); poojaVidhiData = {}; }
 
 // normalize (Hindi + English)
 function normalizeDeityName(name = "") {
@@ -366,17 +363,9 @@ app.get("/api/ask-bhakti", (req, res) => {
     return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
   }
 
-  const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
-    ? mantrasData[mantraKey].mantras
-    : [];
-
-  const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
-    ? aartisData[aartiKey].aartis
-    : [];
-  const aartisArr = normalizeAartiItems(aartisArrRaw);
-
-  const poojaObj =
-    poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
+  const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
+  const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
+  const poojaObj = poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
 
   return res.json({
     deity: canonical,
@@ -391,12 +380,7 @@ app.get("/api/ask-bhakti", (req, res) => {
       mantra: mantrasArr,
       aarti: aartisArr,
       poojaVidhi: poojaObj
-        ? {
-            sankalp: SANKALP_TEXT,
-            title: poojaObj.title,
-            pdf: poojaObj.pdf,
-            source: poojaObj.source,
-          }
+        ? { sankalp: SANKALP_TEXT, title: poojaObj.title, pdf: poojaObj.pdf, source: poojaObj.source }
         : null,
       chalisa: "",
       stotra: [],
@@ -424,17 +408,9 @@ app.post("/api/ask-bhakti", (req, res) => {
       return res.json({ fromCache: false, ...empty });
     }
 
-    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
-      ? mantrasData[mantraKey].mantras
-      : [];
-
-    const aartisArrRaw = Array.isArray(aartisData[aartiKey]?.aartis)
-      ? aartisData[aartiKey].aartis
-      : [];
-    const aartisArr = normalizeAartiItems(aartisArrRaw);
-
-    const poojaObj =
-      poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
+    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
+    const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
+    const poojaObj = poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
 
     const response = {
       deity: canonical,
@@ -449,16 +425,11 @@ app.post("/api/ask-bhakti", (req, res) => {
         mantra: mantrasArr,
         aarti: aartisArr,
         poojaVidhi: poojaObj
-          ? {
-              sankalp: SANKALP_TEXT,
-              title: poojaObj.title,
-              pdf: poojaObj.pdf,
-              source: poojaObj.source,
-            }
+          ? { sankalp: SANKALP_TEXT, title: poojaObj.title, pdf: poojaObj.pdf, source: poojaObj.source }
           : null,
         chalisa: "",
         stotra: [],
-        },
+      },
       sourceNote: "पारंपरिक स्थिर भक्ति डेटा (merged)",
     };
 
