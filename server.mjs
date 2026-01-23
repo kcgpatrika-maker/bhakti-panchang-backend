@@ -9,9 +9,16 @@ import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
 
-/* =====================================================
-   🔱 GLOBAL SANKALP (STATIC)
-   ===================================================== */
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+const URL = "https://www.srimandir.com/hi/panchang";
+
 const sankalpPath = path.join(__dirname, "data", "sankalp.txt");
 let SANKALP_TEXT = "";
 
@@ -21,19 +28,9 @@ try {
   console.error("❌ sankalp.txt load error:", e.message);
   SANKALP_TEXT = "";
 }
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-
-const PORT = process.env.PORT || 3000;
-const URL = "https://www.srimandir.com/hi/panchang";
-
 /* =====================================================
    🔸 CACHE SETUP START
    ===================================================== */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const CACHE_DIR = path.join(__dirname, "cache");
 
 if (!fs.existsSync(CACHE_DIR)) {
@@ -215,9 +212,9 @@ try {
 
 // poojaVidhi.json
 const poojaVidhiPath = path.join(__dirname, "data", "poojaVidhi.json");
-let poojaVidhiData = Object.create(null);
+let poojaVidhiData = {};
 try { poojaVidhiData = JSON.parse(fs.readFileSync(poojaVidhiPath, "utf-8")); }
-catch (e) { console.error("poojaVidhi.json load error", e.message); poojaVidhiData = {}; }
+catch (e) { console.error("❌ poojaVidhi.json load error:", e.message); poojaVidhiData = {}; }
 
 // normalize (Hindi + English)
 function normalizeDeityName(name = "") {
@@ -362,22 +359,24 @@ app.get("/api/ask-bhakti", (req, res) => {
 
   const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
   const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
-  const poojaObj = poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
-
+  // पूजा विधि: array (संकल्प + देवता-वाइज PDFs + fallback) 
+   const poojaArr = Array.isArray(poojaVidhiData[poojaKey]?.poojaVidhi) 
+      ? poojaVidhiData[poojaKey].poojaVidhi 
+      : [];
   return res.json({
     deity: canonical,
     available: {
       mantra: mantrasArr.length > 0,
       aarti: aartisArr.length > 0,
-      poojaVidhi: !!poojaObj,
+      poojaVidhi: poojaArr.length > 0 || !!SANKALP_TEXT,
       chalisa: false,
       stotra: false,
     },
     content: {
       mantra: mantrasArr,
       aarti: aartisArr,
-      poojaVidhi: poojaObj
-        ? { sankalp: SANKALP_TEXT, title: poojaObj.title, pdf: poojaObj.pdf, source: poojaObj.source }
+      poojaVidhi: (poojaArr.length || SANKALP_TEXT)
+        ? [{ text: SANKALP_TEXT }, ...poojaArr]
         : null,
       chalisa: "",
       stotra: [],
@@ -407,22 +406,24 @@ app.post("/api/ask-bhakti", (req, res) => {
 
     const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
     const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
-    const poojaObj = poojaVidhiData[poojaKey] || poojaVidhiData["_fallback"] || null;
+    const poojaArr = Array.isArray(poojaVidhiData[poojaKey]?.poojaVidhi)
+     ? poojaVidhiData[poojaKey].poojaVidhi
+       : [];
 
     const response = {
       deity: canonical,
       available: {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
-        poojaVidhi: !!poojaObj,
+        poojaVidhi: poojaArr.length > 0 || !!SANKALP_TEXT,
         chalisa: false,
         stotra: false,
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
-        poojaVidhi: poojaObj
-          ? { sankalp: SANKALP_TEXT, title: poojaObj.title, pdf: poojaObj.pdf, source: poojaObj.source }
+       poojaVidhi: (poojaArr.length || SANKALP_TEXT)
+          ? [{ text: SANKALP_TEXT }, ...poojaArr]
           : null,
         chalisa: "",
         stotra: [],
