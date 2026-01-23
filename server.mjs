@@ -5,9 +5,6 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 import { bharatDiwasMap } from "./data/bharatDiwas.js";
 import { composeDharmikMessage } from "./data/messageComposer.js";
 import { resolveCanonicalFestivals, getFestivalHints } from "./data/festivalResolver.js";
