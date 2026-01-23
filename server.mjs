@@ -18,10 +18,6 @@ const URL = "https://www.srimandir.com/hi/panchang";
 /* =====================================================
    🔱 GLOBAL SANKALP (STATIC)
    ===================================================== */
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const sankalpPath = path.join(__dirname, "data", "sankalp.txt");
 let SANKALP_TEXT = "";
 
