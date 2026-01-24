@@ -1,28 +1,26 @@
 {
   "ram": [
-    {
-      "text": "ॐ विष्णुर्विष्णुर्विष्णुः। … श्रीरामदेवताप्रीत्यर्थम् पूजां/जपादि/अनुष्ठानं करिष्ये।"
-    },
-    {
-      "pdf": "https://example.com/ram-navami-puja-vidhi.pdf",
-      "source": "रामनवमी पूजा विधि"
-    },
-    {
-      "pdf": "https://example.com/all-deities-puja-vidhi.pdf",
-      "source": "सर्वदेव पूजा विधि"
-    }
+    { "pdf": "https://example.com/ram-navami-puja-vidhi.pdf", "source": "रामनवमी पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
   ],
   "shiv": [
-    {
-      "text": "ॐ विष्णुर्विष्णुर्विष्णुः। … श्रीशिवदेवताप्रीत्यर्थम् पूजां/जपादि/अनुष्ठानं करिष्ये।"
-    },
-    {
-      "pdf": "https://example.com/mahashivratri-puja-vidhi.pdf",
-      "source": "महाशिवरात्रि पूजा विधि"
-    },
-    {
-      "pdf": "https://example.com/all-deities-puja-vidhi.pdf",
-      "source": "सर्वदेव पूजा विधि"
-    }
+    { "pdf": "https://example.com/mahashivratri-puja-vidhi.pdf", "source": "महाशिवरात्रि पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
+  ],
+  "krishna": [
+    { "pdf": "https://example.com/janmashtami-puja-vidhi.pdf", "source": "जन्माष्टमी पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
+  ],
+  "durga": [
+    { "pdf": "https://example.com/navratri-puja-vidhi.pdf", "source": "नवरात्रि पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
+  ],
+  "ganesh": [
+    { "pdf": "https://example.com/ganesh-chaturthi-puja-vidhi.pdf", "source": "गणेश चतुर्थी पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
+  ],
+  "lakshmi": [
+    { "pdf": "https://example.com/diwali-lakshmi-puja-vidhi.pdf", "source": "दीपावली लक्ष्मी पूजा विधि" },
+    { "pdf": "https://example.com/all-deities-puja-vidhi.pdf", "source": "सर्वदेव पूजा विधि" }
   ]
 }
