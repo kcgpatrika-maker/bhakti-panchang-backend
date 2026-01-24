@@ -271,6 +271,10 @@ Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
    ----------------------------------------------------- */
 function resolveKeys(deityRaw = "") {
   const norm = normalizeDeityName(deityRaw);
+console.log("Deity raw:", deityRaw);
+console.log("Resolved key:", poojaKey);
+console.log("Available poojaVidhi keys:", Object.keys(poojaVidhiData));
+console.log("Entries for key:", poojaVidhiData[poojaKey]);
 
   const mantraKey =
     ALIAS_MANTRA[norm] ||
@@ -353,6 +357,12 @@ app.get("/api/ask-bhakti", (req, res) => {
   const deityRaw = req.query.deity || "";
   const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deityRaw);
 
+console.log("Deity raw:", deityRaw);
+console.log("Resolved key:", poojaKey);
+console.log("Available poojaVidhi keys:", Object.keys(poojaVidhiData));
+console.log("Entries for key:", poojaVidhiData[poojaKey]);
+
+  
   if (!canonical) {
     return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
   }
