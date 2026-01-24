@@ -363,13 +363,12 @@ app.get("/api/ask-bhakti", (req, res) => {
     : [];
   const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
 
-  // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
+    // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
+  const sankalpItem = { text: SANKALP_TEXT };
   const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
     ? poojaVidhiData[poojaKey]
     : [];
-  const poojaArr = (SANKALP_TEXT || poojaEntries.length)
-    ? [{ text: SANKALP_TEXT }, ...poojaEntries]
-    : [];
+  const poojaArr = [sankalpItem, ...poojaEntries];
 
   return res.json({
     deity: canonical,
@@ -416,13 +415,12 @@ app.post("/api/ask-bhakti", (req, res) => {
       : [];
     const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
 
-    // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
-    const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
-      ? poojaVidhiData[poojaKey]
-      : [];
-    const poojaArr = (SANKALP_TEXT || poojaEntries.length)
-      ? [{ text: SANKALP_TEXT }, ...poojaEntries]
-      : [];
+      // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
+  const sankalpItem = { text: SANKALP_TEXT };
+  const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
+    ? poojaVidhiData[poojaKey]
+    : [];
+  const poojaArr = [sankalpItem, ...poojaEntries];
 
     const response = {
       deity: canonical,
