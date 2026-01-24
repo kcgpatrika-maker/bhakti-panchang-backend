@@ -357,27 +357,33 @@ app.get("/api/ask-bhakti", (req, res) => {
     return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
   }
 
-  const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
+  // मंत्र और आरती
+  const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
+    ? mantrasData[mantraKey].mantras
+    : [];
   const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
-  // पूजा विधि: array (संकल्प + देवता-वाइज PDFs + fallback) 
-   const poojaArr = Array.isArray(poojaVidhiData[poojaKey]?.poojaVidhi) 
-      ? poojaVidhiData[poojaKey].poojaVidhi 
-      : [];
+
+  // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
+  const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
+    ? poojaVidhiData[poojaKey]
+    : [];
+  const poojaArr = (SANKALP_TEXT || poojaEntries.length)
+    ? [{ text: SANKALP_TEXT }, ...poojaEntries]
+    : [];
+
   return res.json({
     deity: canonical,
     available: {
       mantra: mantrasArr.length > 0,
       aarti: aartisArr.length > 0,
-      poojaVidhi: poojaArr.length > 0 || !!SANKALP_TEXT,
+      poojaVidhi: poojaArr.length > 0,
       chalisa: false,
       stotra: false,
     },
     content: {
       mantra: mantrasArr,
       aarti: aartisArr,
-      poojaVidhi: (poojaArr.length || SANKALP_TEXT)
-        ? [{ text: SANKALP_TEXT }, ...poojaArr]
-        : null,
+      poojaVidhi: poojaArr,
       chalisa: "",
       stotra: [],
     },
@@ -404,27 +410,33 @@ app.post("/api/ask-bhakti", (req, res) => {
       return res.json({ fromCache: false, ...empty });
     }
 
-    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras) ? mantrasData[mantraKey].mantras : [];
+    // मंत्र और आरती
+    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
+      ? mantrasData[mantraKey].mantras
+      : [];
     const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
-    const poojaArr = Array.isArray(poojaVidhiData[poojaKey]?.poojaVidhi)
-     ? poojaVidhiData[poojaKey].poojaVidhi
-       : [];
+
+    // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
+    const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
+      ? poojaVidhiData[poojaKey]
+      : [];
+    const poojaArr = (SANKALP_TEXT || poojaEntries.length)
+      ? [{ text: SANKALP_TEXT }, ...poojaEntries]
+      : [];
 
     const response = {
       deity: canonical,
       available: {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
-        poojaVidhi: poojaArr.length > 0 || !!SANKALP_TEXT,
+        poojaVidhi: poojaArr.length > 0,
         chalisa: false,
         stotra: false,
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
-       poojaVidhi: (poojaArr.length || SANKALP_TEXT)
-          ? [{ text: SANKALP_TEXT }, ...poojaArr]
-          : null,
+        poojaVidhi: poojaArr,
         chalisa: "",
         stotra: [],
       },
@@ -438,7 +450,6 @@ app.post("/api/ask-bhakti", (req, res) => {
     return res.status(500).json({ error: "Bhakti Ask System error" });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`Bhakti Panchang backend running on port ${PORT}`);
