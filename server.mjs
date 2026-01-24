@@ -363,8 +363,7 @@ app.get("/api/ask-bhakti", (req, res) => {
     : [];
   const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
 
-    // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
-  const sankalpItem = { text: SANKALP_TEXT };
+      const sankalpItem = { text: SANKALP_TEXT };
   const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
     ? poojaVidhiData[poojaKey]
     : [];
@@ -415,8 +414,7 @@ app.post("/api/ask-bhakti", (req, res) => {
       : [];
     const aartisArr = normalizeAartiItems(aartisData[aartiKey]?.aartis || []);
 
-      // पूजा विधि: संकल्प + deity‑specific PDFs + fallback
-  const sankalpItem = { text: SANKALP_TEXT };
+        const sankalpItem = { text: SANKALP_TEXT };
   const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
     ? poojaVidhiData[poojaKey]
     : [];
