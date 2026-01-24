@@ -271,10 +271,6 @@ Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
    ----------------------------------------------------- */
 function resolveKeys(deityRaw = "") {
   const norm = normalizeDeityName(deityRaw);
-console.log("Deity raw:", deityRaw);
-console.log("Resolved key:", poojaKey);
-console.log("Available poojaVidhi keys:", Object.keys(poojaVidhiData));
-console.log("Entries for key:", poojaVidhiData[poojaKey]);
 
   const mantraKey =
     ALIAS_MANTRA[norm] ||
@@ -355,14 +351,10 @@ function getEmptyBhaktiResponse(deity) {
 // GET (AskNews.jsx uses this)
 app.get("/api/ask-bhakti", (req, res) => {
   const deityRaw = req.query.deity || "";
-  const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deityRaw);
+  const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
+  const poojaKey = canonical;
 
-console.log("Deity raw:", deityRaw);
-console.log("Resolved key:", poojaKey);
-console.log("Available poojaVidhi keys:", Object.keys(poojaVidhiData));
-console.log("Entries for key:", poojaVidhiData[poojaKey]);
 
-  
   if (!canonical) {
     return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
   }
@@ -410,7 +402,8 @@ app.post("/api/ask-bhakti", (req, res) => {
     const cached = readBhaktiCache(deity);
     if (cached) return res.json({ fromCache: true, ...cached });
 
-    const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deity);
+    const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
+    const poojaKey = canonical;
 
     if (!canonical) {
       const empty = getEmptyBhaktiResponse(deity);
