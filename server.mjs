@@ -356,7 +356,8 @@ app.get("/api/ask-bhakti", (req, res) => {
       return res.status(400).json({ error: "देवी/देवता का नाम आवश्यक है" });
     }
 
-    const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deity);
+    const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
+    const poojaKey = canonical;
 
     if (!canonical) {
       return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
@@ -416,7 +417,8 @@ app.post("/api/ask-bhakti", (req, res) => {
     const cached = readBhaktiCache(deity);
     if (cached) return res.json({ fromCache: true, ...cached });
 
-    const { canonical, mantraKey, aartiKey, poojaKey } = resolveKeys(deity);
+    const { canonical, mantraKey, aartiKey } = resolveKeys(deityRaw);
+    const poojaKey = canonical;
 
     if (!canonical) {
       const empty = getEmptyBhaktiResponse(deity);
