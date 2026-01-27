@@ -282,12 +282,41 @@ Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
 function resolveKeys(deityRaw = "") {
   const norm = normalizeDeityName(deityRaw);
 
-  const mantraKey = MANTRA_ALIAS[norm] || Object.keys(mantrasData).find(k => normalize(k) === norm) || null;
-  const aartiKey = AARTI_ALIAS[norm] || Object.keys(aartisData).find(k => normalize(k) === norm) || null;
-  const chalisaKey = normalize(name);
-  const poojaKey = normalize(name);
-  const canonical = mantraKey || aartiKey || chalisaKey || poojaKey;
-  return { canonical, mantraKey, aartiKey, chalisaKey, poojaKey };
+  const mantraKey =
+    ALIAS_MANTRA[norm] ||
+    Object.keys(mantrasData).find((k) => normalizeDeityName(k) === norm) ||
+    null;
+
+  const aartiKey =
+    ALIAS_AARTI[norm] ||
+    Object.keys(aartisData).find((k) => normalizeDeityName(k) === norm) ||
+    null;
+
+  // canonical नाम चुनें—पहली प्राथमिकता: mantraKey, वरना aartiKey
+  const canonical = mantraKey || aartiKey || null;
+
+  return { canonical, mantraKey, aartiKey };
+}
+
+/* -----------------------------------------------------
+   Aarti normalization: string → lines[], empty safety
+   ----------------------------------------------------- */
+function normalizeAartiItems(items) {
+  if (!Array.isArray(items)) return [];
+  return items.map((it) => {
+    const title = typeof it?.title === "string" ? it.title : "";
+    let lines = [];
+    if (Array.isArray(it?.aarti)) {
+      lines = it.aarti.filter((s) => typeof s === "string" && s.trim().length > 0);
+    } else if (typeof it?.aarti === "string") {
+
+      lines = it.aarti
+        .split("\n")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+    }
+    return { title, aarti: lines };
+  });
 }
 
 /* -----------------------------------------------------
@@ -317,9 +346,9 @@ function writeBhaktiCache(deity, data) {
     console.error("Bhakti cache write error:", e.message);
   }
 }
-function getEmptyResponse(name) {
+function getEmptyBhaktiResponse(deity) {
   return {
-    deity: name,
+    deity,
     available: { mantra: false, aarti: false, poojaVidhi: false, chalisa: false, stotra: false },
     content: { mantra: [], aarti: [], poojaVidhi: null, chalisa: "", stotra: [] },
     sourceNote: "डेटा उपलब्ध नहीं है",
