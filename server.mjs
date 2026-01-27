@@ -393,11 +393,20 @@ app.get("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
     
-    // 🔴 CHALISA LOGIC (FINAL)
-    const chalisaArr = chalisaData[canonical]
-      ? [{ pdf: chalisaData[canonical].pdf, source: chalisaData[canonical].source }]
-      : [];
-
+    // 🔴 CHALISA LOGIC (PATCHED)
+const chalisaArr = [];
+if (chalisaData[canonical]?.direct) {
+  chalisaArr.push({
+    pdf: chalisaData[canonical].direct.pdf,
+    source: chalisaData[canonical].direct.source
+  });
+}
+if (chalisaData[canonical]?.fallback) {
+  chalisaArr.push({
+    pdf: chalisaData[canonical].fallback.pdf,
+    source: chalisaData[canonical].fallback.source
+  });
+}
    
     return res.json({
       deity: canonical,
@@ -462,11 +471,20 @@ app.post("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
     
-    // 🔴 CHALISA LOGIC (FINAL)
-    const chalisaArr = chalisaData[canonical]
-      ? [{ pdf: chalisaData[canonical].pdf, source: chalisaData[canonical].source }]
-      : [];
-
+     // 🔴 CHALISA LOGIC (PATCHED)
+const chalisaArr = [];
+if (chalisaData[canonical]?.direct) {
+  chalisaArr.push({
+    pdf: chalisaData[canonical].direct.pdf,
+    source: chalisaData[canonical].direct.source
+  });
+}
+if (chalisaData[canonical]?.fallback) {
+  chalisaArr.push({
+    pdf: chalisaData[canonical].fallback.pdf,
+    source: chalisaData[canonical].fallback.source
+  });
+}
     
     const response = {
       deity: canonical,
