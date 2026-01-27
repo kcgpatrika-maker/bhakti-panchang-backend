@@ -1,12 +1,88 @@
 {
-  "ganesh": { "pdf": "https://example.com/ganesh-chalisa.pdf", "source": "Gita Insight" },
-  "ram": { "pdf": "https://example.com/ram-chalisa.pdf", "source": "Gita Insight" },
-  "krishna": { "pdf": "https://example.com/krishna-chalisa.pdf", "source": "Gita Insight" },
-  "hanuman": { "pdf": "https://example.com/hanuman-chalisa.pdf", "source": "Gita Insight" },
-  "shani": { "pdf": "https://example.com/shani-chalisa.pdf", "source": "Gita Insight" },
-  "durga": { "pdf": "https://example.com/durga-chalisa.pdf", "source": "Gita Insight" },
-  "lakshmi": { "pdf": "https://example.com/lakshmi-chalisa.pdf", "source": "Gita Insight" },
-  "saraswati": { "pdf": "https://example.com/saraswati-chalisa.pdf", "source": "Gita Insight" },
-  "santoshi": { "pdf": "https://example.com/santoshi-chalisa.pdf", "source": "Gita Insight" },
-  "surya": { "pdf": "https://example.com/surya-chalisa.pdf", "source": "Gita Insight" }
+  "हनुमान": {
+    "direct": {
+      "pdf": "https://hanumanchalisapdf.in/pdf-download/",
+      "source": "HanumanChalisaPDF.in"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "शिव": {
+    "direct": {
+      "pdf": "https://www.sarkarirush.com/shiv-chalisa-pdf/",
+      "source": "SarkariRush"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "गणेश": {
+    "direct": null,
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "कृष्ण": {
+    "direct": null,
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "राम": {
+    "direct": null,
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "शनि": {
+    "direct": {
+      "pdf": "https://instapdf.in/shani-chalisa/",
+      "source": "InstaPDF"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "सूर्य": {
+    "direct": null,
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "लक्ष्मी": {
+    "direct": {
+      "pdf": "https://www.chalisa-pdf.com/lakshmi-chalisa-pdf/",
+      "source": "Chalisa-PDF.com"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  },
+
+  "दुर्गा": {
+    "direct": {
+      "pdf": "https://vedpuran.net/wp-content/uploads/2021/05/durga-chalisa.pdf",
+      "source": "VedPuran"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "Gita Insight – सर्वदेव चालीसा संग्रह"
+    }
+  }
 }
