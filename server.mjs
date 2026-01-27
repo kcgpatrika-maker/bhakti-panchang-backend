@@ -216,6 +216,16 @@ let poojaVidhiData = {};
 try { poojaVidhiData = JSON.parse(fs.readFileSync(poojaVidhiPath, "utf-8")); }
 catch (e) { console.error("❌ poojaVidhi.json load error:", e.message); poojaVidhiData = {}; }
 
+// chalisa.json
+const chalisaPath = path.join(__dirname, "data", "chalisa.json");
+let chalisaData = {};
+try {
+  chalisaData = JSON.parse(fs.readFileSync(chalisaPath, "utf-8"));
+} catch (e) {
+  console.error("❌ chalisa.json load error:", e.message);
+  chalisaData = {};
+}
+
 // normalize (Hindi + English)
 function normalizeDeityName(name = "") {
   return name.toLowerCase().replace(/[^a-z0-9\u0900-\u097F]+/g, "").trim();
@@ -381,6 +391,24 @@ app.get("/api/ask-bhakti", (req, res) => {
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
+    // 🔴 CHALISA LOGIC (FINAL)
+    const chalisaInfo = chalisaData[canonical] || null;
+    const chalisaArr = [];
+
+    if (chalisaInfo) {
+      if (chalisaInfo.direct) {
+        chalisaArr.push({
+          pdf: chalisaInfo.direct.pdf,
+          source: chalisaInfo.direct.source
+        });
+      }
+      if (chalisaInfo.fallback) {
+        chalisaArr.push({
+          pdf: chalisaInfo.fallback.pdf,
+          source: chalisaInfo.fallback.source
+        });
+      }
+    }
 
     return res.json({
       deity: canonical,
@@ -388,14 +416,14 @@ app.get("/api/ask-bhakti", (req, res) => {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
         poojaVidhi: poojaArr.length > 1, // sankalp + pdf
-        chalisa: false,
-        stotra: false,
+        chalisa: chalisaArr.length > 0,
+        stotra: false
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
         poojaVidhi: poojaArr,
-        chalisa: "",
+        chalisa: chalisaArr,
         stotra: [],
       },
       sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
@@ -444,6 +472,24 @@ app.post("/api/ask-bhakti", (req, res) => {
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
+    // 🔴 CHALISA LOGIC (FINAL)
+    const chalisaInfo = chalisaData[canonical] || null;
+    const chalisaArr = [];
+
+    if (chalisaInfo) {
+      if (chalisaInfo.direct) {
+        chalisaArr.push({
+          pdf: chalisaInfo.direct.pdf,
+          source: chalisaInfo.direct.source
+        });
+      }
+      if (chalisaInfo.fallback) {
+        chalisaArr.push({
+          pdf: chalisaInfo.fallback.pdf,
+          source: chalisaInfo.fallback.source
+        });
+      }
+    }
 
     const response = {
       deity: canonical,
@@ -451,14 +497,14 @@ app.post("/api/ask-bhakti", (req, res) => {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
         poojaVidhi: poojaArr.length > 1,
-        chalisa: false,
+        chalisa: chalisaArr.length > 0,
         stotra: false,
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
         poojaVidhi: poojaArr,
-        chalisa: "",
+        chalisa: chalisaArr,
         stotra: [],
       },
       sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
