@@ -391,25 +391,13 @@ app.get("/api/ask-bhakti", (req, res) => {
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
+    
     // 🔴 CHALISA LOGIC (FINAL)
-    const chalisaInfo = chalisaData[canonical] || null;
-    const chalisaArr = [];
+    const chalisaArr = chalisaData[canonical]
+      ? [{ pdf: chalisaData[canonical].pdf, source: chalisaData[canonical].source }]
+      : [];
 
-    if (chalisaInfo) {
-      if (chalisaInfo.direct) {
-        chalisaArr.push({
-          pdf: chalisaInfo.direct.pdf,
-          source: chalisaInfo.direct.source
-        });
-      }
-      if (chalisaInfo.fallback) {
-        chalisaArr.push({
-          pdf: chalisaInfo.fallback.pdf,
-          source: chalisaInfo.fallback.source
-        });
-      }
-    }
-
+   
     return res.json({
       deity: canonical,
       available: {
@@ -472,25 +460,13 @@ app.post("/api/ask-bhakti", (req, res) => {
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
+    
     // 🔴 CHALISA LOGIC (FINAL)
-    const chalisaInfo = chalisaData[canonical] || null;
-    const chalisaArr = [];
+    const chalisaArr = chalisaData[canonical]
+      ? [{ pdf: chalisaData[canonical].pdf, source: chalisaData[canonical].source }]
+      : [];
 
-    if (chalisaInfo) {
-      if (chalisaInfo.direct) {
-        chalisaArr.push({
-          pdf: chalisaInfo.direct.pdf,
-          source: chalisaInfo.direct.source
-        });
-      }
-      if (chalisaInfo.fallback) {
-        chalisaArr.push({
-          pdf: chalisaInfo.fallback.pdf,
-          source: chalisaInfo.fallback.source
-        });
-      }
-    }
-
+    
     const response = {
       deity: canonical,
       available: {
