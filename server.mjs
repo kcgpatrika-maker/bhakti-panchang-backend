@@ -298,24 +298,17 @@ function resolveKeys(deityRaw = "") {
   return { canonical, mantraKey, aartiKey };
 }
 
-/* -----------------------------------------------------
-   Aarti normalization: string → lines[], empty safety
-   ----------------------------------------------------- */
-function normalizeAartiItems(items) {
-  if (!Array.isArray(items)) return [];
-  return items.map((it) => {
-    const title = typeof it?.title === "string" ? it.title : "";
-    let lines = [];
-    if (Array.isArray(it?.aarti)) {
-      lines = it.aarti.filter((s) => typeof s === "string" && s.trim().length > 0);
-    } else if (typeof it?.aarti === "string") {
-      lines = it.aarti
-        .split("\n")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0);
-    }
-    return { title, aarti: lines };
-  });
+/* ---------------------
+   Resolve deity keys
+--------------------- */
+function resolveKeys(name) {
+  const norm = normalize(name);
+  const mantraKey = MANTRA_ALIAS[norm] || Object.keys(mantrasData).find(k => normalize(k) === norm) || null;
+  const aartiKey = AARTI_ALIAS[norm] || Object.keys(aartisData).find(k => normalize(k) === norm) || null;
+  const chalisaKey = normalize(name);
+  const poojaKey = normalize(name);
+  const canonical = mantraKey || aartiKey || chalisaKey || poojaKey;
+  return { canonical, mantraKey, aartiKey, chalisaKey, poojaKey };
 }
 
 /* -----------------------------------------------------
@@ -345,9 +338,9 @@ function writeBhaktiCache(deity, data) {
     console.error("Bhakti cache write error:", e.message);
   }
 }
-function getEmptyBhaktiResponse(deity) {
+function getEmptyResponse(name) {
   return {
-    deity,
+    deity: name,
     available: { mantra: false, aarti: false, poojaVidhi: false, chalisa: false, stotra: false },
     content: { mantra: [], aarti: [], poojaVidhi: null, chalisa: "", stotra: [] },
     sourceNote: "डेटा उपलब्ध नहीं है",
