@@ -282,27 +282,6 @@ Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
 function resolveKeys(deityRaw = "") {
   const norm = normalizeDeityName(deityRaw);
 
-  const mantraKey =
-    ALIAS_MANTRA[norm] ||
-    Object.keys(mantrasData).find((k) => normalizeDeityName(k) === norm) ||
-    null;
-
-  const aartiKey =
-    ALIAS_AARTI[norm] ||
-    Object.keys(aartisData).find((k) => normalizeDeityName(k) === norm) ||
-    null;
-
-  // canonical नाम चुनें—पहली प्राथमिकता: mantraKey, वरना aartiKey
-  const canonical = mantraKey || aartiKey || null;
-
-  return { canonical, mantraKey, aartiKey };
-}
-
-/* ---------------------
-   Resolve deity keys
---------------------- */
-function resolveKeys(name) {
-  const norm = normalize(name);
   const mantraKey = MANTRA_ALIAS[norm] || Object.keys(mantrasData).find(k => normalize(k) === norm) || null;
   const aartiKey = AARTI_ALIAS[norm] || Object.keys(aartisData).find(k => normalize(k) === norm) || null;
   const chalisaKey = normalize(name);
