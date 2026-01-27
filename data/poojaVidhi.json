@@ -1,62 +1,82 @@
 {
   "ram": [
     {
-      "pdf": "https://upayogibooks.com/pdf/shri-ram-navami-puja-vidhi.pdf",
-      "source": "श्री रामनवमी पूजा विधि (UpayogiBooks)"
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/04/Ram-Navami-Puja-Vidhi.pdf",
+      "source": "रामनवमी पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://www.dharmsaar.com/pujan-vidhi/ram-navami-puja-vidhi.pdf",
-      "source": "राम नवमी पूजा विधि (Dharmsaar)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
   "shiv": [
     {
-      "pdf": "https://instapdf.in/mahashivratri-puja-vidhi/",
-      "source": "महाशिवरात्रि पूजा विधि (InstaPDF)"
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/02/Maha-Shivratri-Puja-Vidhi.pdf",
+      "source": "महाशिवरात्रि पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://www.dharmsaar.com/pujan-vidhi/shiv-ratri-puja-vidhi.pdf",
-      "source": "शिवरात्रि पूजन विधि (Dharmsaar)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
   "krishna": [
     {
-      "pdf": "https://instapdf.in/janmashtami-puja-vidhi/",
-      "source": "जन्माष्टमी पूजा विधि (InstaPDF)" 
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/08/Janmashtami-Puja-Vidhi.pdf",
+      "source": "जन्माष्टमी पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://govtempdiary.com/2022/06/masik-krishna-janmashtami-puja-vidhi-%E0%A4%AE%E0%A4%BE%E0%A4%B8%E0%A4%BF%E0%A4%95-%E0%A4%95%E0%A5%83%E0%A4%B7%E0%A5%8D%E0%A4%A3%E0%A4%BE-%E0%A4%9C%E0%A4%A8%E0%A5%8D%E0%A4%AE%E0%A4%BE%E0%A4%B7/",
-      "source": "मासिक कृष्ण जन्माष्टमी पूजा विधि (Govtempdiary)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
   "durga": [
     {
-      "pdf": "https://instapdf.in/navratri-puja-vidhi/",
-      "source": "नवरात्रि पूजा विधि (InstaPDF)" 
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/09/Navratri-Puja-Vidhi.pdf",
+      "source": "नवरात्रि पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://www.dharmsaar.com/pujan-vidhi/navratri-puja-vidhi.pdf",
-      "source": "नवरात्रि पूजन (Dharmsaar)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
   "ganesh": [
     {
-      "pdf": "https://www.reddit.com/r/u_quickpdf1/comments/plav56/ganesh_chaturthi_puja_vidhi_pdf_download/",
-      "source": "गणेश चतुर्थी पूजा विधि (PDF list link)"
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/08/Ganesh-Chaturthi-Puja-Vidhi.pdf",
+      "source": "गणेश चतुर्थी पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://www.dharmsaar.com/pujan-vidhi/ganesh-chaturthi-puja-vidhi.pdf",
-      "source": "गणेश चतुर्थी पूजा विधि (Dharmsaar)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
   "lakshmi": [
     {
-      "pdf": "https://www.reddit.com/r/u_quickpdf1/comments/qkene4/lakshmi_puja_vidhi_pdf/",
-      "source": "लक्ष्मी पूजा विधि PDF (Reddit link collection)"
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/10/Lakshmi-Puja-Vidhi.pdf",
+      "source": "लक्ष्मी पूजा विधि (Dharmsaar)"
     },
     {
-      "pdf": "https://www.dharmsaar.com/pujan-vidhi/lakshmi-puja-vidhi.pdf",
-      "source": "लक्ष्मी पूजा विधि (Dharmsaar)"
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+  "hanuman": [
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/04/Hanuman-Jayanti-Puja-Vidhi.pdf",
+      "source": "हनुमान जयंती पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+  "saraswati": [
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/01/Saraswati-Puja-Vidhi.pdf",
+      "source": "सरस्वती पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ]
 }
