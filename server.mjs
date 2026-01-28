@@ -394,9 +394,15 @@ app.get("/api/ask-bhakti", (req, res) => {
     const poojaArr = [sankalpItem, ...poojaEntries];
     
     // 🔴 CHALISA LOGIC (FINAL FIX)
-const chalisaKey = Object.keys(chalisaData).find(
-  k => normalizeDeityName(k) === normalizeDeityName(canonical)
-);
+const chalisaMap = {
+  shiv: "शिव",
+  hanuman: "हनुमान",
+  ganesh: "गणेश",
+  krishna: "कृष्ण",
+  durga: "दुर्गा"
+};
+
+const chalisaKey = chalisaMap[canonical]; // canonical → Hindi key
 
 const chalisaArr = [];
 if (chalisaKey && chalisaData[chalisaKey]?.direct) {
@@ -476,9 +482,15 @@ app.post("/api/ask-bhakti", (req, res) => {
     const poojaArr = [sankalpItem, ...poojaEntries];
     
      // 🔴 CHALISA LOGIC (FINAL FIX)
-const chalisaKey = Object.keys(chalisaData).find(
-  k => normalizeDeityName(k) === normalizeDeityName(canonical)
-);
+const chalisaMap = {
+  shiv: "शिव",
+  hanuman: "हनुमान",
+  ganesh: "गणेश",
+  krishna: "कृष्ण",
+  durga: "दुर्गा"
+};
+
+const chalisaKey = chalisaMap[canonical]; // canonical → Hindi key
 
 const chalisaArr = [];
 if (chalisaKey && chalisaData[chalisaKey]?.direct) {
