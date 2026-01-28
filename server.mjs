@@ -416,26 +416,26 @@ app.get("/api/ask-bhakti", (req, res) => {
       console.error("Chalisa error:", err.message);
     }
 
-   // Stotra logic (safe + normalized)
+   // ✅ Stotra logic — FINAL (flat + frontend-safe)
 let stotraArr = [];
 try {
   const stotraKey = Object.keys(stotraData).find(
-    k => k === canonical || k === deity
+    k => normalizeDeityName(k) === normalizeDeityName(canonical)
   );
+
   if (stotraKey) {
     const raw = stotraData[stotraKey];
 
-    if (raw?.direct) stotraArr.push(raw.direct);
-    if (raw?.fallback) stotraArr.push(raw.fallback);
+    // direct / fallback arrays ko flatten karo
+    if (Array.isArray(raw?.direct)) {
+      raw.direct.forEach(item => {
+        if (item && item.pdf) stotraArr.push(item);
+      });
+    }
 
-    // अगर raw खुद array है तो flatten करें
-    if (Array.isArray(raw)) {
-      raw.forEach(item => {
-        if (Array.isArray(item)) {
-          stotraArr.push(...item);   // nested array flatten
-        } else {
-          stotraArr.push(item);
-        }
+    if (Array.isArray(raw?.fallback)) {
+      raw.fallback.forEach(item => {
+        if (item && item.pdf) stotraArr.push(item);
       });
     }
   }
@@ -520,26 +520,26 @@ app.post("/api/ask-bhakti", (req, res) => {
       console.error("Chalisa error:", err.message);
     }
 
-   // Stotra logic (safe + normalized)
+   // ✅ Stotra logic — FINAL (flat + frontend-safe)
 let stotraArr = [];
 try {
   const stotraKey = Object.keys(stotraData).find(
-    k => k === canonical || k === deity
+    k => normalizeDeityName(k) === normalizeDeityName(canonical)
   );
+
   if (stotraKey) {
     const raw = stotraData[stotraKey];
 
-    if (raw?.direct) stotraArr.push(raw.direct);
-    if (raw?.fallback) stotraArr.push(raw.fallback);
+    // direct / fallback arrays ko flatten karo
+    if (Array.isArray(raw?.direct)) {
+      raw.direct.forEach(item => {
+        if (item && item.pdf) stotraArr.push(item);
+      });
+    }
 
-    // अगर raw खुद array है तो flatten करें
-    if (Array.isArray(raw)) {
-      raw.forEach(item => {
-        if (Array.isArray(item)) {
-          stotraArr.push(...item);   // nested array flatten
-        } else {
-          stotraArr.push(item);
-        }
+    if (Array.isArray(raw?.fallback)) {
+      raw.fallback.forEach(item => {
+        if (item && item.pdf) stotraArr.push(item);
       });
     }
   }
