@@ -416,19 +416,31 @@ app.get("/api/ask-bhakti", (req, res) => {
       console.error("Chalisa error:", err.message);
     }
 
-    // स्तोत्र (safe checks)
-    let stotraArr = [];
-    try {
-      const stotraKey = Object.keys(stotraData).find(
-        k => k === canonical || k === deity
-      );
-      if (stotraKey) {
-        if (stotraData[stotraKey]?.direct) stotraArr.push(stotraData[stotraKey].direct);
-        if (stotraData[stotraKey]?.fallback) stotraArr.push(stotraData[stotraKey].fallback);
-      }
-    } catch (err) {
-      console.error("Stotra error:", err.message);
+    // Stotra logic (safe + normalized)
+let stotraArr = [];
+try {
+  const stotraKey = Object.keys(stotraData).find(
+    k => k === canonical || k === deity
+  );
+  if (stotraKey) {
+    const raw = stotraData[stotraKey];
+    if (raw?.direct) stotraArr.push(raw.direct);
+    if (raw?.fallback) stotraArr.push(raw.fallback);
+
+    // अगर data nested array में है तो flatten करें
+    if (Array.isArray(raw)) {
+      raw.forEach(item => {
+        if (Array.isArray(item)) {
+          stotraArr.push(...item);
+        } else {
+          stotraArr.push(item);
+        }
+      });
     }
+  }
+} catch (err) {
+  console.error("Stotra error:", err.message);
+}
 
     return res.json({
       deity: canonical,
@@ -507,19 +519,31 @@ app.post("/api/ask-bhakti", (req, res) => {
       console.error("Chalisa error:", err.message);
     }
 
-    // स्तोत्र (safe checks)
-    let stotraArr = [];
-    try {
-      const stotraKey = Object.keys(stotraData).find(
-        k => k === canonical || k === deity
-      );
-      if (stotraKey) {
-        if (stotraData[stotraKey]?.direct) stotraArr.push(stotraData[stotraKey].direct);
-        if (stotraData[stotraKey]?.fallback) stotraArr.push(stotraData[stotraKey].fallback);
-      }
-    } catch (err) {
-      console.error("Stotra error:", err.message);
+    // Stotra logic (safe + normalized)
+let stotraArr = [];
+try {
+  const stotraKey = Object.keys(stotraData).find(
+    k => k === canonical || k === deity
+  );
+  if (stotraKey) {
+    const raw = stotraData[stotraKey];
+    if (raw?.direct) stotraArr.push(raw.direct);
+    if (raw?.fallback) stotraArr.push(raw.fallback);
+
+    // अगर data nested array में है तो flatten करें
+    if (Array.isArray(raw)) {
+      raw.forEach(item => {
+        if (Array.isArray(item)) {
+          stotraArr.push(...item);
+        } else {
+          stotraArr.push(item);
+        }
+      });
     }
+  }
+} catch (err) {
+  console.error("Stotra error:", err.message);
+}
 
     const response = {
       deity: canonical,
