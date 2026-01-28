@@ -1,13 +1,53 @@
 {
-  "शिव": {
-    "direct": {
-      "pdf": "https://www.gitainsight.com/pdf/shiv-stotra.pdf",
-      "source": "शिव स्तोत्र"
-    },
-    "fallback": {
-      "pdf": "https://www.gitainsight.com/pdf/all-stotra.pdf",
-      "source": "सर्वदेव स्तोत्र (GeetaInsight)"
-    }
+  "shiv": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_shiva/panchaksharastotram.pdf",
+        "source": "शिव पंचाक्षरी स्तोत्र"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_shiva/rudrashtakam.pdf",
+        "source": "रुद्राष्टकम"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_shiva/lingashtakam.pdf",
+        "source": "लिंगाष्टकम"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_shiva/shivamahimna.pdf",
+        "source": "शिव महिम्न स्तोत्र"
+      }
+    ]
+  },
+
+  "ram": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_raama/ramaraksha.pdf",
+        "source": "राम रक्षा स्तोत्र"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_raama/ramchandrakripalu.pdf",
+        "source": "रामचन्द्र कृपालु भजमन"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_raama/bhayepragat.pdf",
+        "source": "भए प्रकट कृपाला"
+      }
+    ]
+  },
+
+  "krishna": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_vishhnu/gopalasahasranama.pdf",
+        "source": "गोपाल सहस्त्रनाम"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_vishhnu/krishnashtakam.pdf",
+        "source": "कृष्णाष्टकम"
+      }
+    ]
   },
   "हनुमान": {
     "direct": {
