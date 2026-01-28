@@ -393,18 +393,22 @@ app.get("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
     
-    // 🔴 CHALISA LOGIC (PATCHED)
+    // 🔴 CHALISA LOGIC (FINAL FIX)
+const chalisaKey = Object.keys(chalisaData).find(
+  k => normalizeDeityName(k) === normalizeDeityName(canonical)
+);
+
 const chalisaArr = [];
-if (chalisaData[canonical]?.direct) {
+if (chalisaKey && chalisaData[chalisaKey]?.direct) {
   chalisaArr.push({
-    pdf: chalisaData[canonical].direct.pdf,
-    source: chalisaData[canonical].direct.source
+    pdf: chalisaData[chalisaKey].direct.pdf,
+    source: chalisaData[chalisaKey].direct.source
   });
 }
-if (chalisaData[canonical]?.fallback) {
+if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
   chalisaArr.push({
-    pdf: chalisaData[canonical].fallback.pdf,
-    source: chalisaData[canonical].fallback.source
+    pdf: chalisaData[chalisaKey].fallback.pdf,
+    source: chalisaData[chalisaKey].fallback.source
   });
 }
    
@@ -471,18 +475,22 @@ app.post("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
     
-     // 🔴 CHALISA LOGIC (PATCHED)
+     // 🔴 CHALISA LOGIC (FINAL FIX)
+const chalisaKey = Object.keys(chalisaData).find(
+  k => normalizeDeityName(k) === normalizeDeityName(canonical)
+);
+
 const chalisaArr = [];
-if (chalisaData[canonical]?.direct) {
+if (chalisaKey && chalisaData[chalisaKey]?.direct) {
   chalisaArr.push({
-    pdf: chalisaData[canonical].direct.pdf,
-    source: chalisaData[canonical].direct.source
+    pdf: chalisaData[chalisaKey].direct.pdf,
+    source: chalisaData[chalisaKey].direct.source
   });
 }
-if (chalisaData[canonical]?.fallback) {
+if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
   chalisaArr.push({
-    pdf: chalisaData[canonical].fallback.pdf,
-    source: chalisaData[canonical].fallback.source
+    pdf: chalisaData[chalisaKey].fallback.pdf,
+    source: chalisaData[chalisaKey].fallback.source
   });
 }
     
