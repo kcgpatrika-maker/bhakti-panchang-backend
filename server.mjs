@@ -374,66 +374,66 @@ app.get("/api/ask-bhakti", (req, res) => {
       return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
     }
 
-    // मंत्र (UNCHANGED)
+    // मंत्र
     const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
       ? mantrasData[mantraKey].mantras
       : [];
 
-    // आरती (UNCHANGED)
+    // आरती
     const aartisArr = normalizeAartiItems(
       Array.isArray(aartisData[aartiKey]?.aartis)
         ? aartisData[aartiKey].aartis
         : []
     );
 
-    // पूजा विधि (FIXED)
+    // पूजा विधि
     const sankalpItem = { type: "sankalp", text: SANKALP_TEXT };
     const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
-    
-    // CHALISA LOGIC (FINAL UNIVERSAL FIX)
-function normalizeName(name) {
-  return name.toLowerCase().trim();
-}
 
-const chalisaKey = Object.keys(chalisaData).find(
-  k => normalizeName(k) === normalizeName(canonical) 
-      || normalizeName(k) === normalizeName(deity)
-);
+    // चालीसा
+    const chalisaKey = Object.keys(chalisaData).find(
+      k => k === canonical || k === deity
+    );
+    const chalisaArr = [];
+    if (chalisaKey && chalisaData[chalisaKey]?.direct) {
+      chalisaArr.push(chalisaData[chalisaKey].direct);
+    }
+    if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
+      chalisaArr.push(chalisaData[chalisaKey].fallback);
+    }
 
-const chalisaArr = [];
-if (chalisaKey && chalisaData[chalisaKey]?.direct) {
-  chalisaArr.push({
-    pdf: chalisaData[chalisaKey].direct.pdf,
-    source: chalisaData[chalisaKey].direct.source
-  });
-}
-if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
-  chalisaArr.push({
-    pdf: chalisaData[chalisaKey].fallback.pdf,
-    source: chalisaData[chalisaKey].fallback.source
-  });
-}
-   
+    // स्तोत्र
+    const stotraKey = Object.keys(stotraData).find(
+      k => k === canonical || k === deity
+    );
+    const stotraArr = [];
+    if (stotraKey && stotraData[stotraKey]?.direct) {
+      stotraArr.push(stotraData[stotraKey].direct);
+    }
+    if (stotraKey && stotraData[stotraKey]?.fallback) {
+      stotraArr.push(stotraData[stotraKey].fallback);
+    }
+
     return res.json({
       deity: canonical,
       available: {
         mantra: mantrasArr.length > 0,
         aarti: aartisArr.length > 0,
-        poojaVidhi: poojaArr.length > 1, // sankalp + pdf
+        poojaVidhi: poojaArr.length > 1,
         chalisa: chalisaArr.length > 0,
-        stotra: false
+        stotra: stotraArr.length > 0
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
         poojaVidhi: poojaArr,
         chalisa: chalisaArr,
-        stotra: [],
+        stotra: stotraArr
       },
-      sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
+      sourceNote: "पारंपरिक स्थिर भक्ति डेटा"
     });
   } catch (e) {
     console.error("Ask Bhakti API error:", e.message);
@@ -461,49 +461,49 @@ app.post("/api/ask-bhakti", (req, res) => {
       return res.json({ fromCache: false, ...empty });
     }
 
-    // मंत्र (UNCHANGED)
+    // मंत्र
     const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
       ? mantrasData[mantraKey].mantras
       : [];
 
-    // आरती (UNCHANGED)
+    // आरती
     const aartisArr = normalizeAartiItems(
       Array.isArray(aartisData[aartiKey]?.aartis)
         ? aartisData[aartiKey].aartis
         : []
     );
 
-    // पूजा विधि (FIXED)
+    // पूजा विधि
     const sankalpItem = { type: "sankalp", text: SANKALP_TEXT };
     const poojaEntries = Array.isArray(poojaVidhiData[poojaKey])
       ? poojaVidhiData[poojaKey]
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
-    
-     // CHALISA LOGIC (FINAL UNIVERSAL FIX)
-function normalizeName(name) {
-  return name.toLowerCase().trim();
-}
 
-const chalisaKey = Object.keys(chalisaData).find(
-  k => normalizeName(k) === normalizeName(canonical) 
-      || normalizeName(k) === normalizeName(deity)
-);
+    // चालीसा
+    const chalisaKey = Object.keys(chalisaData).find(
+      k => k === canonical || k === deity
+    );
+    const chalisaArr = [];
+    if (chalisaKey && chalisaData[chalisaKey]?.direct) {
+      chalisaArr.push(chalisaData[chalisaKey].direct);
+    }
+    if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
+      chalisaArr.push(chalisaData[chalisaKey].fallback);
+    }
 
-const chalisaArr = [];
-if (chalisaKey && chalisaData[chalisaKey]?.direct) {
-  chalisaArr.push({
-    pdf: chalisaData[chalisaKey].direct.pdf,
-    source: chalisaData[chalisaKey].direct.source
-  });
-}
-if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
-  chalisaArr.push({
-    pdf: chalisaData[chalisaKey].fallback.pdf,
-    source: chalisaData[chalisaKey].fallback.source
-  });
-}
-    
+    // स्तोत्र
+    const stotraKey = Object.keys(stotraData).find(
+      k => k === canonical || k === deity
+    );
+    const stotraArr = [];
+    if (stotraKey && stotraData[stotraKey]?.direct) {
+      stotraArr.push(stotraData[stotraKey].direct);
+    }
+    if (stotraKey && stotraData[stotraKey]?.fallback) {
+      stotraArr.push(stotraData[stotraKey].fallback);
+    }
+
     const response = {
       deity: canonical,
       available: {
@@ -511,16 +511,16 @@ if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
         aarti: aartisArr.length > 0,
         poojaVidhi: poojaArr.length > 1,
         chalisa: chalisaArr.length > 0,
-        stotra: false,
+        stotra: stotraArr.length > 0
       },
       content: {
         mantra: mantrasArr,
         aarti: aartisArr,
         poojaVidhi: poojaArr,
         chalisa: chalisaArr,
-        stotra: [],
+        stotra: stotraArr
       },
-      sourceNote: "पारंपरिक स्थिर भक्ति डेटा",
+      sourceNote: "पारंपरिक स्थिर भक्ति डेटा"
     };
 
     writeBhaktiCache(deity, response);
