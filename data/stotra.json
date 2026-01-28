@@ -49,14 +49,87 @@
       }
     ]
   },
-  "हनुमान": {
-    "direct": {
-      "pdf": "https://www.gitainsight.com/pdf/hanuman-stotra.pdf",
-      "source": "हनुमान स्तोत्र"
-    },
-    "fallback": {
-      "pdf": "https://www.gitainsight.com/pdf/all-stotra.pdf",
-      "source": "सर्वदेव स्तोत्र (GeetaInsight)"
-    }
+  
+"hanuman": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_hanuma/hanumanchalisa.pdf",
+        "source": "हनुमान चालीसा"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_hanuma/bajrangabana.pdf",
+        "source": "बजरंग बाण"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_hanuma/hanumanashtakam.pdf",
+        "source": "हनुमानाष्टकम"
+      }
+    ]
+  },
+
+  "durga": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/durga_saptashati.pdf",
+        "source": "दुर्गा सप्तशती"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/argalastotram.pdf",
+        "source": "अर्गला स्तोत्र"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/kavacham.pdf",
+        "source": "देवी कवच"
+      }
+    ]
+  },
+
+  "lakshmi": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/shrisuktam.pdf",
+        "source": "श्री सूक्त"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/kanakadhara.pdf",
+        "source": "कनकधारा स्तोत्र"
+      }
+    ]
+  },
+
+  "vishnu": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_vishhnu/vishnusahasranama.pdf",
+        "source": "विष्णु सहस्त्रनाम"
+      }
+    ]
+  },
+
+  "surya": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_aditya/adityahridayam.pdf",
+        "source": "आदित्य हृदय स्तोत्र"
+      }
+    ]
+  },
+
+  "radha": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/radhastotram.pdf",
+        "source": "राधा स्तोत्र"
+      }
+    ]
+  },
+
+  "sita": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/sitastotram.pdf",
+        "source": "सीता स्तोत्र"
+      }
+    ]
   }
 }
