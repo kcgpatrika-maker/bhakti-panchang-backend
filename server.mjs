@@ -225,6 +225,15 @@ try {
   console.error("❌ chalisa.json load error:", e.message);
   chalisaData = {};
 }
+// stotra.json
+const stotraPath = path.join(__dirname, "data", "stotra.json");
+let stotraData = {};
+try {
+  stotraData = JSON.parse(fs.readFileSync(stotraPath, "utf-8"));
+} catch (e) {
+  console.error("❌ stotra.json load error:", e.message);
+  stotraData = {};
+}
 
 // normalize (Hindi + English)
 function normalizeDeityName(name = "") {
