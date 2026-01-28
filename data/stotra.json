@@ -1,0 +1,22 @@
+{
+  "शिव": {
+    "direct": {
+      "pdf": "https://www.gitainsight.com/pdf/shiv-stotra.pdf",
+      "source": "शिव स्तोत्र"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/pdf/all-stotra.pdf",
+      "source": "सर्वदेव स्तोत्र (GeetaInsight)"
+    }
+  },
+  "हनुमान": {
+    "direct": {
+      "pdf": "https://www.gitainsight.com/pdf/hanuman-stotra.pdf",
+      "source": "हनुमान स्तोत्र"
+    },
+    "fallback": {
+      "pdf": "https://www.gitainsight.com/pdf/all-stotra.pdf",
+      "source": "सर्वदेव स्तोत्र (GeetaInsight)"
+    }
+  }
+}
