@@ -425,7 +425,6 @@ try {
   if (stotraKey) {
     const raw = stotraData[stotraKey];
 
-    // direct/fallback objects
     if (raw?.direct) stotraArr.push(raw.direct);
     if (raw?.fallback) stotraArr.push(raw.fallback);
 
@@ -521,7 +520,7 @@ app.post("/api/ask-bhakti", (req, res) => {
       console.error("Chalisa error:", err.message);
     }
 
-    // Stotra logic (safe + normalized)
+   // Stotra logic (safe + normalized)
 let stotraArr = [];
 try {
   const stotraKey = Object.keys(stotraData).find(
@@ -530,7 +529,6 @@ try {
   if (stotraKey) {
     const raw = stotraData[stotraKey];
 
-    // direct/fallback objects
     if (raw?.direct) stotraArr.push(raw.direct);
     if (raw?.fallback) stotraArr.push(raw.fallback);
 
