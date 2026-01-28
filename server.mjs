@@ -359,7 +359,7 @@ function getEmptyBhaktiResponse(deity) {
    🔱 BHAKTI ASK SYSTEM – API (Ask Section Only)
    ===================================================== */
 
-// GET (AskNews.jsx uses this)
+// GET API
 app.get("/api/ask-bhakti", (req, res) => {
   try {
     const deity = (req.query.deity || "").trim();
@@ -393,28 +393,32 @@ app.get("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
 
-    // चालीसा
-    const chalisaKey = Object.keys(chalisaData).find(
-      k => k === canonical || k === deity
-    );
-    const chalisaArr = [];
-    if (chalisaKey && chalisaData[chalisaKey]?.direct) {
-      chalisaArr.push(chalisaData[chalisaKey].direct);
-    }
-    if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
-      chalisaArr.push(chalisaData[chalisaKey].fallback);
+    // चालीसा (safe checks)
+    let chalisaArr = [];
+    try {
+      const chalisaKey = Object.keys(chalisaData).find(
+        k => k === canonical || k === deity
+      );
+      if (chalisaKey) {
+        if (chalisaData[chalisaKey]?.direct) chalisaArr.push(chalisaData[chalisaKey].direct);
+        if (chalisaData[chalisaKey]?.fallback) chalisaArr.push(chalisaData[chalisaKey].fallback);
+      }
+    } catch (err) {
+      console.error("Chalisa error:", err.message);
     }
 
-    // स्तोत्र
-    const stotraKey = Object.keys(stotraData).find(
-      k => k === canonical || k === deity
-    );
-    const stotraArr = [];
-    if (stotraKey && stotraData[stotraKey]?.direct) {
-      stotraArr.push(stotraData[stotraKey].direct);
-    }
-    if (stotraKey && stotraData[stotraKey]?.fallback) {
-      stotraArr.push(stotraData[stotraKey].fallback);
+    // स्तोत्र (safe checks)
+    let stotraArr = [];
+    try {
+      const stotraKey = Object.keys(stotraData).find(
+        k => k === canonical || k === deity
+      );
+      if (stotraKey) {
+        if (stotraData[stotraKey]?.direct) stotraArr.push(stotraData[stotraKey].direct);
+        if (stotraData[stotraKey]?.fallback) stotraArr.push(stotraData[stotraKey].fallback);
+      }
+    } catch (err) {
+      console.error("Stotra error:", err.message);
     }
 
     return res.json({
@@ -441,7 +445,7 @@ app.get("/api/ask-bhakti", (req, res) => {
   }
 });
 
-// POST (cache enabled)
+// POST API (cache enabled)
 app.post("/api/ask-bhakti", (req, res) => {
   try {
     const deity = (req.body?.deity || "").trim();
@@ -480,28 +484,32 @@ app.post("/api/ask-bhakti", (req, res) => {
       : [];
     const poojaArr = [sankalpItem, ...poojaEntries];
 
-    // चालीसा
-    const chalisaKey = Object.keys(chalisaData).find(
-      k => k === canonical || k === deity
-    );
-    const chalisaArr = [];
-    if (chalisaKey && chalisaData[chalisaKey]?.direct) {
-      chalisaArr.push(chalisaData[chalisaKey].direct);
-    }
-    if (chalisaKey && chalisaData[chalisaKey]?.fallback) {
-      chalisaArr.push(chalisaData[chalisaKey].fallback);
+    // चालीसा (safe checks)
+    let chalisaArr = [];
+    try {
+      const chalisaKey = Object.keys(chalisaData).find(
+        k => k === canonical || k === deity
+      );
+      if (chalisaKey) {
+        if (chalisaData[chalisaKey]?.direct) chalisaArr.push(chalisaData[chalisaKey].direct);
+        if (chalisaData[chalisaKey]?.fallback) chalisaArr.push(chalisaData[chalisaKey].fallback);
+      }
+    } catch (err) {
+      console.error("Chalisa error:", err.message);
     }
 
-    // स्तोत्र
-    const stotraKey = Object.keys(stotraData).find(
-      k => k === canonical || k === deity
-    );
-    const stotraArr = [];
-    if (stotraKey && stotraData[stotraKey]?.direct) {
-      stotraArr.push(stotraData[stotraKey].direct);
-    }
-    if (stotraKey && stotraData[stotraKey]?.fallback) {
-      stotraArr.push(stotraData[stotraKey].fallback);
+    // स्तोत्र (safe checks)
+    let stotraArr = [];
+    try {
+      const stotraKey = Object.keys(stotraData).find(
+        k => k === canonical || k === deity
+      );
+      if (stotraKey) {
+        if (stotraData[stotraKey]?.direct) stotraArr.push(stotraData[stotraKey].direct);
+        if (stotraData[stotraKey]?.fallback) stotraArr.push(stotraData[stotraKey].fallback);
+      }
+    } catch (err) {
+      console.error("Stotra error:", err.message);
     }
 
     const response = {
