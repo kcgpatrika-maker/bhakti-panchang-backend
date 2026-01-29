@@ -288,8 +288,8 @@ Object.entries(INTERNAL_SYNONYMS).forEach(([canonical, list]) => {
 /* -----------------------------------------------------
    Merge‑aware resolve: दोनों datasets से key पकड़ें
    ----------------------------------------------------- */
-function resolveKeys(deityRaw = "") {
-  const norm = normalizeDeityName(deityRaw);
+function resolveKeys(deity = "") {
+  const norm = normalizeDeityName(deity);
 
   const mantraKey =
     ALIAS_MANTRA[norm] ||
