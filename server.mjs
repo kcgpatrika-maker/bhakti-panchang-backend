@@ -383,10 +383,19 @@ app.get("/api/ask-bhakti", (req, res) => {
       return res.status(404).json({ error: "देवी/देवता/त्योहार नहीं मिला" });
     }
 
-    // मंत्र
-    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
-      ? mantrasData[mantraKey].mantras
-      : [];
+    // ✅ Mantra logic — FINAL (flat + frontend-safe)
+let mantrasArr = [];
+try {
+  if (mantraKey && Array.isArray(mantrasData[mantraKey]?.mantras)) {
+    mantrasData[mantraKey].mantras.forEach(m => {
+      if (typeof m === "string" && m.trim().length > 0) {
+        mantrasArr.push(m.trim());
+      }
+    });
+  }
+} catch (err) {
+  console.error("Mantra error:", err.message);
+}
 
     // आरती
     const aartisArr = normalizeAartiItems(
@@ -487,10 +496,19 @@ app.post("/api/ask-bhakti", (req, res) => {
       return res.json({ fromCache: false, ...empty });
     }
 
-    // मंत्र
-    const mantrasArr = Array.isArray(mantrasData[mantraKey]?.mantras)
-      ? mantrasData[mantraKey].mantras
-      : [];
+    // ✅ Mantra logic — FINAL (flat + frontend-safe)
+let mantrasArr = [];
+try {
+  if (mantraKey && Array.isArray(mantrasData[mantraKey]?.mantras)) {
+    mantrasData[mantraKey].mantras.forEach(m => {
+      if (typeof m === "string" && m.trim().length > 0) {
+        mantrasArr.push(m.trim());
+      }
+    });
+  }
+} catch (err) {
+  console.error("Mantra error:", err.message);
+}
 
     // आरती
     const aartisArr = normalizeAartiItems(
