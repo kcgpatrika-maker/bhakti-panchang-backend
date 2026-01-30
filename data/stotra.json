@@ -172,9 +172,64 @@
         "source": "लक्ष्मी स्तुति (SanskritDocuments)"
       },
       {
-        "pdf": "https://dharmyaatra.in/laxmi-stuti/",
-        "source": "लक्ष्मी स्तुति (Dharmyaatra.in)"
+        "pdf": "https://sanskritdocuments.org/doc_devii/mahAlakShmIstuti.pdf",
+        "source": "लक्ष्मी स्तुति (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "saraswati": {
+    "direct": [
+      {
+        "pdf": "https://shrisanatandharam.com/public/storage/image/downloadable-file/shara-sarasavata-satatara-270.pdf",
+        "source": "सरस्वती स्तोत्र (Shrisanatandharam)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/sarasvatyaShTakam3.pdf",
+        "source": "सरस्वती अष्टकम (SanskritDocuments)"
+      }
+    ]
+  },
+    "ganesh": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_ganesha/atharva.pdf",
+        "source": "गणपति अथर्वशीर्ष (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_ganesha/ganesha8.html",
+        "source": "संकटनाशन गणेश स्तोत्र (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_ganesha/gaNeshastutigItam.pdf",
+        "source": "गणपति स्तुति (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_ganesha/gaNeshAShTakam7.pdf",
+        "source": "गणेश अष्टकम (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "hanuman": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_z_otherlang_hindi/sankatamochana.pdf",
+        "source": "संकटमोचक हनुमाष्टकम (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_z_otherlang_hindi/bajarangabaaNHindi.pdf",
+        "source": "बजरंग बाण (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://vedicprayers.com/shri-hanuman-bahuk/",
+        "source": "हनुमान बाहुक (VedicPrayers)"
+      },
+      {
+        "pdf": "https://dn710305.ca.archive.org/0/items/sundarkand_201910/sundar%20kand.pdf",
+        "source": "सुन्दरकाण्ड (Archive.org)"
       }
     ]
   }
 }
+
