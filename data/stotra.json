@@ -1,135 +1,180 @@
 {
-  "shiv": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_shiva/panchaksharastotram.pdf",
-        "source": "शिव पंचाक्षरी स्तोत्र"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_shiva/rudrashtakam.pdf",
-        "source": "रुद्राष्टकम"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_shiva/lingashtakam.pdf",
-        "source": "लिंगाष्टकम"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_shiva/shivamahimna.pdf",
-        "source": "शिव महिम्न स्तोत्र"
-      }
-    ]
-  },
+  "shiv_mahimna_stotra": [
+    {
+      "pdf": "https://ia800404.us.archive.org/1/items/ShivaMahimnaStotraAcharyaRajeshDikshit/Shiva%20Mahimna%20Stotra%20-%20Acharya%20Rajesh%20Dikshit.pdf",
+      "source": "Archive.org"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_shiva/shivamahi.pdf",
+      "source": "SanskritDocuments"
+    }
+  ],
 
-  "ram": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_raama/ramaraksha.pdf",
-        "source": "राम रक्षा स्तोत्र"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_raama/ramchandrakripalu.pdf",
-        "source": "रामचन्द्र कृपालु भजमन"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_raama/bhayepragat.pdf",
-        "source": "भए प्रकट कृपाला"
-      }
-    ]
-  },
+  "rudrashtadhyayi": [
+    {
+      "pdf": "https://dn721909.ca.archive.org/0/items/RudrashtadhyayiGItaPressGorakhpur/Rudrashtadhyayi%20-%20GIta%20Press%20Gorakhpur.pdf",
+      "source": "Archive.org – Gita Press"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_shiva/rudrAShTAdhyAyIshuklayajurvedIya.pdf",
+      "source": "SanskritDocuments"
+    }
+  ],
 
-  "krishna": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_vishhnu/gopalasahasranama.pdf",
-        "source": "गोपाल सहस्त्रनाम"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_vishhnu/krishnashtakam.pdf",
-        "source": "कृष्णाष्टकम"
-      }
-    ]
-  },
-  
-"hanuman": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_hanuma/hanumanchalisa.pdf",
-        "source": "हनुमान चालीसा"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_hanuma/bajrangabana.pdf",
-        "source": "बजरंग बाण"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_hanuma/hanumanashtakam.pdf",
-        "source": "हनुमानाष्टकम"
-      }
-    ]
-  },
+  "lingashtakam": [
+    {
+      "pdf": "https://svtempleco.org/Home/pdfs/Hindi/Lingashtakam.pdf",
+      "source": "SVTempleCo.org"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_shiva/lingashhMean.html",
+      "source": "SanskritDocuments"
+    }
+  ],
 
-  "durga": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/durga_saptashati.pdf",
-        "source": "दुर्गा सप्तशती"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/argalastotram.pdf",
-        "source": "अर्गला स्तोत्र"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/kavacham.pdf",
-        "source": "देवी कवच"
-      }
-    ]
-  },
+  "shiv_tandav_stotram": [
+    {
+      "pdf": "https://www.aghori.it/Shiva%20Tandava%20Stotram.pdf",
+      "source": "Aghori.it"
+    },
+    {
+      "pdf": "https://balsanskarkendra.s3-us-west-2.amazonaws.com/Downloads/Path/Shiv+Tandav+Stotram.pdf",
+      "source": "Bal Sanskar Kendra"
+    }
+  ],
 
-  "lakshmi": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/shrisuktam.pdf",
-        "source": "श्री सूक्त"
-      },
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/kanakadhara.pdf",
-        "source": "कनकधारा स्तोत्र"
-      }
-    ]
-  },
+  "rudrashtakam": [
+    {
+      "pdf": "https://chitrakutdhamtalgajarda.org/wp-content/uploads/2020/10/Rudrashtak-Hindi.pdf",
+      "source": "Chitrakutdham.org"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_shiva/rudra8.pdf",
+      "source": "SanskritDocuments"
+    }
+  ],
 
-  "vishnu": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_vishhnu/vishnusahasranama.pdf",
-        "source": "विष्णु सहस्त्रनाम"
-      }
-    ]
-  },
+  "shiv_panchakshar_stotra": [
+    {
+      "pdf": "https://sanskrit.safire.com/pdf/Shiva5color.pdf",
+      "source": "Safire.com"
+    },
+    {
+      "pdf": "https://www.srimandir.com/articles/stotra-aarth-or-laabh/shiv-panchakshar-stotra",
+      "source": "SriMandir"
+    }
+  ],
 
-  "surya": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_aditya/adityahridayam.pdf",
-        "source": "आदित्य हृदय स्तोत्र"
-      }
-    ]
-  },
+  "shiv_manasa_puja_stotra": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_shiva/smaanasa.pdf",
+      "source": "SanskritDocuments"
+    }
+  ],
 
-  "radha": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/radhastotram.pdf",
-        "source": "राधा स्तोत्र"
-      }
-    ]
-  },
+  "vishnu_sahasranama": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_vishhnu/vsahasranew.pdf",
+      "source": "SanskritDocuments"
+    },
+    {
+      "pdf": "https://sanskrit.safire.com/pdf/VISHNU2.pdf",
+      "source": "Safire.com"
+    }
+  ],
 
-  "sita": {
-    "direct": [
-      {
-        "pdf": "https://sanskritdocuments.org/doc_devii/sitastotram.pdf",
-        "source": "सीता स्तोत्र"
-      }
-    ]
-  }
+  "vishnu_stuti": [
+    {
+      "pdf": "https://www.bhaktibharat.com/mantra/shri-vishnu-stuti-shantakaram-bhujagashayanam",
+      "source": "BhaktiBharat"
+    },
+    {
+      "pdf": "https://www.astromantra.com/vishnu-stuti/?srsltid=AfmBOooOAT6Y778-RIwBw_lNy2piaGyWLpxGN0OA184qpi7jdJthVxGw",
+      "source": "Astromantra"
+    }
+  ],
+
+  "purusha_sukta": [
+    {
+      "pdf": "http://www.shdvef.com/wp-content/uploads/2019/06/Purush-sookta-1.pdf",
+      "source": "Shdvef.com"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_veda/puruSukta.pdf",
+      "source": "SanskritDocuments"
+    }
+  ],
+
+  "narayan_kavach": [
+    {
+      "pdf": "https://dn721607.ca.archive.org/0/items/shree_narayan_kavach/229_Sri_Narayan_Kavach_Web.pdf",
+      "source": "Archive.org"
+    },
+    {
+      "pdf": "https://vedpuran.net/wp-content/uploads/2016/03/narayan-kwach.pdf",
+      "source": "VedPuran"
+    }
+  ],
+
+  "durga_saptashati": [
+    {
+      "pdf": "https://ia601904.us.archive.org/3/items/durga-saptashati-geetapress/Durga_Saptashati.pdf",
+      "source": "Archive.org – Gita Press"
+    },
+    {
+      "pdf": "https://vedpuran.net/wp-content/uploads/2013/04/durga-saptashati-hindi.pdf",
+      "source": "VedPuran"
+    }
+  ],
+
+  "durga_kavach": [
+    {
+      "pdf": "https://ia904500.us.archive.org/32/items/durga-kavach-ebook/durga-kavach-ebook.pdf",
+      "source": "Archive.org"
+    }
+  ],
+
+  "shree_sukt": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_veda/s-sukta.pdf",
+      "source": "SanskritDocuments"
+    },
+    {
+      "pdf": "https://www.shdvef.com/wp-content/uploads/2019/06/Shree-sukt-1.pdf",
+      "source": "Shdvef.com"
+    }
+  ],
+
+  "lakshmi_ashtottara_shatanam": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_devii/lakShmyaShTottarashatanAmastotram.pdf",
+      "source": "SanskritDocuments"
+    },
+    {
+      "pdf": "https://vignanam.org/mobile/hindi/sree-lakshmi-ashtottara-satanaama-stotram.html",
+      "source": "Vignanam.org"
+    }
+  ],
+
+  "kanakadhara_stotram": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_devii/kanaka-tr.pdf",
+      "source": "SanskritDocuments"
+    },
+    {
+      "pdf": "https://sanskrit.safire.com/pdf/KANAKADHARA.pdf",
+      "source": "Safire.com"
+    }
+  ],
+
+  "lakshmi_stuti": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_devii/mahAlakShmIstuti.pdf",
+      "source": "SanskritDocuments"
+    },
+    {
+      "pdf": "https://dharmyaatra.in/laxmi-stuti/",
+      "source": "Dharmyaatra.in"
+    }
+  ]
 }
