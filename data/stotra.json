@@ -72,6 +72,46 @@
     }
   ],
 
+  "ram_raksha_stotra": [
+    {
+      "pdf": "https://ia802906.us.archive.org/22/items/ramrakshastotram/231_Ramraksha_Stotram_Web.pdf",
+      "source": "Archive.org"
+    },
+    {
+      "pdf": "https://sanskritdocuments.org/doc_raama/rraksha.html",
+      "source": "SanskritDocuments"
+    }
+  ],
+
+  "ram_stuti_kripalu": [
+    {
+      "pdf": "https://www.bhaktibharat.com/aarti/shri-ram-stuti",
+      "source": "BhaktiBharat"
+    },
+    {
+      "pdf": "https://astrodisha.com/shri-ram-stuti-download-free-pdf-hindi/",
+      "source": "Astrodisha"
+    }
+  ],
+
+  "ram_janam_stuti": [
+    {
+      "pdf": "https://chitrakutdhamtalgajarda.org/wp-content/uploads/2020/10/Ram-Janam-Stuti-Hindi.pdf",
+      "source": "Chitrakutdham.org"
+    },
+    {
+      "pdf": "https://www.bhaktibharat.com/bhajan/bhaye-pragat-kripala-dindayala",
+      "source": "BhaktiBharat"
+    }
+  ],
+
+  "mool_ramayana": [
+    {
+      "pdf": "https://dn710301.ca.archive.org/0/items/in.ernet.dli.2015.345549/2015.345549.Mool-Ramayana.pdf",
+      "source": "Archive.org"
+    }
+  ],
+
   "vishnu_sahasranama": [
     {
       "pdf": "https://sanskritdocuments.org/doc_vishhnu/vsahasranew.pdf",
