@@ -1,15 +1,13 @@
 {
-  "ram": [
+  "shiv": [
     {
-      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/04/Ram-Navami-Puja-Vidhi.pdf",
-      "source": "रामनवमी पूजा विधि (Dharmsaar)"
+      "pdf": "https://shivloti.tripod.com/upasana/worship%20of%20Shiva%20%209.pdf",
+      "source": "शिव पूजा विधि (Shivloti Tripod)"
     },
     {
-      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
-      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
-    }
-  ],
-  "shiv": [
+      "pdf": "https://shivloti.tripod.com/upasana/worship%20of%20stone%20lingam%208c.pdf",
+      "source": "शिव पार्थिव पूजन विधि (Shivloti Tripod)"
+    },
     {
       "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/02/Maha-Shivratri-Puja-Vidhi.pdf",
       "source": "महाशिवरात्रि पूजा विधि (Dharmsaar)"
@@ -19,27 +17,27 @@
       "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
-  "krishna": [
+
+  "ram": [
     {
-      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/08/Janmashtami-Puja-Vidhi.pdf",
-      "source": "जन्माष्टमी पूजा विधि (Dharmsaar)"
+      "pdf": "https://sanskritdocuments.org/doc_raama/shrIrAmapUjA.pdf",
+      "source": "राम पूजा विधि (SanskritDocuments)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/04/Ram-Navami-Puja-Vidhi.pdf",
+      "source": "रामनवमी पूजा विधि (Dharmsaar)"
     },
     {
       "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
       "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
-  "durga": [
-    {
-      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/09/Navratri-Puja-Vidhi.pdf",
-      "source": "नवरात्रि पूजा विधि (Dharmsaar)"
-    },
-    {
-      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
-      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
-    }
-  ],
+
   "ganesh": [
+    {
+      "pdf": "https://www.scribd.com/document/648684056/Gauri-Ganesh-Puja-Mantra",
+      "source": "गणेश पूजा विधि (Scribd)"
+    },
     {
       "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/08/Ganesh-Chaturthi-Puja-Vidhi.pdf",
       "source": "गणेश चतुर्थी पूजा विधि (Dharmsaar)"
@@ -49,30 +47,270 @@
       "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
-  "lakshmi": [
+
+  "krishna": [
     {
-      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/10/Lakshmi-Puja-Vidhi.pdf",
-      "source": "लक्ष्मी पूजा विधि (Dharmsaar)"
+      "pdf": "https://www.shdvef.com/wp-content/uploads/2019/08/krishna-Janamastmi-1.pdf",
+      "source": "कृष्ण पूजा विधि (Shdvef)"
+    },
+    {
+      "pdf": "https://krishnamuttkondapur.weebly.com/uploads/1/9/7/6/1976276/krishna-jayanti-pooja-sanskrit.pdf",
+      "source": "कृष्ण जन्माष्टमी पूजा विधि (Krishna Mutt Kondapur)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/08/Janmashtami-Puja-Vidhi.pdf",
+      "source": "जन्माष्टमी पूजा विधि (Dharmsaar)"
     },
     {
       "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
       "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
+
+  "vishnu": [
+    {
+      "pdf": "https://www.scribd.com/document/643209371/Vishnu-Pujan-Vidhi-Hanuman-Sharma-pdf",
+      "source": "विष्णु पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://www.srimandir.com/articles/chalisa/shree-vishnu-chalisa",
+      "source": "विष्णु पूजा विधि (SriMandir)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "durga": [
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/09/Navratri-Puja-Vidhi.pdf",
+      "source": "नवरात्रि पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/pujan-vidhi/maa-durga-pujan-vidhi",
+      "source": "दुर्गा पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.drikpanchang.com/navratri/durga-puja/puja-vidhi/durga-puja-vidhi.html?lang=hi",
+      "source": "दुर्गा पूजा विधि (DrikPanchang)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "lakshmi": [
+    {
+      "pdf": "https://ia601809.us.archive.org/34/items/laxmi-pooja-1-watermark/laxmi%20pooja1_watermark.pdf",
+      "source": "लक्ष्मी पूजा विधि (Archive.org)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/10/Lakshmi-Puja-Vidhi.pdf",
+      "source": "लक्ष्मी पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://shribaglamukhi.wordpress.com/wp-content/uploads/2015/11/diwali-puja-vidhi-in-hindi-and-ma-laxmi-pujan-vidhi-in-hindi-11-november-2015.pdf",
+      "source": "दीपावली पूजा विधि (Shribaglamukhi Wordpress)"
+    },
+    {
+      "pdf": "https://www.mithilapuja.com/2023/10/laxmi-pujan-mantra.html",
+      "source": "लक्ष्मी गणेश दीपावली पूजा विधि (MithilaPuja)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "saraswati": [
+    {
+      "pdf": "https://ia601808.us.archive.org/7/items/saraswati-pooja/saraswati%20Pooja.pdf",
+      "source": "सरस्वती पूजा विधि (Archive.org)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/01/Saraswati-Puja-Vidhi.pdf",
+      "source": "सरस्वती पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.scribd.com/document/558221905/instaPDF-in-saraswati-puja-mantra-hindi-967",
+      "source": "सरस्वती पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "gayatri": [
+    {
+      "pdf": "https://www.scribd.com/doc/253971847/Gayatri-Pooja-vidhi",
+      "source": "गायत्री पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
   "hanuman": [
     {
       "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/04/Hanuman-Jayanti-Puja-Vidhi.pdf",
       "source": "हनुमान जयंती पूजा विधि (Dharmsaar)"
     },
     {
+      "pdf": "https://www.drikpanchang.com/hindu-gods/hanuman/puja-vidhi/hanuman-puja-vidhi.html?lang=hi",
+      "source": "हनुमान पूजा विधि (DrikPanchang)"
+    },
+    {
+      "pdf": "https://www.scribd.com/document/452702473/Shri-Hanumanji-Shodashopachar-Pujan",
+      "source": "हनुमान पूजा विधि (Scribd)"
+    },
+    {
       "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
       "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
     }
   ],
+
+  "gayatri": [
+    {
+      "pdf": "https://www.scribd.com/doc/253971847/Gayatri-Pooja-vidhi",
+      "source": "गायत्री पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
   "saraswati": [
+    {
+      "pdf": "https://ia601808.us.archive.org/7/items/saraswati-pooja/saraswati%20Pooja.pdf",
+      "source": "सरस्वती पूजा विधि (Archive.org)"
+    },
     {
       "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/01/Saraswati-Puja-Vidhi.pdf",
       "source": "सरस्वती पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.scribd.com/document/558221905/instaPDF-in-saraswati-puja-mantra-hindi-967",
+      "source": "सरस्वती पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "lakshmi": [
+    {
+      "pdf": "https://ia601809.us.archive.org/34/items/laxmi-pooja-1-watermark/laxmi%20pooja1_watermark.pdf",
+      "source": "लक्ष्मी पूजा विधि (Archive.org)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/10/Lakshmi-Puja-Vidhi.pdf",
+      "source": "लक्ष्मी पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://shribaglamukhi.wordpress.com/wp-content/uploads/2015/11/diwali-puja-vidhi-in-hindi-and-ma-laxmi-pujan-vidhi-in-hindi-11-november-2015.pdf",
+      "source": "दीपावली पूजा विधि (Shribaglamukhi Wordpress)"
+    },
+    {
+      "pdf": "https://www.mithilapuja.com/2023/10/laxmi-pujan-mantra.html",
+      "source": "लक्ष्मी गणेश दीपावली पूजा विधि (MithilaPuja)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "durga": [
+    {
+      "pdf": "https://www.dharmsaar.com/wp-content/uploads/2022/09/Navratri-Puja-Vidhi.pdf",
+      "source": "नवरात्रि पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.dharmsaar.com/pujan-vidhi/maa-durga-pujan-vidhi",
+      "source": "दुर्गा पूजा विधि (Dharmsaar)"
+    },
+    {
+      "pdf": "https://www.drikpanchang.com/navratri/durga-puja/puja-vidhi/durga-puja-vidhi.html?lang=hi",
+      "source": "दुर्गा पूजा विधि (DrikPanchang)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "vishnu": [
+    {
+      "pdf": "https://www.scribd.com/document/643209371/Vishnu-Pujan-Vidhi-Hanuman-Sharma-pdf",
+      "source": "विष्णु पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://www.srimandir.com/articles/chalisa/shree-vishnu-chalisa",
+      "source": "विष्णु पूजा विधि (SriMandir)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+  "shani": [
+    {
+      "pdf": "https://sanskritdocuments.org/doc_z_otherlang_hindi/shani40.html",
+      "source": "शनि पूजा विधि (SanskritDocuments)"
+    },
+    {
+      "pdf": "https://www.scribd.com/document/470767061/shri-shani-chalisa-in-hindi-pdf",
+      "source": "शनि पूजा विधि (Scribd)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "navgraha": [
+    {
+      "pdf": "https://vedpuran.net/wp-content/uploads/2021/05/navgraha-chalisa.pdf",
+      "source": "नवग्रह पूजा विधि (VedPuran)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "brahma": [
+    {
+      "pdf": "https://shrisanatandharam.com/public/storage/image/downloadable-file/brahamanae-calsa-521.pdf",
+      "source": "ब्रह्मा पूजा विधि (Shri Sanatan Dharam)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "parvati": [
+    {
+      "pdf": "https://www.gitainsight.com/p/sampoorna-chalisa-sangrah.html",
+      "source": "पार्वती पूजा विधि (Gita Insight – fallback)"
+    },
+    {
+      "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
+      "source": "सर्वदेव पूजा विधि (Rajasthan Devasthan Dept.)"
+    }
+  ],
+
+  "giriraj": [
+    {
+      "pdf": "https://www.scribd.com/document/683083138/Shri-Giriraj-Chalisa",
+      "source": "गिरिराज पूजा विधि (Scribd)"
     },
     {
       "pdf": "https://devasthan.rajasthan.gov.in/List_of_festivals_year_2018.asp",
