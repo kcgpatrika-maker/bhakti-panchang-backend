@@ -1,220 +1,171 @@
 {
-  "shiv_mahimna_stotra": [
+  "shiv": [
     {
       "pdf": "https://ia800404.us.archive.org/1/items/ShivaMahimnaStotraAcharyaRajeshDikshit/Shiva%20Mahimna%20Stotra%20-%20Acharya%20Rajesh%20Dikshit.pdf",
-      "source": "Archive.org"
+      "source": "शिव महिम्न स्तोत्र (Archive.org)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_shiva/shivamahi.pdf",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "rudrashtadhyayi": [
+      "source": "शिव महिम्न स्तोत्र (SanskritDocuments)"
+    },
     {
       "pdf": "https://dn721909.ca.archive.org/0/items/RudrashtadhyayiGItaPressGorakhpur/Rudrashtadhyayi%20-%20GIta%20Press%20Gorakhpur.pdf",
-      "source": "Archive.org – Gita Press"
+      "source": "रुद्राष्टाध्यायी (Archive.org – Gita Press)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_shiva/rudrAShTAdhyAyIshuklayajurvedIya.pdf",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "lingashtakam": [
+      "source": "रुद्राष्टाध्यायी (SanskritDocuments)"
+    },
     {
       "pdf": "https://svtempleco.org/Home/pdfs/Hindi/Lingashtakam.pdf",
-      "source": "SVTempleCo.org"
+      "source": "लिंगाष्टकम (SVTempleCo.org)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_shiva/lingashhMean.html",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "shiv_tandav_stotram": [
+      "source": "लिंगाष्टकम (SanskritDocuments)"
+    },
     {
       "pdf": "https://www.aghori.it/Shiva%20Tandava%20Stotram.pdf",
-      "source": "Aghori.it"
+      "source": "शिव ताण्डव स्तोत्रम (Aghori.it)"
     },
     {
       "pdf": "https://balsanskarkendra.s3-us-west-2.amazonaws.com/Downloads/Path/Shiv+Tandav+Stotram.pdf",
-      "source": "Bal Sanskar Kendra"
-    }
-  ],
-
-  "rudrashtakam": [
+      "source": "शिव ताण्डव स्तोत्रम (Bal Sanskar Kendra)"
+    },
     {
       "pdf": "https://chitrakutdhamtalgajarda.org/wp-content/uploads/2020/10/Rudrashtak-Hindi.pdf",
-      "source": "Chitrakutdham.org"
+      "source": "रुद्राष्टकम (Chitrakutdham.org)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_shiva/rudra8.pdf",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "shiv_panchakshar_stotra": [
+      "source": "रुद्राष्टकम (SanskritDocuments)"
+    },
     {
       "pdf": "https://sanskrit.safire.com/pdf/Shiva5color.pdf",
-      "source": "Safire.com"
+      "source": "शिव पंचाक्षर स्तोत्र (Safire.com)"
     },
     {
       "pdf": "https://www.srimandir.com/articles/stotra-aarth-or-laabh/shiv-panchakshar-stotra",
-      "source": "SriMandir"
-    }
-  ],
-
-  "shiv_manasa_puja_stotra": [
+      "source": "शिव पंचाक्षर स्तोत्र (SriMandir)"
+    },
     {
       "pdf": "https://sanskritdocuments.org/doc_shiva/smaanasa.pdf",
-      "source": "SanskritDocuments"
+      "source": "शिव मानस पूजा स्तोत्र (SanskritDocuments)"
     }
   ],
 
-  "ram_raksha_stotra": [
+  "ram": [
     {
       "pdf": "https://ia802906.us.archive.org/22/items/ramrakshastotram/231_Ramraksha_Stotram_Web.pdf",
-      "source": "Archive.org"
+      "source": "राम रक्षा स्तोत्र (Archive.org)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_raama/rraksha.html",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "ram_stuti_kripalu": [
+      "source": "राम रक्षा स्तोत्र (SanskritDocuments)"
+    },
     {
       "pdf": "https://www.bhaktibharat.com/aarti/shri-ram-stuti",
-      "source": "BhaktiBharat"
+      "source": "राम स्तुति – श्रीरामचन्द्र कृपालु भजमन (BhaktiBharat)"
     },
     {
       "pdf": "https://astrodisha.com/shri-ram-stuti-download-free-pdf-hindi/",
-      "source": "Astrodisha"
-    }
-  ],
-
-  "ram_janam_stuti": [
+      "source": "राम स्तुति – श्रीरामचन्द्र कृपालु भजमन (Astrodisha)"
+    },
     {
       "pdf": "https://chitrakutdhamtalgajarda.org/wp-content/uploads/2020/10/Ram-Janam-Stuti-Hindi.pdf",
-      "source": "Chitrakutdham.org"
+      "source": "राम जन्म स्तुति – भए प्रकट कृपाला (Chitrakutdham.org)"
     },
     {
       "pdf": "https://www.bhaktibharat.com/bhajan/bhaye-pragat-kripala-dindayala",
-      "source": "BhaktiBharat"
-    }
-  ],
-
-  "mool_ramayana": [
+      "source": "राम जन्म स्तुति – भए प्रकट कृपाला (BhaktiBharat)"
+    },
     {
       "pdf": "https://dn710301.ca.archive.org/0/items/in.ernet.dli.2015.345549/2015.345549.Mool-Ramayana.pdf",
-      "source": "Archive.org"
+      "source": "मूल रामायण (Archive.org)"
     }
   ],
-
-  "vishnu_sahasranama": [
+  "vishnu": [
     {
       "pdf": "https://sanskritdocuments.org/doc_vishhnu/vsahasranew.pdf",
-      "source": "SanskritDocuments"
+      "source": "विष्णु सहस्त्रनाम स्तोत्र (SanskritDocuments)"
     },
     {
       "pdf": "https://sanskrit.safire.com/pdf/VISHNU2.pdf",
-      "source": "Safire.com"
-    }
-  ],
-
-  "vishnu_stuti": [
+      "source": "विष्णु सहस्त्रनाम स्तोत्र (Safire.com)"
+    },
     {
       "pdf": "https://www.bhaktibharat.com/mantra/shri-vishnu-stuti-shantakaram-bhujagashayanam",
-      "source": "BhaktiBharat"
+      "source": "विष्णु स्तुति (BhaktiBharat)"
     },
     {
       "pdf": "https://www.astromantra.com/vishnu-stuti/?srsltid=AfmBOooOAT6Y778-RIwBw_lNy2piaGyWLpxGN0OA184qpi7jdJthVxGw",
-      "source": "Astromantra"
-    }
-  ],
-
-  "purusha_sukta": [
+      "source": "विष्णु स्तुति (Astromantra)"
+    },
     {
       "pdf": "http://www.shdvef.com/wp-content/uploads/2019/06/Purush-sookta-1.pdf",
-      "source": "Shdvef.com"
+      "source": "पुरुष सूक्त (Shdvef.com)"
     },
     {
       "pdf": "https://sanskritdocuments.org/doc_veda/puruSukta.pdf",
-      "source": "SanskritDocuments"
-    }
-  ],
-
-  "narayan_kavach": [
+      "source": "पुरुष सूक्त (SanskritDocuments)"
+    },
     {
       "pdf": "https://dn721607.ca.archive.org/0/items/shree_narayan_kavach/229_Sri_Narayan_Kavach_Web.pdf",
-      "source": "Archive.org"
+      "source": "नारायण कवच (Archive.org)"
     },
     {
       "pdf": "https://vedpuran.net/wp-content/uploads/2016/03/narayan-kwach.pdf",
-      "source": "VedPuran"
+      "source": "नारायण कवच (VedPuran)"
     }
   ],
 
-  "durga_saptashati": [
+  "durga": [
     {
       "pdf": "https://ia601904.us.archive.org/3/items/durga-saptashati-geetapress/Durga_Saptashati.pdf",
-      "source": "Archive.org – Gita Press"
+      "source": "दुर्गा सप्तशती (Archive.org – Gita Press)"
     },
     {
       "pdf": "https://vedpuran.net/wp-content/uploads/2013/04/durga-saptashati-hindi.pdf",
-      "source": "VedPuran"
-    }
-  ],
-
-  "durga_kavach": [
+      "source": "दुर्गा सप्तशती (VedPuran)"
+    },
     {
       "pdf": "https://ia904500.us.archive.org/32/items/durga-kavach-ebook/durga-kavach-ebook.pdf",
-      "source": "Archive.org"
+      "source": "दुर्गा कवच (Archive.org)"
     }
   ],
 
-  "shree_sukt": [
+    "lakshmi": [
     {
       "pdf": "https://sanskritdocuments.org/doc_veda/s-sukta.pdf",
-      "source": "SanskritDocuments"
+      "source": "श्री सूक्त (SanskritDocuments)"
     },
     {
       "pdf": "https://www.shdvef.com/wp-content/uploads/2019/06/Shree-sukt-1.pdf",
-      "source": "Shdvef.com"
-    }
-  ],
-
-  "lakshmi_ashtottara_shatanam": [
+      "source": "श्री सूक्त (Shdvef.com)"
+    },
     {
       "pdf": "https://sanskritdocuments.org/doc_devii/lakShmyaShTottarashatanAmastotram.pdf",
-      "source": "SanskritDocuments"
+      "source": "लक्ष्मी अष्टोत्तर शतनाम (SanskritDocuments)"
     },
     {
       "pdf": "https://vignanam.org/mobile/hindi/sree-lakshmi-ashtottara-satanaama-stotram.html",
-      "source": "Vignanam.org"
-    }
-  ],
-
-  "kanakadhara_stotram": [
+      "source": "लक्ष्मी अष्टोत्तर शतनाम (Vignanam.org)"
+    },
     {
       "pdf": "https://sanskritdocuments.org/doc_devii/kanaka-tr.pdf",
-      "source": "SanskritDocuments"
+      "source": "कनकधारा स्तोत्रम (SanskritDocuments)"
     },
     {
       "pdf": "https://sanskrit.safire.com/pdf/KANAKADHARA.pdf",
-      "source": "Safire.com"
-    }
-  ],
-
-  "lakshmi_stuti": [
+      "source": "कनकधारा स्तोत्रम (Safire.com)"
+    },
     {
       "pdf": "https://sanskritdocuments.org/doc_devii/mahAlakShmIstuti.pdf",
-      "source": "SanskritDocuments"
+      "source": "लक्ष्मी स्तुति (SanskritDocuments)"
     },
     {
       "pdf": "https://dharmyaatra.in/laxmi-stuti/",
-      "source": "Dharmyaatra.in"
+      "source": "लक्ष्मी स्तुति (Dharmyaatra.in)"
     }
   ]
 }
