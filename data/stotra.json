@@ -230,6 +230,35 @@
         "source": "सुन्दरकाण्ड (Archive.org)"
       }
     ]
+  },
+
+  "krishna": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_vishhnu/madhurst.pdf",
+        "source": "मधुराष्टकम् (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_vishhnu/kRRiShNAShTakam9.html",
+        "source": "कृष्णाष्टकम् (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritacademy.delhi.gov.in/sites/default/files/2022-09/final_geeta.pdf",
+        "source": "श्रीमद्भगवद्गीता (Delhi Sanskrit Academy)"
+      }
+    ]
+  },
+
+  "surya": {
+    "direct": [
+      {
+        "pdf": "https://dn721200.ca.archive.org/0/items/c_825/aaditya%20hridya%20stotra.pdf",
+        "source": "आदित्य हृदय स्तोत्र (Archive.org)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_z_misc_navagraha/sUryAShTakam.html",
+        "source": "सूर्य अष्टकम (SanskritDocuments)"
+      }
+    ]
   }
 }
-
