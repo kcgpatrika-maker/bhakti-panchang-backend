@@ -260,5 +260,83 @@
         "source": "सूर्य अष्टकम (SanskritDocuments)"
       }
     ]
+  },
+
+  "chandra": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_z_misc_navagraha/chandrAShTottarashatanAmastotram2.pdf",
+        "source": "चन्द्राष्टोत्तर शतनाम स्तोत्रम (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "navagraha": {
+    "direct": [
+      {
+        "pdf": "https://sampradaaya.wordpress.com/wp-content/uploads/2013/04/navagraha-stotra-in-dev.pdf",
+        "source": "नवग्रह स्तोत्र (Sampradaaya)"
+      }
+    ]
+  },
+
+  "kartikeya": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_subrahmanya/skanda-6-kavacha.pdf",
+        "source": "स्कंद षष्ठी कवचम् (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "sita": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/sItAShTAkSharastotram.html",
+        "source": "श्री सीताष्टाक्षर स्तोत्रम (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_raama/siitaaraama8.pdf",
+        "source": "श्री सीतारामाष्टकम (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_raama/sItAsahasranAmastotramadbhutarAmAyaNa.pdf",
+        "source": "सीता सहस्त्रनाम (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "radha": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/rAdhAShTakam3.pdf",
+        "source": "राधा अष्टकम् (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/rAdhAsahasranAmastotram1.pdf",
+        "source": "राधा सहस्रनाम स्तोत्र (SanskritDocuments)"
+      }
+    ]
+  },
+
+  "gayatri": {
+    "direct": [
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/gaayatriistotra.pdf",
+        "source": "गायत्री स्तोत्र (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/gAyatrisahasra.html",
+        "source": "गायत्री सहस्रनाम (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/gaayatriikavach.pdf",
+        "source": "गायत्री कवच (SanskritDocuments)"
+      },
+      {
+        "pdf": "https://sanskritdocuments.org/doc_devii/gAyatrI_hRRidayam.pdf",
+        "source": "गायत्री हृदय स्तोत्र (SanskritDocuments)"
+      }
+    ]
   }
 }
