@@ -16,6 +16,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get("/manifest.json", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "manifest.json"));
+});
+
+app.get("/panchang-icon-192.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "panchang-icon-192.png"));
+});
+
+app.get("/panchang-icon-512.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "panchang-icon-512.png"));
+});
+
 console.log("Static path:", path.join(__dirname, "public"));
 app.use(express.static(path.join(__dirname, "public")));
 
